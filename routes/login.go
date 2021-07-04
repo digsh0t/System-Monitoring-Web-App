@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"crypto/sha512"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -12,6 +14,25 @@ import (
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
+
+func hashPassword(password string) string {
+	// convert password to byte slice
+	var passwordBytes = []byte(password)
+
+	// Create sha-512 hasger
+	var sha512Hasher = sha512.New()
+
+	// Write password bytes to the hasher
+	sha512Hasher.Write(passwordBytes)
+
+	// Get the SHA-512 hashed password
+	var hashedPasswordBytes = sha512Hasher.Sum(nil)
+
+	// Convert the hashed password to a base64 encoded string
+	var base64EncodedPasswordHash = base64.URLEncoding.EncodeToString(hashedPasswordBytes)
+
+	return base64EncodedPasswordHash
+}
 
 //Login handler to handle login
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -31,12 +52,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	db := database.ConnectDB()
 	defer db.Close()
-	row := db.QueryRow("SELECT wa_users_username, wa_users_role FROM wa_users WHERE wa_users_username = ? AND wa_users_password = ?", user.Username, user.Password)
+
+	hashedPassword := hashPassword(user.Password)
+	row := db.QueryRow("SELECT wa_users_username, wa_users_role FROM wa_users WHERE wa_users_username = ? AND wa_users_hashedPassword = ?", user.Username, hashedPassword)
 	err = row.Scan(&user.Username, &user.Role)
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, "Wrong Username or Password")
 	} else {
-		token, err := auth.Create(user.Username, user.Role)
+		token, err := auth.CreateToken(user.Username, user.Role)
 		if err != nil {
 			fmt.Println("Fail to create token while login")
 		}

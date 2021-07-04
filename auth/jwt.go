@@ -7,7 +7,8 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-func Create(username string, role string) (string, error) {
+func CreateToken(username string, role string) (string, error) {
+
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["username"] = username
