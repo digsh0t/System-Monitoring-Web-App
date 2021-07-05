@@ -2,7 +2,6 @@ package routes
 
 import (
 	"crypto/sha512"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -28,10 +27,10 @@ func hashPassword(password string) string {
 	// Get the SHA-512 hashed password
 	var hashedPasswordBytes = sha512Hasher.Sum(nil)
 
-	// Convert the hashed password to a base64 encoded string
-	var base64EncodedPasswordHash = base64.URLEncoding.EncodeToString(hashedPasswordBytes)
+	// Convert hashed password byte array to string
+	result := fmt.Sprintf("%x", hashedPasswordBytes)
 
-	return base64EncodedPasswordHash
+	return result
 }
 
 //Login handler to handle login
