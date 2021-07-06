@@ -5,11 +5,9 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/wintltr/login-api/utils"
 )
 
 func CreateToken(username string, role string) (string, error) {
-	utils.Init()
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["username"] = username

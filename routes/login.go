@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
@@ -17,6 +18,13 @@ import (
 func hashPassword(password string) string {
 	// convert password to byte slice
 	var passwordBytes = []byte(password)
+
+	// Load SALT environment variable from .env file
+	utils.Init()
+	salt := os.Getenv("SALT")
+	var saltBytes = []byte(salt)
+
+	passwordBytes = append(passwordBytes, saltBytes...)
 
 	// Create sha-512 hasger
 	var sha512Hasher = sha512.New()
