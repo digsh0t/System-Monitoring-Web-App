@@ -61,7 +61,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	hashedPassword := hashPassword(user.Password)
-	row := db.QueryRow("SELECT wa_users_username, wa_users_role FROM wa_users WHERE wa_users_username = ? AND wa_users_hashedPassword = ?", user.Username, hashedPassword)
+	row := db.QueryRow("SELECT wa_users_username, wa_users_role FROM wa_users WHERE wa_users_username = ? AND wa_users_password = ?", user.Username, hashedPassword)
 	err = row.Scan(&user.Username, &user.Role)
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, "Wrong Username or Password")
