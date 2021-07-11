@@ -3,7 +3,6 @@ package routes
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -42,7 +41,7 @@ func connectSSH(user, password, host string, port int) (*ssh.Client, error) {
 
 	sshClient, err = ssh.Dial("tcp", addr, clientConfig)
 	if err != nil {
-		log.Fatal("Error at sshClient!")
+		return sshClient, err
 	}
 
 	return sshClient, nil
@@ -66,17 +65,22 @@ func execCommand(cmd string) (string, error) {
 
 	//create ssh connect
 	sshClient, err = connectSSH(user_SSH, password_SSH, host_SSH, port_SSH)
-
-	//create a session. It is one session per command
-	session, err = sshClient.NewSession()
 	if err != nil {
-		log.Fatal("Error at open session for ssh!")
+		return "Wrong username or password to connect remote server", err
+	} else {
+		//create a session. It is one session per command
+		session, err = sshClient.NewSession()
+		if err != nil {
+			return "Failed to open new session", err
+		}
+		defer session.Close()
+		var b bytes.Buffer //import "bytes"
+		session.Stdout = &b
+		err = session.Run(cmd)
+		return b.String(), err
+
 	}
-	defer session.Close()
-	var b bytes.Buffer //import "bytes"
-	session.Stdout = &b
-	err = session.Run(cmd)
-	return b.String(), err
+
 }
 
 // Check Public Key of user exist or not
@@ -94,18 +98,22 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 	isKeyExist := isKeyExist()
 	user := utils.GetCurrentUser()
 	if isKeyExist == false {
-		log.Fatal("Your key does not exist")
+		utils.ERROR(w, http.StatusNotFound, "Your public key does not exist")
+
+	} else {
+		data, _ := ioutil.ReadFile(user.HomeDir + "/.ssh/id_rsa.pub")
+		cmd := "echo" + " \"" + string(data) + "\" " + ">> ~/.ssh/authorized_keys"
+		message, err := execCommand(cmd)
+		if err == nil {
+			returnJson := simplejson.New()
+			returnJson.Set("Message", "Transfer key successfully!")
+			returnJson.Set("Status", true)
+			returnJson.Set("Error", "")
+			utils.JSON(w, http.StatusOK, returnJson)
+		} else {
+			utils.ERROR(w, http.StatusBadRequest, message)
+		}
+
 	}
-	data, err := ioutil.ReadFile(user.HomeDir + "/.ssh/id_rsa.pub")
-	if err != nil {
-		utils.ERROR(w, http.StatusNotFound, "Failed to load public key of your folder!")
-	}
-	cmd := "echo" + " \"" + string(data) + "\" " + ">> ~/.ssh/authorized_keys"
-	execCommand(cmd)
-	returnJson := simplejson.New()
-	returnJson.Set("Message", "Transfer key successfully!")
-	returnJson.Set("Status", true)
-	returnJson.Set("Error", "")
-	utils.JSON(w, http.StatusOK, returnJson)
 
 }
