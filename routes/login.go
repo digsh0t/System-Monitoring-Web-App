@@ -20,7 +20,7 @@ func hashPassword(password string) string {
 	var passwordBytes = []byte(password)
 
 	// Load SALT environment variable from .env file
-	utils.Init()
+	utils.EnvInit()
 	salt := os.Getenv("SALT")
 	var saltBytes = []byte(salt)
 

@@ -103,14 +103,22 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		data, _ := ioutil.ReadFile(user.HomeDir + "/.ssh/id_rsa.pub")
-		cmd := "echo" + " \"" + "test" + string(data) + "\" " + ">> ~/.ssh/authorized_keys"
+		cmd := "echo" + " \"" + string(data) + "\" " + ">> ~/.ssh/authorized_keys"
 		message, err := execCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
 		if err == nil {
 			returnJson := simplejson.New()
-			returnJson.Set("Message", "Transfer key successfully!")
-			returnJson.Set("Status", true)
-			returnJson.Set("Error", "")
-			utils.JSON(w, http.StatusOK, returnJson)
+			//Test the SSH connection using public key if works
+			success, err := sshConnectionInfo.TestConnectionPublicKey()
+			if err != nil {
+				returnJson.Set("Status", success)
+				returnJson.Set("Error", err.Error())
+				utils.JSON(w, http.StatusOK, returnJson)
+			} else {
+				returnJson.Set("Message", "Transfer key successfully!")
+				returnJson.Set("Status", true)
+				returnJson.Set("Error", "")
+				utils.JSON(w, http.StatusOK, returnJson)
+			}
 		} else {
 			utils.ERROR(w, http.StatusBadRequest, message)
 		}
