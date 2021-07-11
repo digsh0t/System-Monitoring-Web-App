@@ -112,11 +112,10 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				returnJson.Set("Status", success)
 				returnJson.Set("Error", err.Error())
-				utils.JSON(w, http.StatusOK, returnJson)
+				utils.JSON(w, http.StatusBadRequest, returnJson)
 			} else {
-				returnJson.Set("Message", "Transfer key successfully!")
 				returnJson.Set("Status", true)
-				returnJson.Set("Error", "")
+				returnJson.Set("Error", nil)
 				utils.JSON(w, http.StatusOK, returnJson)
 			}
 		} else {

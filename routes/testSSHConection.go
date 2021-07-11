@@ -14,13 +14,16 @@ func TestSSHConnection(w http.ResponseWriter, r *http.Request) {
 	//Dummy Database SSH Connection Info
 	sshConnection.HostSSH = "192.168.163.136"
 	sshConnection.UserSSH = "root"
-	sshConnection.PasswordSSH = "Anmbmkn123"
 	sshConnection.PortSSH = 22
 
-	success, err := sshConnection.TestConnection()
+	success, err := sshConnection.TestConnectionPublicKey()
 
 	returnJson := simplejson.New()
-	returnJson.Set("Success", success)
-	returnJson.Set("Error", err)
-	utils.JSON(w, http.StatusOK, returnJson)
+	returnJson.Set("Status", success)
+	returnJson.Set("Error", err.Error())
+	if err != nil {
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+	} else {
+		utils.JSON(w, http.StatusOK, returnJson)
+	}
 }
