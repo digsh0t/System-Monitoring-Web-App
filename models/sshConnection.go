@@ -16,6 +16,8 @@ type SshConnectionInfo struct {
 	PasswordSSH string `json:"passwordSSH"`
 	HostSSH     string `json:"hostSSH"`
 	PortSSH     int    `json:"portSSH"`
+	CreatorId   int    `json:"creatorId"`
+	SSHKeyId    int    `json:"sshKeyId"`
 }
 
 //Test SSH connection using username and password
