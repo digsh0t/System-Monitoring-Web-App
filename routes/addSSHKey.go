@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"github.com/wintltr/login-api/database"
+	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -68,18 +68,15 @@ func AddSSHKey(w http.ResponseWriter, r *http.Request) {
 	sshKey.PrivateKey = models.AESEncryptKey(privateKey)
 	sshKey.CreatorId = creatorId
 
-	db := database.ConnectDB()
-	defer db.Close()
-
-	stmt, err := db.Prepare("INSERT INTO ssh_keys (sk_key_name, sk_private_key, creator_id) VALUES (?,?,?)")
+	status, err := sshKey.InsertSSHKeyToDB()
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
+	statusCode := http.StatusBadRequest
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
+		returnJson.Set("Error", err.Error())
+	} else {
+		returnJson.Set("Error", err)
+		statusCode = http.StatusCreated
 	}
-	_, err = stmt.Exec(sshKey.KeyName, sshKey.PrivateKey, sshKey.CreatorId)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	utils.JSON(w, http.StatusCreated, sshKey)
+	utils.JSON(w, statusCode, returnJson)
 }

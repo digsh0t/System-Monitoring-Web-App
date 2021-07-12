@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/wintltr/login-api/database"
 	"github.com/wintltr/login-api/utils"
 	"golang.org/x/crypto/ssh"
 )
@@ -84,4 +85,20 @@ func (sshConnection *SshConnectionInfo) TestConnectionPublicKey() (bool, error) 
 	} else {
 		return true, err
 	}
+}
+
+func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB(creator_id int, ssh_key_id int) (bool, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_host, sc_port, creator_id, ssh_key_id) VALUES (?,?,?,?,?)")
+	if err != nil {
+		return false, err
+	}
+
+	_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.PortSSH, creator_id, ssh_key_id)
+	if err != nil {
+		return false, err
+	}
+	return true, err
 }

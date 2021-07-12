@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/wintltr/login-api/database"
 	"github.com/wintltr/login-api/utils"
 )
 
@@ -79,4 +80,19 @@ func decrypt(key []byte, securemess string) (decodedmess string, err error) {
 
 	decodedmess = string(cipherText)
 	return
+}
+
+func (sshKey *SSHKey) InsertSSHKeyToDB() (bool, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	stmt, err := db.Prepare("INSERT INTO ssh_keys (sk_key_name, sk_private_key, creator_id) VALUES (?,?,?)")
+	if err != nil {
+		return false, err
+	}
+	_, err = stmt.Exec(sshKey.KeyName, sshKey.PrivateKey, sshKey.CreatorId)
+	if err != nil {
+		return false, err
+	}
+	return true, err
 }
