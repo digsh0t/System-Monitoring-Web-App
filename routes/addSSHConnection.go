@@ -114,14 +114,17 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 				returnJson.Set("Error", err.Error())
 				utils.JSON(w, http.StatusBadRequest, returnJson)
 			} else {
-				returnJson.Set("Status", true)
-				returnJson.Set("Error", nil)
-				utils.JSON(w, http.StatusOK, returnJson)
+
+				//Dummy value
+				sshConnectionInfo.CreatorId = 1
+				sshConnectionInfo.SSHKeyId = 1
+
+				success, err = sshConnectionInfo.AddSSHConnectionToDB()
+				utils.ReturnInsertJSON(w, success, err)
 			}
 		} else {
 			utils.ERROR(w, http.StatusBadRequest, message)
 		}
-
 	}
 
 }
