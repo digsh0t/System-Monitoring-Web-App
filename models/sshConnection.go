@@ -89,7 +89,7 @@ func (sshConnection *SshConnectionInfo) TestConnectionPublicKey() (bool, error) 
 	}
 }
 
-func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB(creator_id int, ssh_key_id int) (bool, error) {
+func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
@@ -98,7 +98,7 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB(creator_id int, ssh
 		return false, err
 	}
 
-	_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.PortSSH, creator_id, ssh_key_id)
+	_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId)
 	if err != nil {
 		return false, err
 	}
