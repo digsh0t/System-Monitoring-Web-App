@@ -21,8 +21,8 @@ type SshConnectionInfo struct {
 	SSHKeyId        int    `json:"sshKeyId"`
 }
 
-//Read public key from private key file
-func ReadPublicKeyFile(file string) (ssh.AuthMethod, error) {
+//Read private key from private key file
+func ReadPrivateKeyFile(file string) (ssh.AuthMethod, error) {
 	buffer, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func ReadPublicKeyFile(file string) (ssh.AuthMethod, error) {
 func (sshConnection *SshConnectionInfo) TestConnectionPublicKey() (bool, error) {
 	//If private key is incorrect or wrong format, return error immediately
 	var auth []ssh.AuthMethod
-	authMethod, err := ReadPublicKeyFile("/home/long/.ssh/id_rsa")
+	authMethod, err := ReadPrivateKeyFile("/home/long/.ssh/id_rsa")
 	fmt.Print(authMethod)
 	if err != nil {
 		return false, err
@@ -85,4 +85,27 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 		return false, err
 	}
 	return true, err
+}
+
+func (connectionInfo *SshConnectionInfo) GetAllSSHConnection() ([]SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_port, creator_id, ssh_key_id 
+			  FROM ssh_connections`
+	selDB, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var connectionInfos []SshConnectionInfo
+	for selDB.Next() {
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId)
+		if err != nil {
+			return nil, err
+		}
+
+		connectionInfos = append(connectionInfos, *connectionInfo)
+	}
+	return connectionInfos, err
 }
