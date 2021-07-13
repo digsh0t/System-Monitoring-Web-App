@@ -9,33 +9,26 @@ import (
 )
 
 // Get SSh connection from DB
-func GetSSHConnection(w http.ResponseWriter, r *http.Request) {
+func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 
 	db := database.ConnectDB()
 	defer db.Close()
 
-	query := `SELECT c.sc_username, c.sc_host, c.sc_port, k.sk_key_name 
-			  FROM ssh_connections AS c JOIN ssh_keys AS k 
-			  ON c.ssh_key_id = k.sk_key_id`
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_port, creator_id, ssh_key_id 
+			  FROM ssh_connections`
 	selDB, err := db.Query(query)
 	if err != nil {
 		utils.ERROR(w, http.StatusNotFound, "No entry in database!")
 	}
 
-	var connectionInfo models.GetSSHConnectionInfo
-	var connectionInfos []models.GetSSHConnectionInfo
+	var connectionInfo models.SshConnectionInfo
+	var connectionInfos []models.SshConnectionInfo
 	for selDB.Next() {
-		var username, host, key_name string
-		var port int
-		err = selDB.Scan(&username, &host, &port, &key_name)
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId)
 		if err != nil {
 			utils.ERROR(w, http.StatusNotFound, "Error while exporting connected clients info!")
 		}
 
-		connectionInfo.Sc_username = username
-		connectionInfo.Sc_host = host
-		connectionInfo.Sc_port = port
-		connectionInfo.Sk_key_name = key_name
 		connectionInfos = append(connectionInfos, connectionInfo)
 	}
 

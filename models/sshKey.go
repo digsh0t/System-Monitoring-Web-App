@@ -14,9 +14,10 @@ import (
 )
 
 type SSHKey struct {
-	KeyName    string
-	PrivateKey string
-	CreatorId  int
+	SSHKeyId   int    `json:"sshKeyId"`
+	KeyName    string `json:"keyName"`
+	PrivateKey string `json:"privateKey"`
+	CreatorId  int    `json:"creatorId"`
 }
 
 func AESEncryptKey(privateKey string) string {

@@ -11,9 +11,11 @@ import (
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/login", routes.Login).Methods("POST")
+
 	router.HandleFunc("/sshconnection", routes.SSHCopyKey).Methods("POST")
 	router.HandleFunc("/sshconnection/{id}/test", routes.TestSSHConnection).Methods("GET")
+	router.HandleFunc("/sshconnections", routes.GetAllSSHConnection).Methods("GET")
+
 	router.HandleFunc("/sshkey", routes.AddSSHKey).Methods("POST")
-	router.HandleFunc("/sshconnections", routes.GetSSHConnection).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8081", router))
 }
