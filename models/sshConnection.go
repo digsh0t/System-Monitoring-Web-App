@@ -109,3 +109,16 @@ func (connectionInfo *SshConnectionInfo) GetAllSSHConnection() ([]SshConnectionI
 	}
 	return connectionInfos, err
 }
+
+func GetSSHConnectionFromId(sshConnectionId string) (*SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	var sshConnection SshConnectionInfo
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_host, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &sshConnection.HostSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, sshConnection.SSHKeyId)
+	if err != nil {
+		return nil, err
+	}
+	return &sshConnection, err
+}
