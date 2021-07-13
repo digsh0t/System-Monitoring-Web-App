@@ -15,7 +15,7 @@ import (
 
 type SSHKey struct {
 	SSHKeyId   int    `json:"sshKeyId"`
-	KeyName    string `json:"keyName"`
+	KeyName    string `json:"sshKeyName"`
 	PrivateKey string `json:"privateKey"`
 	CreatorId  int    `json:"creatorId"`
 }
