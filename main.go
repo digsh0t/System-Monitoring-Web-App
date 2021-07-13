@@ -13,5 +13,6 @@ func main() {
 	router.HandleFunc("/login", routes.Login).Methods("POST")
 	router.HandleFunc("/sshConnection", routes.SSHCopyKey).Methods("POST")
 	router.HandleFunc("/sshConnection/{id}", routes.TestSSHConnection).Methods("GET")
+	router.HandleFunc("/getSSHConnection", routes.GetSSHConnection).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8081", router))
 }

@@ -62,7 +62,8 @@ func ReadPublicKeyFile(file string) (ssh.AuthMethod, error) {
 func (sshConnection *SshConnectionInfo) TestConnectionPublicKey() (bool, error) {
 	//If private key is incorrect or wrong format, return error immediately
 	var auth []ssh.AuthMethod
-	authMethod, err := ReadPublicKeyFile("/home/wintltr/.ssh/id_rsa")
+	authMethod, err := ReadPublicKeyFile("/home/long/.ssh/id_rsa")
+	fmt.Print(authMethod)
 	if err != nil {
 		return false, err
 	}

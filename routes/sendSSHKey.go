@@ -87,7 +87,7 @@ func isKeyExist() bool {
 	}
 }
 
-// Copy Key to remote server
+// Copy Key to client
 func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 	var sshConnectionInfo models.SshConnectionInfo
 	reqBody, err := ioutil.ReadAll(r.Body)
@@ -99,7 +99,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 	isKeyExist := isKeyExist()
 	user := utils.GetCurrentUser()
 	if !isKeyExist {
-		utils.ERROR(w, http.StatusNotFound, "Your public key does not exist")
+		utils.ERROR(w, http.StatusNotFound, "Your public key does not exist, please generate a pair public and private key!")
 
 	} else {
 		data, _ := ioutil.ReadFile(user.HomeDir + "/.ssh/id_rsa.pub")
