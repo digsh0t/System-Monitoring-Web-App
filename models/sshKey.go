@@ -91,9 +91,30 @@ func (sshKey *SSHKey) InsertSSHKeyToDB() (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	defer stmt.Close()
 	_, err = stmt.Exec(sshKey.KeyName, sshKey.PrivateKey, sshKey.CreatorId)
 	if err != nil {
 		return false, err
 	}
 	return true, err
+}
+
+func GetAllSSHKeyFromDB() ([]SSHKey, error) {
+	var sshKey SSHKey
+	var sshKeyList []SSHKey
+
+	db := database.ConnectDB()
+	defer db.Close()
+	rows, err := db.Query("SELECT sk_key_id, sk_key_name, creator_id FROM ssh_keys")
+	if err != nil {
+		return sshKeyList, err
+	}
+	for rows.Next() {
+		err = rows.Scan(&sshKey.SSHKeyId, &sshKey.KeyName, &sshKey.CreatorId)
+		if err != nil {
+			return sshKeyList, err
+		}
+		sshKeyList = append(sshKeyList, sshKey)
+	}
+	return sshKeyList, err
 }

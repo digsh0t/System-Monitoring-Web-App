@@ -78,6 +78,7 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId)
 	if err != nil {
