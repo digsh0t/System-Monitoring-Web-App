@@ -109,3 +109,23 @@ func (connectionInfo *SshConnectionInfo) GetAllSSHConnection() ([]SshConnectionI
 	}
 	return connectionInfos, err
 }
+
+func UpdateSSHConnection(connectionInfo SshConnectionInfo) (bool, error) {
+
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := "UPDATE ssh_connections SET sc_username=?, sc_host=?, sc_port=?, ssh_key_id=? WHERE sc_connection_id=?"
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return false, err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(connectionInfo.UserSSH, connectionInfo.HostSSH, connectionInfo.PortSSH, connectionInfo.SSHKeyId, connectionInfo.SSHConnectionId)
+	if err != nil {
+		return false, err
+	}
+	return true, err
+
+}
