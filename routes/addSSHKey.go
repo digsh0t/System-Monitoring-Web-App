@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/bitly/go-simplejson"
@@ -14,11 +15,11 @@ func AddSSHKey(w http.ResponseWriter, r *http.Request) {
 	//Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("invalid token").Error())
 		return
 	}
 	if !isAuthorized {
-		utils.ERROR(w, http.StatusUnauthorized, err.Error())
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
 		return
 	}
 

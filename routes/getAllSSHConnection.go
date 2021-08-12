@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/wintltr/login-api/auth"
@@ -13,11 +14,11 @@ func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("invalid token").Error())
 		return
 	}
 	if !isAuthorized {
-		utils.ERROR(w, http.StatusUnauthorized, err.Error())
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
 		return
 	}
 

@@ -3,6 +3,7 @@ package routes
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -82,11 +83,11 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 	//Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("invalid token").Error())
 		return
 	}
 	if !isAuthorized {
-		utils.ERROR(w, http.StatusUnauthorized, err.Error())
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
 		return
 	}
 
@@ -97,12 +98,16 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 	}
 	json.Unmarshal(reqBody, &sshConnectionInfo)
 
+	returnJson := simplejson.New()
 	isKeyExist := sshConnectionInfo.IsKeyExist()
 	if !isKeyExist {
-		utils.ERROR(w, http.StatusNotFound, "Your public key does not exist, please generate a pair public and private key!")
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", errors.New("your public key does not exist, please generate a pair public and private key").Error())
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
 
 	} else {
-		returnJson := simplejson.New()
+
 		sshKey, err := models.GetSSHKeyFromId(sshConnectionInfo.SSHKeyId)
 		if err != nil {
 			returnJson.Set("Status", 400)
@@ -121,7 +126,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 		}
 
 		cmd := "echo" + " \"" + string(data) + "\" " + ">> ~/.ssh/authorized_keys"
-		message, err := execCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
+		_, err = execCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
 		if err == nil {
 
 			//Test the SSH connection using public key if works
@@ -134,7 +139,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 
 				sshConnectionInfo.CreatorId, err = auth.ExtractUserId(r)
 				if err != nil {
-					returnJson.Set("Status", 400)
+					returnJson.Set("Status", false)
 					returnJson.Set("Error", err.Error())
 					utils.JSON(w, http.StatusBadRequest, returnJson)
 					return
@@ -144,7 +149,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 				utils.ReturnInsertJSON(w, success, err)
 			}
 		} else {
-			utils.ERROR(w, http.StatusBadRequest, message)
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
 		}
 	}
 

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -133,4 +134,26 @@ func (sshConnection *SshConnectionInfo) IsKeyExist() bool {
 	} else {
 		return false
 	}
+}
+
+//Delete SSH Connection Function
+func DeleteSSHConnection(id int) (bool, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	stmt, err := db.Prepare("DELETE FROM ssh_connections WHERE sc_connection_id = ?")
+	if err != nil {
+		return false, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(id)
+	if err != nil {
+		return false, err
+	}
+	rows, err := res.RowsAffected()
+	if rows == 0 {
+		return false, errors.New("no SSH Connections with this ID exists")
+	}
+	return true, err
 }
