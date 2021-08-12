@@ -9,7 +9,7 @@ import (
 )
 
 func GetAllSSHKey(w http.ResponseWriter, r *http.Request) {
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return

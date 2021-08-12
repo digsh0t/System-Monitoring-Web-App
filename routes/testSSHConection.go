@@ -4,22 +4,27 @@ import (
 	"net/http"
 
 	"github.com/bitly/go-simplejson"
+	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
 func TestSSHConnection(w http.ResponseWriter, r *http.Request) {
-	var sshConnection models.SshConnectionInfo
+	vars := mux.Vars(r)
+	sshConnectionId := vars["id"]
+	sshConnection, err := models.GetSSHConnectionFromId(sshConnectionId)
 
-	//Dummy Database SSH Connection Info
-	sshConnection.HostSSH = "192.168.163.136"
-	sshConnection.UserSSH = "root"
-	sshConnection.PortSSH = 22
-
-	success, err := sshConnection.TestConnectionPublicKey()
-
+	status := false
 	returnJson := simplejson.New()
-	returnJson.Set("Status", success)
+
+	if err != nil {
+		returnJson.Set("Status", status)
+		returnJson.Set("Error", err.Error())
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+	}
+
+	status, err = sshConnection.TestConnectionPublicKey()
+	returnJson.Set("Status", status)
 	returnJson.Set("Error", err.Error())
 	if err != nil {
 		utils.JSON(w, http.StatusBadRequest, returnJson)

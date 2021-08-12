@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -22,11 +21,16 @@ type SshConnectionInfo struct {
 }
 
 //Read private key from private key file
-func ReadPrivateKeyFile(file string) (ssh.AuthMethod, error) {
-	buffer, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
+func ProcessPrivateKey(keyId int) (ssh.AuthMethod, error) {
+	//buffer, err := ioutil.ReadFile(file)
+	//fmt.Println(string(buffer))
+	privateKey, _ := GetSSHKeyFromId(keyId)
+	decrytedPrivateKey := AESDecryptKey(privateKey.PrivateKey)
+
+	buffer := []byte(decrytedPrivateKey)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	key, err := ssh.ParsePrivateKey(buffer)
 	//If error means Private key is protected by passphrase
@@ -45,8 +49,7 @@ func ReadPrivateKeyFile(file string) (ssh.AuthMethod, error) {
 func (sshConnection *SshConnectionInfo) TestConnectionPublicKey() (bool, error) {
 	//If private key is incorrect or wrong format, return error immediately
 	var auth []ssh.AuthMethod
-	authMethod, err := ReadPrivateKeyFile("/home/long/.ssh/id_rsa")
-	fmt.Print(authMethod)
+	authMethod, err := ProcessPrivateKey(sshConnection.SSHKeyId)
 	if err != nil {
 		return false, err
 	}
@@ -121,4 +124,13 @@ func GetSSHConnectionFromId(sshConnectionId string) (*SshConnectionInfo, error) 
 		return nil, err
 	}
 	return &sshConnection, err
+}
+
+// Check Public Key of user exist or not
+func (sshConnection *SshConnectionInfo) IsKeyExist() bool {
+	if _, err := GetSSHKeyFromId(sshConnection.SSHKeyId); err == nil {
+		return true
+	} else {
+		return false
+	}
 }
