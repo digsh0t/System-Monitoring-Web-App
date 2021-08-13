@@ -81,6 +81,16 @@ func ExecCommand(cmd string, userSSH string, passwordSSH string, hostSSH string,
 
 // Copy Key to client
 func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	if r.Method == "OPTIONS" {
+		//CORS
+		// return "OKOK"
+		json.NewEncoder(w).Encode("OKOK")
+		return
+	}
+
 	//Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
 	if err != nil {
