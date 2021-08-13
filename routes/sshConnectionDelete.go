@@ -45,6 +45,12 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sshConnectionInfo, _ := models.GetSSHConnectionFromId(sshConnectionId)
+	if sshConnectionInfo == nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", errors.New("SSH Connection with id "+strconv.Itoa(sshConnectionId)+" doesn't exist").Error())
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
 	cmd := `echo "y" | if grep -v key` + strconv.Itoa(sshConnectionInfo.SSHKeyId) + ` $HOME/.ssh/authorized_keys > $HOME/.ssh/tmp; then cat $HOME/.ssh/tmp > $HOME/.ssh/authorized_keys && rm $HOME/.ssh/tmp; fi;`
 	_, err = ExecCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
 	if err != nil {
