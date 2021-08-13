@@ -58,6 +58,15 @@ func TokenValid(r *http.Request) error {
 	return nil
 }
 
+//Extract UserId from Token
+func ExtractUserId(r *http.Request) (int, error) {
+	tokenData, err := ExtractTokenMetadata(r)
+	if err != nil {
+		return -1, err
+	}
+	return tokenData.Userid, err
+}
+
 func ExtractTokenMetadata(r *http.Request) (*TokenData, error) {
 	token, err := VerifyToken(r)
 	if err != nil {

@@ -5,9 +5,12 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+
+	"golang.org/x/crypto/ssh"
 
 	"github.com/wintltr/login-api/database"
 	"github.com/wintltr/login-api/utils"
@@ -28,6 +31,16 @@ func AESEncryptKey(privateKey string) string {
 		fmt.Println(err)
 	}
 	return ciphertext
+}
+
+func AESDecryptKey(encryptedPrivateKey string) string {
+	utils.EnvInit()
+	aesKey := os.Getenv("AES_KEY")
+	plaintext, err := decrypt([]byte(aesKey), encryptedPrivateKey)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return plaintext
 }
 
 func encrypt(key []byte, message string) (encmess string, err error) {
@@ -117,4 +130,56 @@ func GetAllSSHKeyFromDB() ([]SSHKey, error) {
 		sshKeyList = append(sshKeyList, sshKey)
 	}
 	return sshKeyList, err
+}
+
+func GetSSHKeyFromId(id int) (SSHKey, error) {
+	var returnedSSHKey SSHKey
+
+	db := database.ConnectDB()
+	defer db.Close()
+	row := db.QueryRow("SELECT sk_key_id, sk_key_name, sk_private_key, creator_id FROM ssh_keys WHERE sk_key_id= ?", id)
+
+	err := row.Scan(&returnedSSHKey.SSHKeyId, &returnedSSHKey.KeyName, &returnedSSHKey.PrivateKey, &returnedSSHKey.CreatorId)
+	if err != nil {
+		return returnedSSHKey, err
+	}
+	return returnedSSHKey, err
+}
+
+//Generate SSH public key from private key
+func GeneratePublicKey(privatekey []byte) ([]byte, error) {
+	priv, err := ssh.ParsePrivateKey(privatekey)
+	if err != nil {
+		utils.EnvInit()
+		priv, err = ssh.ParsePrivateKeyWithPassphrase(privatekey, []byte(os.Getenv("SECRET_SSH_PASSPHRASE")))
+		if err != nil {
+			fmt.Printf("Error while parsing Private key: %s", err)
+		}
+	}
+	publicKey := priv.PublicKey()
+
+	pubKeyBytes := ssh.MarshalAuthorizedKey(publicKey)
+
+	return pubKeyBytes, nil
+}
+
+func SSHKeyDelete(id int) (bool, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	stmt, err := db.Prepare("DELETE FROM ssh_keys WHERE sk_key_id = ?")
+	if err != nil {
+		return false, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(id)
+	if err != nil {
+		return false, err
+	}
+	rows, err := res.RowsAffected()
+	if rows == 0 {
+		return false, errors.New("no SSH Connections with this ID exists")
+	}
+	return true, err
 }

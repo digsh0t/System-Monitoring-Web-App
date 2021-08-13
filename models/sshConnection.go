@@ -1,8 +1,8 @@
 package models
 
 import (
+	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -22,11 +22,16 @@ type SshConnectionInfo struct {
 }
 
 //Read private key from private key file
-func ReadPrivateKeyFile(file string) (ssh.AuthMethod, error) {
-	buffer, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
+func ProcessPrivateKey(keyId int) (ssh.AuthMethod, error) {
+	//buffer, err := ioutil.ReadFile(file)
+	//fmt.Println(string(buffer))
+	privateKey, _ := GetSSHKeyFromId(keyId)
+	decrytedPrivateKey := AESDecryptKey(privateKey.PrivateKey)
+
+	buffer := []byte(decrytedPrivateKey)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	key, err := ssh.ParsePrivateKey(buffer)
 	//If error means Private key is protected by passphrase
@@ -45,8 +50,7 @@ func ReadPrivateKeyFile(file string) (ssh.AuthMethod, error) {
 func (sshConnection *SshConnectionInfo) TestConnectionPublicKey() (bool, error) {
 	//If private key is incorrect or wrong format, return error immediately
 	var auth []ssh.AuthMethod
-	authMethod, err := ReadPrivateKeyFile("/home/long/.ssh/id_rsa")
-	fmt.Print(authMethod)
+	authMethod, err := ProcessPrivateKey(sshConnection.SSHKeyId)
 	if err != nil {
 		return false, err
 	}
@@ -74,13 +78,15 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_host, sc_port, creator_id, ssh_key_id) VALUES (?,?,?,?,?)")
+	encryptedPassword := AESEncryptKey(sshConnection.PasswordSSH)
+
+	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_password, sc_host, sc_port, creator_id, ssh_key_id) VALUES (?,?,?,?,?,?)")
 	if err != nil {
 		return false, err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId)
+	_, err = stmt.Exec(sshConnection.UserSSH, encryptedPassword, sshConnection.HostSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId)
 	if err != nil {
 		return false, err
 	}
@@ -110,22 +116,52 @@ func (connectionInfo *SshConnectionInfo) GetAllSSHConnection() ([]SshConnectionI
 	return connectionInfos, err
 }
 
-func UpdateSSHConnection(connectionInfo SshConnectionInfo) (bool, error) {
-
+func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	query := "UPDATE ssh_connections SET sc_username=?, sc_host=?, sc_port=?, ssh_key_id=? WHERE sc_connection_id=?"
-	stmt, err := db.Prepare(query)
+	var sshConnection SshConnectionInfo
+	var encryptedPassword string
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &encryptedPassword, &sshConnection.HostSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
+	if row == nil {
+		return nil, errors.New("ssh connection doesn't exist")
+	}
+
+	sshConnection.PasswordSSH = AESDecryptKey(encryptedPassword)
+	if err != nil {
+		return nil, errors.New("fail to retrieve ssh connection info")
+	}
+	return &sshConnection, err
+}
+
+// Check Public Key of user exist or not
+func (sshConnection *SshConnectionInfo) IsKeyExist() bool {
+	if _, err := GetSSHKeyFromId(sshConnection.SSHKeyId); err == nil {
+		return true
+	} else {
+		return false
+	}
+}
+
+//Delete SSH Connection Function
+func DeleteSSHConnection(id int) (bool, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	stmt, err := db.Prepare("DELETE FROM ssh_connections WHERE sc_connection_id = ?")
 	if err != nil {
 		return false, err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(connectionInfo.UserSSH, connectionInfo.HostSSH, connectionInfo.PortSSH, connectionInfo.SSHKeyId, connectionInfo.SSHConnectionId)
+	res, err := stmt.Exec(id)
 	if err != nil {
 		return false, err
 	}
+	rows, err := res.RowsAffected()
+	if rows == 0 {
+		return false, errors.New("no SSH Connections with this ID exists")
+	}
 	return true, err
-
 }

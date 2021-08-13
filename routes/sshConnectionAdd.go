@@ -3,14 +3,16 @@ package routes
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
-	"os"
+	"strings"
 	"time"
 
 	"io/ioutil"
 
 	"github.com/bitly/go-simplejson"
+	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 	"golang.org/x/crypto/ssh"
@@ -49,7 +51,7 @@ func connectSSH(user, password, host string, port int) (*ssh.Client, error) {
 	return sshClient, nil
 }
 
-func execCommand(cmd string, userSSH string, passwordSSH string, hostSSH string, portSSH int) (string, error) {
+func ExecCommand(cmd string, userSSH string, passwordSSH string, hostSSH string, portSSH int) (string, error) {
 
 	var (
 		session   *ssh.Session
@@ -77,18 +79,19 @@ func execCommand(cmd string, userSSH string, passwordSSH string, hostSSH string,
 
 }
 
-// Check Public Key of user exist or not
-func isKeyExist() bool {
-	user := utils.GetCurrentUser()
-	if _, err := os.Stat(user.HomeDir + "/.ssh/id_rsa.pub"); err == nil {
-		return true
-	} else {
-		return false
-	}
-}
-
 // Copy Key to client
 func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+
 	var sshConnectionInfo models.SshConnectionInfo
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -96,17 +99,38 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 	}
 	json.Unmarshal(reqBody, &sshConnectionInfo)
 
-	isKeyExist := isKeyExist()
-	user := utils.GetCurrentUser()
+	returnJson := simplejson.New()
+	isKeyExist := sshConnectionInfo.IsKeyExist()
 	if !isKeyExist {
-		utils.ERROR(w, http.StatusNotFound, "Your public key does not exist, please generate a pair public and private key!")
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", errors.New("your public key does not exist, please generate a pair public and private key").Error())
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
 
 	} else {
-		data, _ := ioutil.ReadFile(user.HomeDir + "/.ssh/id_rsa.pub")
-		cmd := "echo" + " \"" + string(data) + "\" " + ">> ~/.ssh/authorized_keys"
-		message, err := execCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
+
+		sshKey, err := models.GetSSHKeyFromId(sshConnectionInfo.SSHKeyId)
+		if err != nil {
+			returnJson.Set("Status", 400)
+			returnJson.Set("Error", err.Error())
+			utils.JSON(w, http.StatusBadRequest, returnJson)
+			return
+		}
+
+		decrypted := models.AESDecryptKey(sshKey.PrivateKey)
+		data, err := models.GeneratePublicKey([]byte(decrypted))
+		if err != nil {
+			returnJson.Set("Status", 400)
+			returnJson.Set("Error", err.Error())
+			utils.JSON(w, http.StatusBadRequest, returnJson)
+			return
+		}
+
+		publicKey := strings.TrimSuffix(string(data), "\n") + " key" + fmt.Sprint(sshKey.SSHKeyId) + "\n"
+		cmd := "echo" + " \"" + publicKey + "\" " + ">> ~/.ssh/authorized_keys"
+		_, err = ExecCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
 		if err == nil {
-			returnJson := simplejson.New()
+
 			//Test the SSH connection using public key if works
 			success, err := sshConnectionInfo.TestConnectionPublicKey()
 			if err != nil {
@@ -115,15 +139,19 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 				utils.JSON(w, http.StatusBadRequest, returnJson)
 			} else {
 
-				//Dummy value
-				sshConnectionInfo.CreatorId = 1
-				sshConnectionInfo.SSHKeyId = 1
+				sshConnectionInfo.CreatorId, err = auth.ExtractUserId(r)
+				if err != nil {
+					returnJson.Set("Status", false)
+					returnJson.Set("Error", err.Error())
+					utils.JSON(w, http.StatusBadRequest, returnJson)
+					return
+				}
 
 				success, err = sshConnectionInfo.AddSSHConnectionToDB()
 				utils.ReturnInsertJSON(w, success, err)
 			}
 		} else {
-			utils.ERROR(w, http.StatusBadRequest, message)
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
 		}
 	}
 
