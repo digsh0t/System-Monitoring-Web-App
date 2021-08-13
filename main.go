@@ -19,5 +19,9 @@ func main() {
 
 	router.HandleFunc("/sshkey", routes.AddSSHKey).Methods("POST")
 	router.HandleFunc("/sshkeys", routes.GetAllSSHKey).Methods("GET")
+
+	//Network Function
+	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")
+
 	log.Fatal(http.ListenAndServe(":8081", router))
 }
