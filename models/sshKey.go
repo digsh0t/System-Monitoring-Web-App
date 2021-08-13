@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -160,4 +161,25 @@ func GeneratePublicKey(privatekey []byte) ([]byte, error) {
 	pubKeyBytes := ssh.MarshalAuthorizedKey(publicKey)
 
 	return pubKeyBytes, nil
+}
+
+func SSHKeyDelete(id int) (bool, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	stmt, err := db.Prepare("DELETE FROM ssh_keys WHERE sk_key_id = ?")
+	if err != nil {
+		return false, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(id)
+	if err != nil {
+		return false, err
+	}
+	rows, err := res.RowsAffected()
+	if rows == 0 {
+		return false, errors.New("no SSH Connections with this ID exists")
+	}
+	return true, err
 }

@@ -18,6 +18,7 @@ func main() {
 	router.HandleFunc("/sshconnection/{id}", routes.SSHConnectionDeleteRoute).Methods("DELETE")
 
 	router.HandleFunc("/sshkey", routes.AddSSHKey).Methods("POST")
+	router.HandleFunc("/sshkey/{id}", routes.SSHKeyDeleteRoute).Methods("DELETE")
 	router.HandleFunc("/sshkeys", routes.GetAllSSHKey).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8081", router))
 }
