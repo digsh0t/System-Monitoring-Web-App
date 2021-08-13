@@ -34,14 +34,18 @@ func TestSSHConnection(w http.ResponseWriter, r *http.Request) {
 		returnJson.Set("Status", status)
 		returnJson.Set("Error", err.Error())
 		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
 	}
 
 	status, err = sshConnection.TestConnectionPublicKey()
-	returnJson.Set("Status", status)
-	returnJson.Set("Error", err.Error())
 	if err != nil {
+		returnJson.Set("Status", status)
+		returnJson.Set("Error", err.Error())
 		utils.JSON(w, http.StatusBadRequest, returnJson)
-	} else {
-		utils.JSON(w, http.StatusOK, returnJson)
+		return
 	}
+
+	returnJson.Set("Status", status)
+	returnJson.Set("Error", "")
+	utils.JSON(w, http.StatusOK, returnJson)
 }
