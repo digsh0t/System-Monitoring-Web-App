@@ -16,7 +16,7 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("invalid token").Error())
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
 	}
 	if !isAuthorized {
