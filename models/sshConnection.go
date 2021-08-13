@@ -78,13 +78,15 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_host, sc_port, creator_id, ssh_key_id) VALUES (?,?,?,?,?)")
+	encryptedPassword := AESEncryptKey(sshConnection.PasswordSSH)
+
+	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_password, sc_host, sc_port, creator_id, ssh_key_id) VALUES (?,?,?,?,?,?)")
 	if err != nil {
 		return false, err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId)
+	_, err = stmt.Exec(sshConnection.UserSSH, encryptedPassword, sshConnection.HostSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId)
 	if err != nil {
 		return false, err
 	}
@@ -114,13 +116,15 @@ func (connectionInfo *SshConnectionInfo) GetAllSSHConnection() ([]SshConnectionI
 	return connectionInfos, err
 }
 
-func GetSSHConnectionFromId(sshConnectionId string) (*SshConnectionInfo, error) {
+func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
 	var sshConnection SshConnectionInfo
-	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_host, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
-	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &sshConnection.HostSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, sshConnection.SSHKeyId)
+	var encryptedPassword string
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &encryptedPassword, &sshConnection.HostSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
+	sshConnection.PasswordSSH = AESDecryptKey(encryptedPassword)
 	if err != nil {
 		return nil, err
 	}
