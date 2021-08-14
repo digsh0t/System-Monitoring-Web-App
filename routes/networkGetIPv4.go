@@ -9,8 +9,7 @@ import (
 
 func GetAllDefaultIP(w http.ResponseWriter, r *http.Request) {
 
-	var defaultIP models.DefaultIPInfo
-	defaultIPList, err := defaultIP.GetAllDefaultIP()
+	defaultIPList, err := models.GetAllDefaultIP()
 	if err != nil {
 		utils.JSON(w, http.StatusBadRequest, defaultIPList)
 		return
