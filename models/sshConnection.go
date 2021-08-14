@@ -12,7 +12,7 @@ import (
 )
 
 type SshConnectionInfo struct {
-	SSHConnectionId int    `json:"sshConectionId"`
+	SSHConnectionId int    `json:"sshConnectionId"`
 	UserSSH         string `json:"userSSH"`
 	PasswordSSH     string `json:"passwordSSH"`
 	HostSSH         string `json:"hostSSH"`
