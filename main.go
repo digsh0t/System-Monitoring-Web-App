@@ -25,5 +25,8 @@ func main() {
 	//Network Function
 	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")
 
+	// Load file yaml
+	router.HandleFunc("/yamls/{name}", routes.LoadFile).Methods("GET")
+
 	log.Fatal(http.ListenAndServe(":8081", router))
 }

@@ -1,0 +1,17 @@
+- name: Node Exporter
+  hosts: all
+  vars:
+   file: node_exporter-1.2.2.linux-amd64
+
+  tasks:
+  - name: Unpacked a file that need to be downloaded
+    ansible.builtin.unarchive:
+     src: https://github.com/prometheus/node_exporter/releases/download/v1.2.2/{{ file }}.tar.gz
+     dest: ~/
+     remote_src: yes
+
+  - name: Execute node_exporter file when reboot
+    ansible.builtin.cron:
+     name: a job for reboot
+     special_time: reboot
+     job: ~/{{ file }}/node_exporter
