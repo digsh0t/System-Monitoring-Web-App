@@ -14,13 +14,21 @@ import (
 func LoadFile(w http.ResponseWriter, r *http.Request) {
 
 	returnJson := simplejson.New()
-	var yamlInfo models.YamlInfo
+	var yaml models.YamlInfo
 
 	reqBody, err := ioutil.ReadAll(r.Body)
-	json.Unmarshal(reqBody, &yamlInfo)
-	cmd := exec.Command("ansible-playbook", "./yamls/"+yamlInfo.FileName, "-e", "host="+yamlInfo.Host)
+	json.Unmarshal(reqBody, &yaml)
+
+	command := "ansible-playbook ./yamls/" + yaml.FileName + " -e \"host=" + yaml.Host
+	if yaml.Mode == "install" {
+		command += " package=" + yaml.Package
+	}
+	command += "\""
+	cmd := exec.Command("/bin/bash", "-c", command)
 	err = cmd.Run()
+
 	if err != nil {
+
 		if err.Error() == "exit status 1" {
 			returnJson.Set("Status", false)
 			returnJson.Set("Error", "File name not found!")
