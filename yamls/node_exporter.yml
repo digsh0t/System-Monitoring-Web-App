@@ -1,5 +1,5 @@
 - name: Node Exporter
-  hosts: all
+  hosts: "{{ host }}"
   vars:
    file: node_exporter-1.2.2.linux-amd64
 
@@ -9,7 +9,11 @@
      src: https://github.com/prometheus/node_exporter/releases/download/v1.2.2/{{ file }}.tar.gz
      dest: ~/
      remote_src: yes
-
+  
+  - name: Execute node_exporter
+    shell: nohup ~/{{ file }}/node_exporter &  
+    
+  
   - name: Execute node_exporter file when reboot
     ansible.builtin.cron:
      name: a job for reboot

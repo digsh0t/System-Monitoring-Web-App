@@ -1,0 +1,11 @@
+- name: Run Test
+  hosts: "{{ host }}"
+  tasks:
+  - name: List ansible packages and register result to print with debug later
+    command: ifconfig
+    register: debugVar
+
+  - debug: var=debugVar
+
+  
+     
