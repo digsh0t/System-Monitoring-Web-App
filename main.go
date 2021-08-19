@@ -25,5 +25,8 @@ func main() {
 	router.HandleFunc("/sshkey", routes.AddSSHKey).Methods("POST", "OPTIONS")
 	router.HandleFunc("/sshkey/{id}", routes.SSHKeyDeleteRoute).Methods("DELETE", "OPTIONS")
 	router.HandleFunc("/sshkeys", routes.GetAllSSHKey).Methods("GET", "OPTIONS")
+
+	//Get PC info
+	router.HandleFunc("/getavgcpuuse/{id}", routes.GetAvgCpuUseRoute).Methods("GET", "OPTIONS")
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

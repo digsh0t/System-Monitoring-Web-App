@@ -1,13 +1,11 @@
 package routes
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"io/ioutil"
 
@@ -15,69 +13,7 @@ import (
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
-	"golang.org/x/crypto/ssh"
 )
-
-func connectSSH(user, password, host string, port int) (*ssh.Client, error) {
-	var (
-		auth         []ssh.AuthMethod
-		addr         string
-		clientConfig *ssh.ClientConfig
-		sshClient    *ssh.Client
-		err          error
-	)
-
-	// get auth method
-
-	auth = make([]ssh.AuthMethod, 0)
-	auth = append(auth, ssh.Password(password))
-
-	clientConfig = &ssh.ClientConfig{
-		User:            user,
-		Auth:            auth,
-		Timeout:         30 * time.Second,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	}
-
-	// connect to ssh
-
-	addr = fmt.Sprintf("%s:%d", host, port)
-
-	sshClient, err = ssh.Dial("tcp", addr, clientConfig)
-	if err != nil {
-		return sshClient, err
-	}
-
-	return sshClient, nil
-}
-
-func ExecCommand(cmd string, userSSH string, passwordSSH string, hostSSH string, portSSH int) (string, error) {
-
-	var (
-		session   *ssh.Session
-		sshClient *ssh.Client
-		err       error
-	)
-
-	//create ssh connect
-	sshClient, err = connectSSH(userSSH, passwordSSH, hostSSH, portSSH)
-	if err != nil {
-		return "Wrong username or password to connect remote server", err
-	} else {
-		//create a session. It is one session per command
-		session, err = sshClient.NewSession()
-		if err != nil {
-			return "Failed to open new session", err
-		}
-		defer session.Close()
-		var b bytes.Buffer //import "bytes"
-		session.Stdout = &b
-		err = session.Run(cmd)
-		return b.String(), err
-
-	}
-
-}
 
 // Copy Key to client
 func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +74,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 
 		publicKey := strings.TrimSuffix(string(data), "\n") + " key" + fmt.Sprint(sshKey.SSHKeyId) + "\n"
 		cmd := "echo" + " \"" + publicKey + "\" " + ">> ~/.ssh/authorized_keys"
-		_, err = ExecCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
+		_, err = models.ExecCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
 		if err == nil {
 
 			//Test the SSH connection using public key if works

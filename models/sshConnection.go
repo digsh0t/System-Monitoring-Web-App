@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -164,4 +165,71 @@ func DeleteSSHConnection(id int) (bool, error) {
 		return false, errors.New("no SSH Connections with this ID exists")
 	}
 	return true, err
+}
+
+//Get SSH Connection and run command on it
+func RunCommandFromSSHConnection(sshConnection SshConnectionInfo, command string) (string, error) {
+	result, err := ExecCommand(command, sshConnection.UserSSH, sshConnection.PasswordSSH, sshConnection.HostSSH, sshConnection.PortSSH)
+	return result, err
+}
+
+func connectSSH(user, password, host string, port int) (*ssh.Client, error) {
+	var (
+		auth         []ssh.AuthMethod
+		addr         string
+		clientConfig *ssh.ClientConfig
+		sshClient    *ssh.Client
+		err          error
+	)
+
+	// get auth method
+
+	auth = make([]ssh.AuthMethod, 0)
+	auth = append(auth, ssh.Password(password))
+
+	clientConfig = &ssh.ClientConfig{
+		User:            user,
+		Auth:            auth,
+		Timeout:         30 * time.Second,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	// connect to ssh
+
+	addr = fmt.Sprintf("%s:%d", host, port)
+
+	sshClient, err = ssh.Dial("tcp", addr, clientConfig)
+	if err != nil {
+		return sshClient, err
+	}
+
+	return sshClient, nil
+}
+
+func ExecCommand(cmd string, userSSH string, passwordSSH string, hostSSH string, portSSH int) (string, error) {
+
+	var (
+		session   *ssh.Session
+		sshClient *ssh.Client
+		err       error
+	)
+
+	//create ssh connect
+	sshClient, err = connectSSH(userSSH, passwordSSH, hostSSH, portSSH)
+	if err != nil {
+		return "Wrong username or password to connect remote server", err
+	} else {
+		//create a session. It is one session per command
+		session, err = sshClient.NewSession()
+		if err != nil {
+			return "Failed to open new session", err
+		}
+		defer session.Close()
+		var b bytes.Buffer //import "bytes"
+		session.Stdout = &b
+		err = session.Run(cmd)
+		return b.String(), err
+
+	}
+
 }
