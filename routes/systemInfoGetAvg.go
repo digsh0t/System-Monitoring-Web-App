@@ -13,7 +13,7 @@ import (
 	"github.com/wintltr/login-api/utils"
 )
 
-func GetAvgCpuUseRoute(w http.ResponseWriter, r *http.Request) {
+func GetSystemInfoRoute(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -50,21 +50,14 @@ func GetAvgCpuUseRoute(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
-	//dummy data
-	command := "top -b -n 1"
-	result, err := models.RunCommandFromSSHConnection(*sshConnection, command)
+
+	var systemInfo models.SysInfo
+	err = systemInfo.GetSysInfo(*sshConnection)
 	if err != nil {
 		returnJson.Set("Status", false)
-		returnJson.Set("Error", errors.New("fail to get cpu usage").Error())
+		returnJson.Set("Error", errors.New("fail to get system info").Error())
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
-	avgCPU, err := models.CalcAvgCPUFromTop(result)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", errors.New("fail to calculate cpu usage").Error())
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
-	utils.JSON(w, http.StatusOK, avgCPU)
+	utils.JSON(w, http.StatusOK, systemInfo)
 }
