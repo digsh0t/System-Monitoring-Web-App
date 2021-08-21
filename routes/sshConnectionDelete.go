@@ -67,6 +67,13 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
+	err = models.GenerateInventory()
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", errors.New("error while regenerate ansible inventory").Error())
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
 
 	returnJson.Set("Status", true)
 	returnJson.Set("Error", nil)
