@@ -3,10 +3,11 @@ package routes
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os/exec"
+	"regexp"
+	"strings"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/models"
@@ -40,16 +41,54 @@ func LoadFile(w http.ResponseWriter, r *http.Request) {
 	cmd := exec.Command("/bin/bash", "-c", command)
 	cmd.Stdout = &out
 	err = cmd.Run()
-	fmt.Println(out.String())
+	raw := out.String()
 
 	// Return Json
 	returnJson := simplejson.New()
 	if err != nil {
-		fmt.Println("error")
+		fatalList, recapList := ProcessingOutput(raw)
+		returnJson.Set("Status", true)
+		returnJson.Set("Error", err)
+		returnJson.Set("Fatal", fatalList)
+		returnJson.Set("Recap", recapList)
+		utils.JSON(w, http.StatusOK, returnJson)
+		return
+
 	}
 
 	returnJson.Set("Status", true)
 	returnJson.Set("Error", nil)
 	utils.JSON(w, http.StatusOK, returnJson)
+	return
+
+}
+
+func ProcessingOutput(raw string) ([]string, []string) {
+	var fatalList []string
+	var recapList []string
+
+	// Extracting Fatal
+	text := strings.Split(raw, "\n")
+	for _, line := range text {
+		pattern := "^fatal"
+		r, _ := regexp.Compile(pattern)
+		if r.MatchString(line) {
+			fatalList = append(fatalList, line)
+		}
+	}
+
+	// Extracting PLAY RECAP **********
+	pattern := "PLAY RECAP .+\n"
+	r, _ := regexp.Compile(pattern)
+	strIndex := r.FindStringIndex(raw)
+	tmp := raw[strIndex[1]:]
+	text = strings.Split(tmp, "\n")
+	for _, line := range text {
+		if line != "" {
+			recapList = append(recapList, line)
+		}
+	}
+
+	return fatalList, recapList
 
 }
