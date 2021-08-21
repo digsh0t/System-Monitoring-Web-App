@@ -95,7 +95,7 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 	return true, err
 }
 
-func (connectionInfo *SshConnectionInfo) GetAllSSHConnection() ([]SshConnectionInfo, error) {
+func GetAllSSHConnection() ([]SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
@@ -106,6 +106,7 @@ func (connectionInfo *SshConnectionInfo) GetAllSSHConnection() ([]SshConnectionI
 		return nil, err
 	}
 
+	var connectionInfo SshConnectionInfo
 	var connectionInfos []SshConnectionInfo
 	for selDB.Next() {
 		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId)
@@ -113,7 +114,7 @@ func (connectionInfo *SshConnectionInfo) GetAllSSHConnection() ([]SshConnectionI
 			return nil, err
 		}
 
-		connectionInfos = append(connectionInfos, *connectionInfo)
+		connectionInfos = append(connectionInfos, connectionInfo)
 	}
 	return connectionInfos, err
 }
@@ -233,4 +234,13 @@ func ExecCommand(cmd string, userSSH string, passwordSSH string, hostSSH string,
 
 	}
 
+}
+
+func generateInventory() error {
+	sshConnectionList, err := GetAllSSHConnection()
+	if err != nil {
+		return err
+	}
+	fmt.Println(sshConnectionList)
+	return err
 }

@@ -32,8 +32,7 @@ func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var sshConnection models.SshConnectionInfo
-	sshConnectionList, err := sshConnection.GetAllSSHConnection()
+	sshConnectionList, err := models.GetAllSSHConnection()
 	if err != nil {
 		utils.JSON(w, http.StatusBadRequest, sshConnectionList)
 		return
