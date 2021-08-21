@@ -14,15 +14,22 @@ import (
 )
 
 func LoadFile(w http.ResponseWriter, r *http.Request) {
-
-	returnJson := simplejson.New()
-	var yaml models.YamlInfo
+	var (
+		hostStr string
+		yaml    models.YamlInfo
+		out     bytes.Buffer
+	)
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	json.Unmarshal(reqBody, &yaml)
 
+	// Processing a list host
+	for _, v := range yaml.Host {
+		hostStr += v + ","
+	}
+
 	// Establish command for load package
-	command := "ansible-playbook ./yamls/" + yaml.File + " -e \"host=" + yaml.Host
+	command := "ansible-playbook ./yamls/" + yaml.File + " -e \"host=" + hostStr
 	if yaml.Mode == "1" {
 		command += " package=" + yaml.Package
 	} else if yaml.Mode == "2" {
@@ -31,18 +38,14 @@ func LoadFile(w http.ResponseWriter, r *http.Request) {
 	command += "\""
 
 	cmd := exec.Command("/bin/bash", "-c", command)
-	var out bytes.Buffer
 	cmd.Stdout = &out
 	err = cmd.Run()
 	fmt.Println(out.String())
-	if err != nil {
 
-		if err.Error() == "exit status 1" {
-			returnJson.Set("Status", false)
-			returnJson.Set("Error", "File name not found!")
-			utils.JSON(w, http.StatusBadRequest, returnJson)
-			return
-		}
+	// Return Json
+	returnJson := simplejson.New()
+	if err != nil {
+		fmt.Println("error")
 	}
 
 	returnJson.Set("Status", true)
