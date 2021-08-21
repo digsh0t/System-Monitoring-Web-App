@@ -120,6 +120,30 @@ func GetAllSSHConnection() ([]SshConnectionInfo, error) {
 	return connectionInfos, err
 }
 
+func GetAllSSHConnectionWithPassword() ([]SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_password, sc_port, creator_id, ssh_key_id 
+			  FROM ssh_connections`
+	selDB, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var connectionInfo SshConnectionInfo
+	var connectionInfos []SshConnectionInfo
+	for selDB.Next() {
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PasswordSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId)
+		if err != nil {
+			return nil, err
+		}
+
+		connectionInfos = append(connectionInfos, connectionInfo)
+	}
+	return connectionInfos, err
+}
+
 func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
@@ -222,6 +246,7 @@ func ExecCommand(cmd string, userSSH string, passwordSSH string, hostSSH string,
 	if err != nil {
 		return "Wrong username or password to connect remote server", err
 	} else {
+		defer sshClient.Close()
 		//create a session. It is one session per command
 		session, err = sshClient.NewSession()
 		if err != nil {
@@ -232,7 +257,6 @@ func ExecCommand(cmd string, userSSH string, passwordSSH string, hostSSH string,
 		session.Stdout = &b
 		err = session.Run(cmd)
 		return b.String(), err
-
 	}
 
 }

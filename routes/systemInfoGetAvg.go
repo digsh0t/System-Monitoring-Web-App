@@ -52,7 +52,7 @@ func GetSystemInfoRoute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var systemInfo models.SysInfo
-	err = systemInfo.GetSysInfo(*sshConnection)
+	systemInfo, err = models.GetSysInfo(*sshConnection)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", errors.New("fail to get system info").Error())
