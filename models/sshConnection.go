@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"time"
 
@@ -236,11 +237,16 @@ func ExecCommand(cmd string, userSSH string, passwordSSH string, hostSSH string,
 
 }
 
-func generateInventory() error {
+func GenerateInventory() error {
 	sshConnectionList, err := GetAllSSHConnection()
 	if err != nil {
 		return err
 	}
-	fmt.Println(sshConnectionList)
+	var inventory string
+	for _, sshConnection := range sshConnectionList {
+		line := sshConnection.HostNameSSH + " ansible_host=" + sshConnection.HostSSH + " ansible_port=" + fmt.Sprint(sshConnection.PortSSH) + " ansible_user=" + sshConnection.UserSSH + "\n"
+		inventory += line
+	}
+	err = ioutil.WriteFile("/etc/ansible/hosts", []byte(inventory), 0644)
 	return err
 }
