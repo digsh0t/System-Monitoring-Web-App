@@ -16,6 +16,7 @@ type SshConnectionInfo struct {
 	SSHConnectionId int    `json:"sshConnectionId"`
 	UserSSH         string `json:"userSSH"`
 	PasswordSSH     string `json:"passwordSSH"`
+	HostNameSSH     string `json:"hostnameSSH"`
 	HostSSH         string `json:"hostSSH"`
 	PortSSH         int    `json:"portSSH"`
 	CreatorId       int    `json:"creatorId"`
@@ -81,13 +82,13 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 
 	encryptedPassword := AESEncryptKey(sshConnection.PasswordSSH)
 
-	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_password, sc_host, sc_port, creator_id, ssh_key_id) VALUES (?,?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id) VALUES (?,?,?,?,?,?,?)")
 	if err != nil {
 		return false, err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(sshConnection.UserSSH, encryptedPassword, sshConnection.HostSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId)
+	_, err = stmt.Exec(sshConnection.UserSSH, encryptedPassword, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId)
 	if err != nil {
 		return false, err
 	}
@@ -98,7 +99,7 @@ func (connectionInfo *SshConnectionInfo) GetAllSSHConnection() ([]SshConnectionI
 	db := database.ConnectDB()
 	defer db.Close()
 
-	query := `SELECT sc_connection_id, sc_username, sc_host, sc_port, creator_id, ssh_key_id 
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id 
 			  FROM ssh_connections`
 	selDB, err := db.Query(query)
 	if err != nil {
@@ -107,7 +108,7 @@ func (connectionInfo *SshConnectionInfo) GetAllSSHConnection() ([]SshConnectionI
 
 	var connectionInfos []SshConnectionInfo
 	for selDB.Next() {
-		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId)
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId)
 		if err != nil {
 			return nil, err
 		}
@@ -123,8 +124,8 @@ func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 
 	var sshConnection SshConnectionInfo
 	var encryptedPassword string
-	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
-	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &encryptedPassword, &sshConnection.HostSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &encryptedPassword, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
 	if row == nil {
 		return nil, errors.New("ssh connection doesn't exist")
 	}
