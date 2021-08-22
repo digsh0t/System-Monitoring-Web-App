@@ -15,6 +15,11 @@ type SysInfo struct {
 	Timestamp    string `json:"timestamp"`
 }
 
+type OnlineStatus struct {
+	ConnectionId int
+	IsOn         bool
+}
+
 func InsertSysInfoToDB(sysInfo SysInfo, ip string, hostname string, connectionId int) error {
 	db := database.ConnectDB()
 	defer db.Close()
@@ -32,7 +37,7 @@ func InsertSysInfoToDB(sysInfo SysInfo, ip string, hostname string, connectionId
 	return err
 }
 
-func GetLatestSysInfo(sshConnectionId int) (SysInfo, error) {
+func GetLatestSysInfo(sshConnectionId int, interval int) (SysInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
@@ -51,7 +56,7 @@ func GetLatestSysInfo(sshConnectionId int) (SysInfo, error) {
 
 	current, _ := time.Parse(layout, time.Now().Format("01-02-2006 15:04:05"))
 	diff := current.Sub(t)
-	if diff.Seconds() > 10 {
+	if diff.Seconds() > float64(interval) {
 		sysInfo = SysInfo{}
 		sysInfo.ConnectionId = sshConnectionId
 	}
@@ -64,7 +69,7 @@ func GetAllSysInfo(sshConnectionList []SshConnectionInfo) ([]SysInfo, error) {
 	var err error
 
 	for _, sshConnection := range sshConnectionList {
-		sysInfo, err = GetLatestSysInfo(sshConnection.SSHConnectionId)
+		sysInfo, err = GetLatestSysInfo(sshConnection.SSHConnectionId, 10)
 		if err != nil {
 			return sysInfoList, err
 		}
@@ -72,4 +77,17 @@ func GetAllSysInfo(sshConnectionList []SshConnectionInfo) ([]SysInfo, error) {
 	}
 
 	return sysInfoList, nil
+}
+
+func CheckOnlineStatus(sshConnectionlist []SshConnectionInfo) []OnlineStatus {
+	var statuses []OnlineStatus
+	for _, sshConnection := range sshConnectionlist {
+		sysinfo, _ := GetLatestSysInfo(sshConnection.SSHConnectionId, 100)
+		if sysinfo.AvgCPU == "" {
+			statuses = append(statuses, OnlineStatus{sshConnection.SSHConnectionId, false})
+		} else {
+			statuses = append(statuses, OnlineStatus{sshConnection.SSHConnectionId, true})
+		}
+	}
+	return statuses
 }
