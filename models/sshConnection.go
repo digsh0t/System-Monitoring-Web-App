@@ -163,6 +163,23 @@ func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 	return &sshConnection, err
 }
 
+func GetSSHConnectionFromIP(ip string) (SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	var sshConnection SshConnectionInfo
+	var encryptedPassword string
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_host = ?", ip)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &encryptedPassword, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
+	if row == nil {
+		return sshConnection, errors.New("ssh connection doesn't exist")
+	}
+	if err != nil {
+		return sshConnection, errors.New("fail to retrieve ssh connection info")
+	}
+	return sshConnection, err
+}
+
 // Check Public Key of user exist or not
 func (sshConnection *SshConnectionInfo) IsKeyExist() bool {
 	if _, err := GetSSHKeyFromId(sshConnection.SSHKeyId); err == nil {

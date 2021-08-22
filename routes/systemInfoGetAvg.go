@@ -43,16 +43,9 @@ func GetSystemInfoRoute(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
-	sshConnection, err := models.GetSSHConnectionFromId(sshConnectionId)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", errors.New("fail to retrieve ssh connection").Error())
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
 
 	var systemInfo models.SysInfo
-	systemInfo, err = models.GetSysInfo(*sshConnection)
+	systemInfo, err = models.GetLatestSysInfo(sshConnectionId)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", errors.New("fail to get system info").Error())
