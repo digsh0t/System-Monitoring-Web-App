@@ -53,6 +53,7 @@ func GetLatestSysInfo(sshConnectionId int) (SysInfo, error) {
 	diff := current.Sub(t)
 	if diff.Seconds() > 10 {
 		sysInfo = SysInfo{}
+		sysInfo.ConnectionId = sshConnectionId
 	}
 	return sysInfo, err
 }
