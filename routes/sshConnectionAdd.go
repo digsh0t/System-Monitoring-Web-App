@@ -74,6 +74,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 
 		publicKey := strings.TrimSuffix(string(data), "\n") + " key" + fmt.Sprint(sshKey.SSHKeyId) + "\n"
 		cmd := "echo" + " \"" + publicKey + "\" " + ">> ~/.ssh/authorized_keys"
+		models.ExecCommand("mkdir ~/.ssh", sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
 		_, err = models.ExecCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
 		if err == nil {
 

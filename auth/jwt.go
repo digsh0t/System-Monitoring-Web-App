@@ -73,6 +73,7 @@ func ExtractTokenMetadata(r *http.Request) (*TokenData, error) {
 		return nil, err
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
+
 	if ok && token.Valid {
 		username, ok := claims["username"].(string)
 		if !ok {

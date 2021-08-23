@@ -1,0 +1,8 @@
+- name: Run Test
+  hosts: "{{ host }}"
+  tasks:
+  - name: Install the nginx rpm from a remote repo
+    ping:
+    register: sss
+   
+  - debug: var=sss     

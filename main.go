@@ -31,5 +31,12 @@ func main() {
 	router.HandleFunc("/systeminfo/{id}", routes.GetSystemInfoRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/systeminfos", routes.SystemInfoGetAllRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/receivelog", routes.Receivelog).Methods("POST", "OPTIONS")
+
+	//Network Function
+	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")
+
+	// Load file yaml
+	router.HandleFunc("/yaml/load", routes.LoadFile).Methods("POST")
+
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
