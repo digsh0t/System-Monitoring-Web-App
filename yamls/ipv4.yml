@@ -1,0 +1,9 @@
+- name: Get All Information of Clients
+  hosts: "{{ host }}"
+  tasks:
+  - debug: var=ansible_default_ipv4
+    when: (ansible_facts['distribution'] == "Ubuntu") or
+          (ansible_facts['distribution'] == "Kali GNU/Linux") or
+          (ansible_facts['distribution'] == "CentOS")
+
+
