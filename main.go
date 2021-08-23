@@ -1,19 +1,17 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/wintltr/login-api/models"
+	"github.com/wintltr/login-api/goroutines"
 	"github.com/wintltr/login-api/routes"
 )
 
 func main() {
-	sshConnectionList, _ := models.GetAllSSHConnection()
-	fmt.Println(models.CheckOnlineStatus(sshConnectionList))
+	go goroutines.CheckClientOnlineStatusGour()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
