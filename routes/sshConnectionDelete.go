@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -13,6 +14,15 @@ import (
 )
 
 func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	if r.Method == "OPTIONS" {
+		//CORS
+		// return "OKOK"
+		json.NewEncoder(w).Encode("OKOK")
+		return
+	}
 
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
 	if err != nil {
@@ -35,8 +45,14 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sshConnectionInfo, _ := models.GetSSHConnectionFromId(sshConnectionId)
+	if sshConnectionInfo == nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", errors.New("SSH Connection with id "+strconv.Itoa(sshConnectionId)+" doesn't exist").Error())
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
 	cmd := `echo "y" | if grep -v key` + strconv.Itoa(sshConnectionInfo.SSHKeyId) + ` $HOME/.ssh/authorized_keys > $HOME/.ssh/tmp; then cat $HOME/.ssh/tmp > $HOME/.ssh/authorized_keys && rm $HOME/.ssh/tmp; fi;`
-	_, err = ExecCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
+	_, err = models.ExecCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", errors.New("error while removing SSH Connection key from remote server").Error())
@@ -48,6 +64,13 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", errors.New("error while deleting SSH Connection").Error())
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+	err = models.GenerateInventory()
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", errors.New("error while regenerate ansible inventory").Error())
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}

@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -12,6 +13,15 @@ import (
 // Get SSh connection from DB
 func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	if r.Method == "OPTIONS" {
+		//CORS
+		// return "OKOK"
+		json.NewEncoder(w).Encode("OKOK")
+		return
+	}
+
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
@@ -22,8 +32,7 @@ func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var sshConnection models.SshConnectionInfo
-	sshConnectionList, err := sshConnection.GetAllSSHConnection()
+	sshConnectionList, err := models.GetAllSSHConnection()
 	if err != nil {
 		utils.JSON(w, http.StatusBadRequest, sshConnectionList)
 		return

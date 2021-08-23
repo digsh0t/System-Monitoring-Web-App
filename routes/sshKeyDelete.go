@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -13,6 +14,15 @@ import (
 )
 
 func SSHKeyDeleteRoute(w http.ResponseWriter, r *http.Request) {
+
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
+	// w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	if r.Method == "OPTIONS" {
+		//CORS
+		// return "OKOK"
+		json.NewEncoder(w).Encode("OKOK")
+		return
+	}
 
 	//Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})

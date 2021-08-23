@@ -44,6 +44,15 @@ func hashPassword(password string) string {
 //Login handler to handle login
 func Login(w http.ResponseWriter, r *http.Request) {
 
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
+	// w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	if r.Method == "OPTIONS" {
+		//CORS
+		// return "OKOK"
+		json.NewEncoder(w).Encode("OKOK")
+		return
+	}
+
 	var user models.User
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {

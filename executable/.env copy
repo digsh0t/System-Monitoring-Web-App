@@ -1,0 +1,13 @@
+#COPY this to your .env file
+
+SECRET_JWT=trilx12
+SALT=projectSys
+
+#Enter this if your ssh key use passphrase
+SECRET_SSH_PASSPHRASE=@Nmbmkn123
+AES_KEY=trilx56789012345
+
+#Connection string, change to your preferred
+DB_STRING=DBUser:DBPassword@(localhost:3306)/CP_Server_Administrator_WA
+
+#Default username / password is: trilx123 / Zaq!123
