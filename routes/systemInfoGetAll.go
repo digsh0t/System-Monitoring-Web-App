@@ -27,7 +27,7 @@ func SystemInfoGetAllRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	systemInfoList, err := models.GetAllSysInfo(sshConnectionList)
-	if err != nil {
+	if err != nil && err.Error() != "sql: no rows in result set" {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to retrieve system info list").Error())
 		return
 	}

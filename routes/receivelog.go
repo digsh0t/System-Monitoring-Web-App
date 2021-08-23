@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
@@ -17,9 +19,10 @@ func Receivelog(w http.ResponseWriter, r *http.Request) {
 	}
 	var sysInfo models.SysInfo
 	json.Unmarshal(reqBody, &sysInfo)
-	// ipport := fmt.Sprint(r.RemoteAddr)
-	// ip := strings.Split(ipport, ":")[0]
-	sshConnection, _ := models.GetSSHConnectionFromIP("192.168.163.136")
+	sysInfo.Timestamp = time.Now().Format("01-02-2006 15:04:05")
+	ipport := fmt.Sprint(r.RemoteAddr)
+	ip := strings.Split(ipport, ":")[0]
+	sshConnection, _ := models.GetSSHConnectionFromIP(ip)
 	err = models.InsertSysInfoToDB(sysInfo, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.SSHConnectionId)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())

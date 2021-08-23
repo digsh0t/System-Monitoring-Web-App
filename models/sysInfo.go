@@ -44,11 +44,8 @@ func GetLatestSysInfo(sshConnectionId int, interval int) (SysInfo, error) {
 	var sysInfo SysInfo
 	row := db.QueryRow("SELECT syl_hostname, syl_avg_cpu, syl_avg_mem, syl_timestamp, syl_connection_id FROM sys_info_logs WHERE syl_connection_id = ? ORDER BY syl_id DESC LIMIT 1", sshConnectionId)
 	err := row.Scan(&sysInfo.HostnameSSH, &sysInfo.AvgCPU, &sysInfo.AvgMem, &sysInfo.Timestamp, &sysInfo.ConnectionId)
-	if row == nil {
-		return sysInfo, errors.New("ssh connection doesn't exist")
-	}
 
-	if err != nil {
+	if err != nil && err.Error() != "sql: no rows in result set" {
 		return sysInfo, errors.New("fail to retrieve ssh connection info")
 	}
 	layout := "01-02-2006 15:04:05"
