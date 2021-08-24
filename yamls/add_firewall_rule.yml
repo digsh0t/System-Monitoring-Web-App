@@ -15,3 +15,7 @@
         permanent: true
         state: enabled
       when: ansible_facts['distribution'] == "CentOS"
+
+    - name: Bounce firewalld
+      service: name=firewalld state=restarted
+      when: ansible_facts['distribution'] == "CentOS"
