@@ -35,6 +35,7 @@ func main() {
 
 	//Config client settings
 	router.HandleFunc("/addufwrule", routes.AddUfwRule).Methods("POST", "OPTIONS")
+	router.HandleFunc("/delufwrule", routes.DeleteUfwRule).Methods("POST", "OPTIONS")
 
 	//Network Function
 	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")
