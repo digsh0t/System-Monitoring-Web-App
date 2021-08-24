@@ -31,6 +31,10 @@ func main() {
 	router.HandleFunc("/systeminfo/{id}", routes.GetSystemInfoRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/systeminfos", routes.SystemInfoGetAllRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/receivelog", routes.Receivelog).Methods("POST", "OPTIONS")
+	router.HandleFunc("/getufwsettings/{id}", routes.UfwRulesGet).Methods("GET", "OPTIONS")
+
+	//Config client settings
+	router.HandleFunc("/addufwrule", routes.AddUfwRule).Methods("POST", "OPTIONS")
 
 	//Network Function
 	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")
