@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -13,6 +14,17 @@ type YamlInfo struct {
 	Mode    string   `json:"mode"`
 	Package string   `json:"package"`
 	Link    string   `json:"link"`
+}
+
+type RecapInfo struct {
+	ClientName  string
+	Ok          int
+	Changed     int
+	Unreachable int
+	Failed      int
+	Skipped     int
+	Rescued     int
+	Ignored     int
 }
 
 func (yaml *YamlInfo) Load() (string, error, []string, []string) {
@@ -76,4 +88,44 @@ func ProcessingOutput(raw string) ([]string, []string) {
 
 	return fatalList, recapList
 
+}
+
+func (recapStruct *RecapInfo) ProcessingRecap(recapList []string) ([]RecapInfo, error) {
+	var recapStructList []RecapInfo
+	var err error
+	for _, line := range recapList {
+		pattern := "^(.+)\\s+:"
+		r, _ := regexp.Compile(pattern)
+		stringSubmatch := r.FindStringSubmatch(line)
+		recapStruct.ClientName = stringSubmatch[1]
+
+		for _, keyword := range []string{"ok", "changed", "unreachable", "failed", "skipped", "rescued", "ignored"} {
+			pattern = keyword + "=" + "([0-9]+)"
+			r, _ := regexp.Compile(pattern)
+			stringSubmatch = r.FindStringSubmatch(line)
+			number, err := strconv.Atoi(stringSubmatch[1])
+			if err != nil {
+				return nil, err
+			}
+			switch keyword {
+			case "ok":
+				recapStruct.Ok = number
+			case "changed":
+				recapStruct.Changed = number
+			case "unreachable":
+				recapStruct.Unreachable = number
+			case "failed":
+				recapStruct.Failed = number
+			case "skipped":
+				recapStruct.Skipped = number
+			case "rescued":
+				recapStruct.Rescued = number
+			case "ignored":
+				recapStruct.Ignored = number
+			}
+		}
+		recapStructList = append(recapStructList, *recapStruct)
+
+	}
+	return recapStructList, err
 }

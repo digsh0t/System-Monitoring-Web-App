@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -48,6 +49,16 @@ func PackageInstall(w http.ResponseWriter, r *http.Request) {
 
 	// Call function Load in yaml.go
 	_, err, fatalList, recapList := yaml.Load()
+
+	var recapStruct models.RecapInfo
+	recapStructList, errRecap := recapStruct.ProcessingRecap(recapList)
+	if errRecap != nil {
+		utils.JSON(w, http.StatusBadRequest, errRecap.Error())
+		return
+	}
+	for _, node := range recapStructList {
+		fmt.Println(node)
+	}
 
 	// Return Json
 	if err != nil {
