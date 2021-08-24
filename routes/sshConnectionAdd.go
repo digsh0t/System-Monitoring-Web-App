@@ -62,7 +62,6 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 			utils.JSON(w, http.StatusBadRequest, returnJson)
 			return
 		}
-
 		decrypted := models.AESDecryptKey(sshKey.PrivateKey)
 		data, err := models.GeneratePublicKey([]byte(decrypted))
 		if err != nil {
@@ -109,9 +108,8 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 					utils.JSON(w, http.StatusBadRequest, returnJson)
 					return
 				}
-
+				fmt.Println("check")
 				utils.ReturnInsertJSON(w, success, err)
-
 			}
 		} else {
 			utils.ERROR(w, http.StatusBadRequest, err.Error())

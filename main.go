@@ -34,8 +34,9 @@ func main() {
 	//Network Function
 	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")
 
-	// Load file yaml
-	router.HandleFunc("/yaml/load", routes.LoadFile).Methods("POST")
+	// Package
+	router.HandleFunc("/package/install", routes.PackageInstall).Methods("POST")
+	router.HandleFunc("/package/remove", routes.PackageRemove).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
