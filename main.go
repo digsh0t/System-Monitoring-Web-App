@@ -6,10 +6,12 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/wintltr/login-api/goroutines"
 	"github.com/wintltr/login-api/routes"
 )
 
 func main() {
+	go goroutines.CheckClientOnlineStatusGour()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
@@ -27,6 +29,7 @@ func main() {
 	//Get PC info
 	router.HandleFunc("/systeminfo/{id}", routes.GetSystemInfoRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/systeminfos", routes.SystemInfoGetAllRoute).Methods("GET", "OPTIONS")
+	router.HandleFunc("/receivelog", routes.Receivelog).Methods("POST", "OPTIONS")
 
 	//Network Function
 	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")
@@ -35,5 +38,4 @@ func main() {
 	router.HandleFunc("/yaml/load", routes.LoadFile).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
-
 }

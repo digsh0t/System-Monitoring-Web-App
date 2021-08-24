@@ -20,7 +20,7 @@ type IPv6Info struct {
 }
 
 type Interfaces struct {
-	InterfacesName string   `json:interfacename`
+	InterfacesName string   `json:"interfacename"`
 	Ipv4           IPv4Info `json:"ipv4"`
 	Ipv6           IPv6Info `json:"ipv6"`
 }
@@ -56,7 +56,7 @@ func extractJsonValue(ansibleOutput string, keys []string) []string {
 			}
 
 		}
-		if isFound == false {
+		if !isFound {
 			valueList = append(valueList, "")
 		} else {
 			isFound = false
@@ -92,7 +92,7 @@ func GetAllDefaultIP() ([]Host, error) {
 	for _, node := range inventoryList {
 		var host Host
 		host.ClientName = node.ClientName
-		if isConnected := utils.IsNodeReachable(node.ClientName); isConnected == true {
+		if isConnected := utils.IsNodeReachable(node.ClientName); isConnected {
 			host.IsConnected = true
 			if node.ClientOS == "linux" {
 				Output, _ := exec.Command("ansible", node.ClientName, "-m", "setup", "-a", "filter=ansible_default_ipv4").Output()
