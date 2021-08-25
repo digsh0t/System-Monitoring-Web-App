@@ -2,6 +2,9 @@ package models
 
 import (
 	"errors"
+	"io/ioutil"
+	"net/http"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/wintltr/login-api/database"
@@ -121,4 +124,19 @@ func SendTelegramMessage(chatId int64, message string) error {
 	msg := tgbotapi.NewMessage(chatId, message)
 	_, err = bot.Send(msg)
 	return err
+}
+
+func TestTelegramKey(apiToken string) bool {
+	resp, err := http.Get("https://api.telegram.org/" + apiToken + "/getMe")
+	if err != nil {
+		return false
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false
+	}
+	if strings.Contains(string(body), `"ok":false`) {
+		return false
+	}
+	return true
 }

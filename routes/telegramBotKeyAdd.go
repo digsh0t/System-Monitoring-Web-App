@@ -39,12 +39,20 @@ func AddTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read request body").Error())
 		return
 	}
+
 	json.Unmarshal(reqBody, &apiKey)
+	isValidKey := models.TestTelegramKey(apiKey.ApiToken)
+	if !isValidKey {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("your telegram bot api key is not valid, please check again").Error())
+		return
+	}
+
 	err = models.InsertTelegramAPIKeyToDB(apiKey)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to insert api key to db").Error())
 		return
 	}
+
 	returnJson := simplejson.New()
 	returnJson.Set("api_token", apiKey.ApiToken)
 	utils.JSON(w, http.StatusOK, returnJson)
