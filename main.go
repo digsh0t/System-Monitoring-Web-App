@@ -37,6 +37,7 @@ func main() {
 	// Package
 	router.HandleFunc("/package/install", routes.PackageInstall).Methods("POST")
 	router.HandleFunc("/package/remove", routes.PackageRemove).Methods("POST")
+	router.HandleFunc("/package/list/{id}", routes.PackageListAll).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

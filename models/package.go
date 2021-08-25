@@ -10,6 +10,7 @@ import (
 )
 
 type PackageInfo struct {
+	PackageId       int
 	PackageName     string
 	PackageDate     string
 	SSHConnectionId int
@@ -110,4 +111,34 @@ func DeletePackageFromDB(Package PackageInfo) (bool, error) {
 		return false, errors.New("no SSH Connections with this ID exists")
 	}
 	return true, err
+}
+
+func GetAllPackageFromHostID(HostId int) ([]PackageInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	var PackageList []PackageInfo
+	selDB, err := db.Query("SELECT * FROM package_installed WHERE pkg_host_id = ?", HostId)
+	if err != nil {
+		return PackageList, err
+	}
+
+	var Package PackageInfo
+	for selDB.Next() {
+		var id int
+		var name, date, hostId string
+
+		err = selDB.Scan(&id, &name, &date, &hostId)
+		if err != nil {
+			return PackageList, err
+		}
+		Package.PackageId = id
+		Package.PackageName = name
+		Package.PackageDate = date
+		Package.SSHConnectionId = HostId
+		PackageList = append(PackageList, Package)
+	}
+
+	return PackageList, err
+
 }
