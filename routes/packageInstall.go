@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -35,20 +34,20 @@ func PackageInstall(w http.ResponseWriter, r *http.Request) {
 		}
 
 	*/
-	var yaml models.YamlInfo
-	returnJson := simplejson.New()
-
+	var ansible models.AnsibleInfo
 	reqBody, err := ioutil.ReadAll(r.Body)
+
+	returnJson := simplejson.New()
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Fail to retrieve json format")
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
-	json.Unmarshal(reqBody, &yaml)
+	json.Unmarshal(reqBody, &ansible)
 
 	// Call function Load in yaml.go
-	_, err, fatalList, recapList := yaml.Load()
+	_, err, fatalList, recapList := ansible.Load()
 
 	var recapStruct models.RecapInfo
 	recapStructList, errRecap := recapStruct.ProcessingRecap(recapList)
@@ -56,23 +55,27 @@ func PackageInstall(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusBadRequest, errRecap.Error())
 		return
 	}
-	for _, node := range recapStructList {
-		fmt.Println(node)
+
+	if ansible.Mode == "1" {
+		_, errPackge := models.AddPackage(recapStructList, ansible.Package)
+		if errPackge != nil {
+			utils.ERROR(w, http.StatusBadRequest, errPackge.Error())
+			return
+		}
 	}
 
 	// Return Json
+	returnJson.Set("Fatal", fatalList)
+	returnJson.Set("Recap", recapList)
 	if err != nil {
-		returnJson.Set("Status", true)
+		returnJson.Set("Status", false)
 		returnJson.Set("Error", err.Error())
-		returnJson.Set("Fatal", fatalList)
-		returnJson.Set("Recap", recapList)
-		utils.JSON(w, http.StatusOK, returnJson)
-		return
 
+	} else {
+		returnJson.Set("Status", true)
+		returnJson.Set("Error", nil)
 	}
 
-	returnJson.Set("Status", true)
-	returnJson.Set("Error", nil)
 	utils.JSON(w, http.StatusOK, returnJson)
 	return
 

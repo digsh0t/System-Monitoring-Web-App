@@ -34,7 +34,7 @@ func PackageRemove(w http.ResponseWriter, r *http.Request) {
 		}
 
 	*/
-	var yaml models.YamlInfo
+	var ansible models.AnsibleInfo
 	returnJson := simplejson.New()
 
 	reqBody, err := ioutil.ReadAll(r.Body)
@@ -44,24 +44,35 @@ func PackageRemove(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
-	json.Unmarshal(reqBody, &yaml)
+	json.Unmarshal(reqBody, &ansible)
 
 	// Call function Load in yaml.go
-	_, err, fatalList, recapList := yaml.Load()
+	_, err, fatalList, recapList := ansible.Load()
 
-	// Return Json
-	if err != nil {
-		returnJson.Set("Status", true)
-		returnJson.Set("Error", err.Error())
-		returnJson.Set("Fatal", fatalList)
-		returnJson.Set("Recap", recapList)
-		utils.JSON(w, http.StatusOK, returnJson)
+	var recapStruct models.RecapInfo
+	recapStructList, errRecap := recapStruct.ProcessingRecap(recapList)
+	if errRecap != nil {
+		utils.JSON(w, http.StatusBadRequest, errRecap.Error())
 		return
-
+	}
+	_, errPackge := models.RemovePackage(recapStructList, ansible.Package)
+	if errPackge != nil {
+		utils.ERROR(w, http.StatusBadRequest, errPackge.Error())
+		return
 	}
 
-	returnJson.Set("Status", true)
-	returnJson.Set("Error", nil)
+	// Return Json
+	returnJson.Set("Fatal", fatalList)
+	returnJson.Set("Recap", recapList)
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", err.Error())
+
+	} else {
+		returnJson.Set("Status", true)
+		returnJson.Set("Error", nil)
+	}
+
 	utils.JSON(w, http.StatusOK, returnJson)
 	return
 

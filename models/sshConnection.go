@@ -147,6 +147,25 @@ func GetAllSSHConnectionWithPassword() ([]SshConnectionInfo, error) {
 	return connectionInfos, err
 }
 
+func GetSSHConnectionFromHostName(sshHostName string) (*SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	var sshConnection SshConnectionInfo
+	//var encryptedPassword string
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_host, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_hostname = ?", sshHostName)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &sshConnection.HostSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
+	if row == nil {
+		return nil, errors.New("ssh connection doesn't exist")
+	}
+
+	/*sshConnection.PasswordSSH = AESDecryptKey(encryptedPassword)
+	if err != nil {
+		return nil, errors.New("fail to retrieve ssh connection info")
+	}*/
+	return &sshConnection, err
+}
+
 func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()

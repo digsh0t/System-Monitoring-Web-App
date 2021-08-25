@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type YamlInfo struct {
+type AnsibleInfo struct {
 	Host    []string `json:"host"`
 	File    string   `json:"file"`
 	Mode    string   `json:"mode"`
@@ -27,25 +27,42 @@ type RecapInfo struct {
 	Ignored     int
 }
 
-func (yaml *YamlInfo) Load() (string, error, []string, []string) {
+func (ansible *AnsibleInfo) Load() (string, error, []string, []string) {
 	var (
-		hostStr   string
-		out       bytes.Buffer
-		err       error
-		fatalList []string
-		recapList []string
+		hostStr           string
+		out               bytes.Buffer
+		err               error
+		fatalList         []string
+		recapList         []string
+		sshConnectionList []SshConnectionInfo
 	)
+
 	// Processing a list host
-	for _, v := range yaml.Host {
-		hostStr += v + ","
+	if ansible.Host[0] == "all" {
+		sshConnectionList, err = GetAllSSHConnection()
+		if err != nil {
+			return "", err, nil, nil
+		}
+		for _, v := range sshConnectionList {
+			hostStr += v.HostNameSSH + ","
+		}
+	} else {
+		for _, id := range ansible.Host {
+			sshConnectionId, err := strconv.Atoi(id)
+			sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
+			if err != nil {
+				return "", err, nil, nil
+			}
+			hostStr += sshConnection.HostNameSSH + ","
+		}
 	}
 
 	// Establish command for load package
-	command := "ansible-playbook ./yamls/" + yaml.File + " -e \"host=" + hostStr
-	if yaml.Mode == "1" {
-		command += " package=" + yaml.Package
-	} else if yaml.Mode == "2" {
-		command += " link=" + yaml.Link
+	command := "ansible-playbook ./yamls/" + ansible.File + " -e \"host=" + hostStr
+	if ansible.Mode == "1" {
+		command += " package=" + ansible.Package
+	} else if ansible.Mode == "2" {
+		command += " link=" + ansible.Link
 	}
 	command += "\""
 
@@ -53,9 +70,7 @@ func (yaml *YamlInfo) Load() (string, error, []string, []string) {
 	cmd.Stdout = &out
 	err = cmd.Run()
 	raw := out.String()
-	if err != nil {
-		fatalList, recapList = ProcessingOutput(raw)
-	}
+	fatalList, recapList = ProcessingOutput(raw)
 
 	return raw, err, fatalList, recapList
 }
@@ -93,6 +108,7 @@ func ProcessingOutput(raw string) ([]string, []string) {
 func (recapStruct *RecapInfo) ProcessingRecap(recapList []string) ([]RecapInfo, error) {
 	var recapStructList []RecapInfo
 	var err error
+
 	for _, line := range recapList {
 		pattern := "^(.+)\\s+:"
 		r, _ := regexp.Compile(pattern)
