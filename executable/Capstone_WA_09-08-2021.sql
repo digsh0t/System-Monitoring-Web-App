@@ -36,3 +36,14 @@ CREATE TABLE ssh_connections (
 /*ALTER TABLE ssh_connections ADD sc_password varchar(50);*/
 
 SELECT * FROM wa_users;
+
+
+CREATE TABLE package_installed (
+  pkg_id INT PRIMARY KEY AUTO_INCREMENT,
+  pkg_name VARCHAR(60),
+  pkg_date DATETIME,
+  pkg_host_id INT,
+  FOREIGN KEY (pkg_host_id) references ssh_connections(sc_connection_id)
+);
+
+
