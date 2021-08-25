@@ -8,6 +8,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/febrianrendak/go-ansible v0.4.1
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.0.0-rc1 // indirect
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.3.0

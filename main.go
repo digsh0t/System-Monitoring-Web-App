@@ -43,5 +43,9 @@ func main() {
 	// Load file yaml
 	router.HandleFunc("/yaml/load", routes.LoadFile).Methods("POST")
 
+	//API management
+	router.HandleFunc("/telegrambotoken", routes.AddTelegramBotKey).Methods("POST", "OPTIONS")
+	router.HandleFunc("/telegrambotoken", routes.GetTelegramBotKey).Methods("GET", "OPTIONS")
+
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

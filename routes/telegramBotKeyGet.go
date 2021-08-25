@@ -5,13 +5,13 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
-// Get SSh connection from DB
-func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
+func GetTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -22,9 +22,9 @@ func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
 	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("please login").Error())
 		return
 	}
 	if !isAuthorized {
@@ -32,12 +32,12 @@ func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sshConnectionList, err := models.GetAllSSHConnection()
+	token, err := models.GetTelegramToken()
 	if err != nil {
 		utils.JSON(w, http.StatusBadRequest, err.Error())
 		return
 	}
-
-	utils.JSON(w, http.StatusOK, sshConnectionList)
-
+	returnJson := simplejson.New()
+	returnJson.Set("api_token", token)
+	utils.JSON(w, http.StatusOK, returnJson)
 }

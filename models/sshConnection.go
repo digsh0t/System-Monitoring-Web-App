@@ -29,7 +29,10 @@ func ProcessPrivateKey(keyId int) (ssh.AuthMethod, error) {
 	//buffer, err := ioutil.ReadFile(file)
 	//fmt.Println(string(buffer))
 	privateKey, _ := GetSSHKeyFromId(keyId)
-	decrytedPrivateKey := AESDecryptKey(privateKey.PrivateKey)
+	decrytedPrivateKey, err := AESDecryptKey(privateKey.PrivateKey)
+	if err != nil {
+		return nil, err
+	}
 
 	buffer := []byte(decrytedPrivateKey)
 	// if err != nil {
@@ -155,10 +158,13 @@ func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 	if row == nil {
 		return nil, errors.New("ssh connection doesn't exist")
 	}
-
-	sshConnection.PasswordSSH = AESDecryptKey(encryptedPassword)
 	if err != nil {
 		return nil, errors.New("fail to retrieve ssh connection info")
+	}
+
+	sshConnection.PasswordSSH, err = AESDecryptKey(encryptedPassword)
+	if err != nil {
+		return nil, errors.New("fail to decrypt ssh connection password")
 	}
 	return &sshConnection, err
 }

@@ -57,18 +57,19 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 
 		sshKey, err := models.GetSSHKeyFromId(sshConnectionInfo.SSHKeyId)
 		if err != nil {
-			returnJson.Set("Status", 400)
-			returnJson.Set("Error", err.Error())
-			utils.JSON(w, http.StatusBadRequest, returnJson)
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		decrypted := models.AESDecryptKey(sshKey.PrivateKey)
+		decrypted, err := models.AESDecryptKey(sshKey.PrivateKey)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
 		data, err := models.GeneratePublicKey([]byte(decrypted))
 		if err != nil {
-			returnJson.Set("Status", 400)
-			returnJson.Set("Error", err.Error())
-			utils.JSON(w, http.StatusBadRequest, returnJson)
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
