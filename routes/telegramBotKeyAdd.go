@@ -46,11 +46,16 @@ func AddTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("your telegram bot api key is not valid, please check again").Error())
 		return
 	}
+	apiKey.TelegramChatId = models.CheckIfUserHasContactBot(apiKey.ApiToken, apiKey.TelegramUser)
 
-	err = models.InsertTelegramAPIKeyToDB(apiKey)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to insert api key to db").Error())
+	if apiKey.TelegramChatId == -1 {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("please send a message to your bot before continuing").Error())
 		return
+	} else {
+		err = models.InsertTelegramAPIKeyToDB(apiKey)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, errors.New("fail to insert api key to db").Error())
+		}
 	}
 
 	returnJson := simplejson.New()

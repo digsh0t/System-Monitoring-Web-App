@@ -11,8 +11,10 @@ import (
 )
 
 type ApiKey struct {
-	ApiName  string `json:"api_name"`
-	ApiToken string `json:"api_token"`
+	ApiName        string `json:"api_name"`
+	ApiToken       string `json:"api_token"`
+	TelegramUser   string `json:"api_telegram_user"`
+	TelegramChatId int64  `json:"api_telegram_chat_id"`
 }
 
 //Insert Telegram Key use for alert bot into DB
@@ -22,13 +24,13 @@ func InsertTelegramAPIKeyToDB(apiKey ApiKey) error {
 
 	encryptedToken := AESEncryptKey(apiKey.ApiToken)
 	apiKey.ApiName = "Telegram_bot"
-	stmt, err := db.Prepare("INSERT INTO api_keys (ak_api_name, ak_api_token) VALUES (?,?)")
+	stmt, err := db.Prepare("INSERT INTO api_keys (ak_api_name, ak_api_token, ak_telegram_user, ak_chat_id) VALUES (?,?,?,?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(apiKey.ApiName, encryptedToken)
+	_, err = stmt.Exec(apiKey.ApiName, encryptedToken, apiKey.TelegramUser, apiKey.TelegramChatId)
 	return err
 }
 
@@ -75,8 +77,14 @@ func RemoveTelegramAPIKeyFromDB(apiName string) error {
 	return err
 }
 
-func RegisterForAlertTelegram() (int64, error) {
-	telegramApiToken, err := GetTelegramToken()
+func RegisterForAlertTelegram(token string) (int64, error) {
+	var telegramApiToken string
+	var err error
+	if token == "" {
+		telegramApiToken, err = GetTelegramToken()
+	} else {
+		telegramApiToken = token
+	}
 	if err != nil {
 		return -1, err
 	}
@@ -111,8 +119,14 @@ func RegisterForAlertTelegram() (int64, error) {
 	return -1, err
 }
 
-func SendTelegramMessage(chatId int64, message string) error {
-	telegramApiToken, err := GetTelegramToken()
+func SendTelegramMessage(token string, message string) error {
+	var telegramApiToken string
+	var err error
+	if token == "" {
+		telegramApiToken, err = GetTelegramToken()
+	} else {
+		telegramApiToken = token
+	}
 	if err != nil {
 		return err
 	}
@@ -121,13 +135,18 @@ func SendTelegramMessage(chatId int64, message string) error {
 		return err
 	}
 
+	updateConfig := tgbotapi.NewUpdate(0)
+	updates, _ := bot.GetUpdates(updateConfig)
+
+	chatId := updates[len(updates)-1].Message.Chat.ID
+
 	msg := tgbotapi.NewMessage(chatId, message)
 	_, err = bot.Send(msg)
 	return err
 }
 
 func TestTelegramKey(apiToken string) bool {
-	resp, err := http.Get("https://api.telegram.org/" + apiToken + "/getMe")
+	resp, err := http.Get("https://api.telegram.org/bot" + apiToken + "/getMe")
 	if err != nil {
 		return false
 	}
@@ -139,4 +158,22 @@ func TestTelegramKey(apiToken string) bool {
 		return false
 	}
 	return true
+}
+
+func CheckIfUserHasContactBot(apiToken string, username string) int64 {
+	bot, err := tgbotapi.NewBotAPI(apiToken)
+	if err != nil {
+		panic(err)
+	}
+
+	bot.Debug = true
+
+	updateConfig := tgbotapi.NewUpdate(0)
+
+	updates, _ := bot.GetUpdates(updateConfig)
+
+	if strings.Contains(updates[len(updates)-1].Message.From.UserName, username) {
+		return updates[len(updates)-1].Message.Chat.ID
+	}
+	return -1
 }
