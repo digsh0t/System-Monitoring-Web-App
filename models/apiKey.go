@@ -35,25 +35,26 @@ func InsertTelegramAPIKeyToDB(apiKey ApiKey) error {
 }
 
 //Get Telegram Token from DB for use or display
-func GetTelegramToken() (string, error) {
+func GetTelegramAPIKey() (ApiKey, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
+	var apiKey ApiKey
 	var encryptedToken string
-	row := db.QueryRow(`SELECT ak_api_token FROM api_keys WHERE ak_api_name = "Telegram_bot"`)
-	err := row.Scan(&encryptedToken)
+	row := db.QueryRow(`SELECT ak_api_name,ak_api_token, ak_telegram_user, ak_chat_id FROM api_keys WHERE ak_api_name = "Telegram_bot"`)
+	err := row.Scan(&apiKey.ApiName, &encryptedToken, &apiKey.TelegramUser, &apiKey.TelegramChatId)
 	if row == nil {
-		return "", errors.New("telegram api key doesn't exist")
+		return apiKey, errors.New("telegram api key doesn't exist")
 	}
 	if err != nil {
-		return "", errors.New("fail to retrieve telegram api key info")
+		return apiKey, errors.New("fail to retrieve telegram api key info")
 	}
 
-	apiToken, err := AESDecryptKey(encryptedToken)
+	apiKey.ApiToken, err = AESDecryptKey(encryptedToken)
 	if err != nil {
-		return "", errors.New("fail to decrypt telegram api key")
+		return apiKey, errors.New("fail to decrypt telegram api key")
 	}
-	return apiToken, err
+	return apiKey, err
 }
 
 func RemoveTelegramAPIKeyFromDB(apiName string) error {
@@ -77,70 +78,19 @@ func RemoveTelegramAPIKeyFromDB(apiName string) error {
 	return err
 }
 
-func RegisterForAlertTelegram(token string) (int64, error) {
-	var telegramApiToken string
-	var err error
-	if token == "" {
-		telegramApiToken, err = GetTelegramToken()
-	} else {
-		telegramApiToken = token
-	}
-	if err != nil {
-		return -1, err
-	}
-	bot, err := tgbotapi.NewBotAPI(telegramApiToken)
-	if err != nil {
-		return -1, err
-	}
-
-	bot.Debug = true
-
-	updateConfig := tgbotapi.NewUpdate(0)
-
-	// Tell Telegram we should wait up to 30 seconds on each request for an
-	// update. This way we can get information just as quickly as making many
-	// frequent requests without having to send nearly as many.
-	updateConfig.Timeout = 30
-
-	// Start polling Telegram for updates.
-	updates, _ := bot.GetUpdates(updateConfig)
-
-	// Let's go through each update that we're getting from Telegram.
-	for _, update := range updates {
-		// Telegram can send many types of updates depending on what your Bot
-		// is up to. We only want to look at messages for now, so we can
-		// discard any other updates.
-		if update.Message == nil {
-			continue
-		}
-
-		return update.Message.Chat.ID, err
-	}
-	return -1, err
-}
-
-func SendTelegramMessage(token string, message string) error {
-	var telegramApiToken string
-	var err error
-	if token == "" {
-		telegramApiToken, err = GetTelegramToken()
-	} else {
-		telegramApiToken = token
-	}
-	if err != nil {
-		return err
-	}
-	bot, err := tgbotapi.NewBotAPI(telegramApiToken)
+func SendTelegramMessage(message string) error {
+	apiKey, err := GetTelegramAPIKey()
 	if err != nil {
 		return err
 	}
 
-	updateConfig := tgbotapi.NewUpdate(0)
-	updates, _ := bot.GetUpdates(updateConfig)
+	bot, err := tgbotapi.NewBotAPI(apiKey.ApiToken)
+	if err != nil {
+		return err
+	}
 
-	chatId := updates[len(updates)-1].Message.Chat.ID
+	msg := tgbotapi.NewMessage(apiKey.TelegramChatId, message)
 
-	msg := tgbotapi.NewMessage(chatId, message)
 	_, err = bot.Send(msg)
 	return err
 }

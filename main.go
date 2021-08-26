@@ -7,10 +7,12 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/goroutines"
+	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/routes"
 )
 
 func main() {
+	models.SendTelegramMessage("lmao cc")
 	go goroutines.CheckClientOnlineStatusGour()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
@@ -46,6 +48,8 @@ func main() {
 	//API management
 	router.HandleFunc("/telegrambotoken", routes.AddTelegramBotKey).Methods("POST", "OPTIONS")
 	router.HandleFunc("/telegrambotoken", routes.GetTelegramBotKey).Methods("GET", "OPTIONS")
+
+	//test
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

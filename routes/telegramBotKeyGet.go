@@ -32,12 +32,12 @@ func GetTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := models.GetTelegramToken()
+	apiKey, err := models.GetTelegramAPIKey()
 	if err != nil {
 		utils.JSON(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	returnJson := simplejson.New()
-	returnJson.Set("api_token", token)
+	returnJson.Set("api_token", apiKey.ApiToken)
 	utils.JSON(w, http.StatusOK, returnJson)
 }
