@@ -2,30 +2,36 @@ package models
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
 	"github.com/wintltr/login-api/database"
 )
 
-type PackageInfo struct {
+type PackageInstalledInfo struct {
 	PackageId       int
 	PackageName     string
 	PackageDate     string
 	SSHConnectionId int
 }
 
+type PackageInfo struct {
+	Host    []string `json:"host"`
+	File    string   `json:"file"`
+	Mode    string   `json:"mode"`
+	Package string   `json:"package"`
+	Link    string   `json:"link"`
+}
+
 func AddPackage(recapStructList []RecapInfo, pkgName string) (bool, error) {
 	var err error = nil
 	var result bool = true
 
-	fmt.Println("recap:", recapStructList)
 	for _, recap := range recapStructList {
 
 		// changed > 0 means installing package successfully
 		if recap.Changed > 0 {
-			var packageInfo PackageInfo
+			var packageInfo PackageInstalledInfo
 			packageInfo.PackageName = pkgName
 			currentTime := time.Now()
 			packageInfo.PackageDate = currentTime.Format("2006-01-02 15:04:05")
@@ -46,7 +52,7 @@ func AddPackage(recapStructList []RecapInfo, pkgName string) (bool, error) {
 
 }
 
-func InsertPackageToDB(Package PackageInfo) (bool, error) {
+func InsertPackageToDB(Package PackageInstalledInfo) (bool, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
@@ -73,7 +79,7 @@ func RemovePackage(recapStructList []RecapInfo, pkgName string) (bool, error) {
 
 		// changed > 0 means installing package successfully
 		if recap.Changed > 0 {
-			var packageInfo PackageInfo
+			var packageInfo PackageInstalledInfo
 			packageInfo.PackageName = pkgName
 			recap.ClientName = strings.TrimSpace(recap.ClientName)
 			SshConnectionInfo, err := GetSSHConnectionFromHostName(recap.ClientName)
@@ -92,7 +98,7 @@ func RemovePackage(recapStructList []RecapInfo, pkgName string) (bool, error) {
 
 }
 
-func DeletePackageFromDB(Package PackageInfo) (bool, error) {
+func DeletePackageFromDB(Package PackageInstalledInfo) (bool, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
@@ -113,17 +119,17 @@ func DeletePackageFromDB(Package PackageInfo) (bool, error) {
 	return true, err
 }
 
-func GetAllPackageFromHostID(HostId int) ([]PackageInfo, error) {
+func GetAllPackageFromHostID(HostId int) ([]PackageInstalledInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	var PackageList []PackageInfo
+	var PackageList []PackageInstalledInfo
 	selDB, err := db.Query("SELECT * FROM package_installed WHERE pkg_host_id = ?", HostId)
 	if err != nil {
 		return PackageList, err
 	}
 
-	var Package PackageInfo
+	var Package PackageInstalledInfo
 	for selDB.Next() {
 		var id int
 		var name, date, hostId string
@@ -136,6 +142,36 @@ func GetAllPackageFromHostID(HostId int) ([]PackageInfo, error) {
 		Package.PackageName = name
 		Package.PackageDate = date
 		Package.SSHConnectionId = HostId
+		PackageList = append(PackageList, Package)
+	}
+
+	return PackageList, err
+
+}
+
+func GetAllPackage() ([]PackageInstalledInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	var PackageList []PackageInstalledInfo
+	selDB, err := db.Query("SELECT * FROM package_installed")
+	if err != nil {
+		return PackageList, err
+	}
+
+	var Package PackageInstalledInfo
+	for selDB.Next() {
+		var id, hostId int
+		var name, date string
+
+		err = selDB.Scan(&id, &name, &date, &hostId)
+		if err != nil {
+			return PackageList, err
+		}
+		Package.PackageId = id
+		Package.PackageName = name
+		Package.PackageDate = date
+		Package.SSHConnectionId = hostId
 		PackageList = append(PackageList, Package)
 	}
 
