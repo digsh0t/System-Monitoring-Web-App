@@ -26,18 +26,21 @@ func main() {
 	router.HandleFunc("/sshkey/{id}", routes.SSHKeyDeleteRoute).Methods("DELETE", "OPTIONS")
 	router.HandleFunc("/sshkeys", routes.GetAllSSHKey).Methods("GET", "OPTIONS")
 
-	//Get PC info
+	// Get PC info
 	router.HandleFunc("/systeminfo/{id}", routes.GetSystemInfoRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/systeminfos", routes.SystemInfoGetAllRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/receivelog", routes.Receivelog).Methods("POST", "OPTIONS")
 
-	//Network Function
+	// Network Function
 	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")
 
 	// Package
 	router.HandleFunc("/package/install", routes.PackageInstall).Methods("POST")
 	router.HandleFunc("/package/remove", routes.PackageRemove).Methods("POST")
 	router.HandleFunc("/package/list/{id}", routes.PackageListAll).Methods("GET")
+
+	// Custom API
+	router.HandleFunc("/pcs", routes.GetAllPcs).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
