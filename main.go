@@ -41,6 +41,7 @@ func main() {
 
 	// User
 	router.HandleFunc("/hostuser/add", routes.HostUserAdd).Methods("POST")
+	router.HandleFunc("/hostuser/remove", routes.HostUserRemove).Methods("POST")
 	router.HandleFunc("/hostuser/list/{id}", routes.HostUserListAll).Methods("GET")
 
 	// Custom API

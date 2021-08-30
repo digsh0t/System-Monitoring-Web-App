@@ -1,0 +1,9 @@
+- name: Remove User Yaml
+  hosts: "{{ host }}"
+  tasks:
+
+  - name: Remove the user 'johnd'
+    ansible.builtin.user:
+     name: "{{ name }}"
+     state: absent
+     remove: yes

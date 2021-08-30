@@ -51,3 +51,22 @@ func (hostUser *HostUserInfo) HostUserAdd() (string, error) {
 	return output, nil
 
 }
+
+func (hostUser *HostUserInfo) HostUserRemove() (string, error) {
+	var (
+		ansible AnsibleInfo
+		output  string
+	)
+
+	host, err := ansible.ProcessingHost(hostUser.SshConnectionId)
+	if err != nil {
+		return output, err
+	}
+	ansible.ExtraValue = map[string]string{"host": host, "name": hostUser.HostUserName}
+	output, err = ansible.Load("./yamls/remove_host_user.yml")
+	if err != nil {
+		return output, err
+	}
+	return output, nil
+
+}
