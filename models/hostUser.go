@@ -39,7 +39,7 @@ func (hostUser *HostUserInfo) HostUserAdd() (string, error) {
 		output  string
 	)
 
-	host, err := ansible.ProcessingHost(hostUser.SshConnectionId)
+	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionId)
 	if err != nil {
 		return output, err
 	}
@@ -58,7 +58,7 @@ func (hostUser *HostUserInfo) HostUserRemove() (string, error) {
 		output  string
 	)
 
-	host, err := ansible.ProcessingHost(hostUser.SshConnectionId)
+	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionId)
 	if err != nil {
 		return output, err
 	}

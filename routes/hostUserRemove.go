@@ -42,7 +42,7 @@ func HostUserRemove(w http.ResponseWriter, r *http.Request) {
 
 	// Processing output and return Json
 	var ansible models.AnsibleInfo
-	fatalList, recapList := ansible.ProcessingOutput(ouput)
+	fatalList, recapList := ansible.RetrieveFatalRecap(ouput)
 
 	returnJson.Set("Fatal", fatalList)
 	returnJson.Set("Recap", recapList)

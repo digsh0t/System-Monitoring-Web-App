@@ -39,7 +39,7 @@ func PackageRemove(w http.ResponseWriter, r *http.Request) {
 
 	// Call function Load in yaml.go
 	var ansible models.AnsibleInfo
-	hostStr, err := ansible.ProcessingHost(packages.Host)
+	hostStr, err := ansible.ConvertListIdToHostname(packages.Host)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Fail to processing list host")
@@ -50,7 +50,7 @@ func PackageRemove(w http.ResponseWriter, r *http.Request) {
 	output, err := ansible.Load("./yamls/" + packages.File)
 
 	// Processing Output From Ansible
-	fatalList, recapList := ansible.ProcessingOutput(output)
+	fatalList, recapList := ansible.RetrieveFatalRecap(output)
 	var recapStruct models.RecapInfo
 	recapStructList, errRecap := recapStruct.ProcessingRecap(recapList)
 	if errRecap != nil {
