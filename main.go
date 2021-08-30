@@ -40,7 +40,7 @@ func main() {
 	router.HandleFunc("/package/list/{id}", routes.PackageListAll).Methods("GET")
 
 	// User
-	router.HandleFunc("/user/list/{id}", routes.UserListAll).Methods("GET")
+	router.HandleFunc("/user/list/{id}", routes.HostUserListAll).Methods("GET")
 
 	// Custom API
 	router.HandleFunc("/pcs", routes.GetAllPcs).Methods("GET")
