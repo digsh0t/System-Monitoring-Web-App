@@ -9,11 +9,7 @@ import (
 )
 
 type AnsibleInfo struct {
-	Host    []string `json:"host"`
-	File    string   `json:"file"`
-	Mode    string   `json:"mode"`
-	Package string   `json:"package"`
-	Link    string   `json:"link"`
+	ExtraValue map[string]string
 }
 
 type RecapInfo struct {
@@ -27,55 +23,28 @@ type RecapInfo struct {
 	Ignored     int
 }
 
-func (ansible *AnsibleInfo) Load() (string, error, []string, []string) {
+// Load Yaml File
+func (ansible *AnsibleInfo) Load(filepath string) (string, error) {
 	var (
-		hostStr           string
-		out               bytes.Buffer
-		err               error
-		fatalList         []string
-		recapList         []string
-		sshConnectionList []SshConnectionInfo
+		out bytes.Buffer
+		err error
 	)
 
-	// Processing a list host
-	if ansible.Host[0] == "all" {
-		sshConnectionList, err = GetAllSSHConnection()
-		if err != nil {
-			return "", err, nil, nil
-		}
-		for _, v := range sshConnectionList {
-			hostStr += v.HostNameSSH + ","
-		}
-	} else {
-		for _, id := range ansible.Host {
-			sshConnectionId, err := strconv.Atoi(id)
-			sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
-			if err != nil {
-				return "", err, nil, nil
-			}
-			hostStr += sshConnection.HostNameSSH + ","
-		}
-	}
-
 	// Establish command for load package
-	command := "ansible-playbook ./yamls/" + ansible.File + " -e \"host=" + hostStr
-	if ansible.Mode == "1" {
-		command += " package=" + ansible.Package
-	} else if ansible.Mode == "2" {
-		command += " link=" + ansible.Link
+	command := "ansible-playbook " + filepath + " -e \""
+	for k, v := range ansible.ExtraValue {
+		command += k + "=" + v + " "
 	}
 	command += "\""
-
 	cmd := exec.Command("/bin/bash", "-c", command)
 	cmd.Stdout = &out
 	err = cmd.Run()
-	raw := out.String()
-	fatalList, recapList = ProcessingOutput(raw)
-
-	return raw, err, fatalList, recapList
+	ouput := out.String()
+	return ouput, err
 }
 
-func ProcessingOutput(raw string) ([]string, []string) {
+// RegExp Fatal And Recap from Ansible Output
+func (ansible *AnsibleInfo) ProcessingOutput(raw string) ([]string, []string) {
 	var fatalList []string
 	var recapList []string
 
@@ -105,6 +74,7 @@ func ProcessingOutput(raw string) ([]string, []string) {
 
 }
 
+// Convert Recap To Struct Format
 func (recapStruct *RecapInfo) ProcessingRecap(recapList []string) ([]RecapInfo, error) {
 	var recapStructList []RecapInfo
 	var err error
@@ -144,4 +114,33 @@ func (recapStruct *RecapInfo) ProcessingRecap(recapList []string) ([]RecapInfo, 
 
 	}
 	return recapStructList, err
+}
+
+// Get Hostname From Id And Concentrate its
+func (ansible *AnsibleInfo) ProcessingHost(hosts []string) (string, error) {
+	var (
+		hostStr           string
+		sshConnectionList []SshConnectionInfo
+		err               error
+	)
+	// Processing a list host
+	if hosts[0] == "all" {
+		sshConnectionList, err = GetAllSSHConnection()
+		if err != nil {
+			return "", err
+		}
+		for _, v := range sshConnectionList {
+			hostStr += v.HostNameSSH + ","
+		}
+	} else {
+		for _, id := range hosts {
+			sshConnectionId, err := strconv.Atoi(id)
+			sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
+			if err != nil {
+				return "", err
+			}
+			hostStr += sshConnection.HostNameSSH + ","
+		}
+	}
+	return hostStr, err
 }
