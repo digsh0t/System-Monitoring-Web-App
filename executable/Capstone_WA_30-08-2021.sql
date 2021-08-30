@@ -33,7 +33,6 @@ CREATE TABLE ssh_connections (
     FOREIGN KEY (ssh_key_id) references ssh_keys(sk_key_id)
 );
 
-/*ALTER TABLE ssh_connections ADD sc_password varchar(50);*/
 
 SELECT * FROM wa_users;
 
