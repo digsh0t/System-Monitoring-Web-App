@@ -9,6 +9,7 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -79,6 +80,21 @@ func AddSSHKey(w http.ResponseWriter, r *http.Request) {
 	} else {
 		returnJson.Set("Error", err)
 		statusCode = http.StatusCreated
+	}
+
+	// Write Event Web
+
+	var eventWeb event.EventWeb = event.EventWeb{
+		EventWebType:        "SSHKey",
+		EventWebDescription: "Add sshKey " + sshKey.KeyName + " to DB",
+		EventWebCreatorId:   sshKey.CreatorId,
+	}
+	_, err = eventWeb.WriteWebEvent()
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to write web event")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
 	}
 	utils.JSON(w, statusCode, returnJson)
 }

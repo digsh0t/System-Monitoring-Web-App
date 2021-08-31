@@ -8,6 +8,7 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -65,6 +66,28 @@ func PackageRemove(w http.ResponseWriter, r *http.Request) {
 	if errPackge != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Fail to remove package to db ")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+
+	// Write Event Web
+	id, err := auth.ExtractUserId(r)
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to get id of creator")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+
+	var eventWeb event.EventWeb = event.EventWeb{
+		EventWebType:        "Package",
+		EventWebDescription: "Remove package from " + hostStr,
+		EventWebCreatorId:   id,
+	}
+	_, err = eventWeb.WriteWebEvent()
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to write web event")
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}

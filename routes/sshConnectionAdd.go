@@ -11,6 +11,7 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -108,7 +109,22 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 					utils.JSON(w, http.StatusBadRequest, returnJson)
 					return
 				}
-				fmt.Println("check")
+
+				// Write Event Web
+
+				var eventWeb event.EventWeb = event.EventWeb{
+					EventWebType:        "SSHConnection",
+					EventWebDescription: "Add SSHconnection to " + sshConnectionInfo.HostNameSSH,
+					EventWebCreatorId:   sshConnectionInfo.CreatorId,
+				}
+				_, err = eventWeb.WriteWebEvent()
+				if err != nil {
+					returnJson.Set("Status", false)
+					returnJson.Set("Error", "Fail to write web event")
+					utils.JSON(w, http.StatusBadRequest, returnJson)
+					return
+				}
+				// Return Json
 				utils.ReturnInsertJSON(w, success, err)
 			}
 		} else {

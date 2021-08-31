@@ -4,7 +4,9 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -29,6 +31,29 @@ func SystemInfoGetAllRoute(w http.ResponseWriter, r *http.Request) {
 	systemInfoList, err := models.GetAllSysInfo(sshConnectionList)
 	if err != nil && err.Error() != "sql: no rows in result set" {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to retrieve system info list").Error())
+		return
+	}
+
+	// Write Event Web
+	returnJson := simplejson.New()
+	id, err := auth.ExtractUserId(r)
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to get id of creator")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+
+	var eventWeb event.EventWeb = event.EventWeb{
+		EventWebType:        "SystemInfp",
+		EventWebDescription: "Get all system info",
+		EventWebCreatorId:   id,
+	}
+	_, err = eventWeb.WriteWebEvent()
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to write web event")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
 	utils.JSON(w, http.StatusOK, systemInfoList)

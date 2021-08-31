@@ -46,3 +46,16 @@ CREATE TABLE package_installed (
 );
 
 
+CREATE TABLE event_web (
+  ev_web_id INT PRIMARY KEY AUTO_INCREMENT,
+  ev_web_type VARCHAR(60),
+  ev_web_description VARCHAR(120),
+  ev_web_timestamp DATETIME,
+  ev_web_creator_id INT,
+  FOREIGN KEY (ev_creator_id) references wa_users(wa_users_id)
+);
+
+
+
+
+

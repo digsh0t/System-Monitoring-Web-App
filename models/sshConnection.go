@@ -185,6 +185,20 @@ func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 	return &sshConnection, err
 }
 
+func GetSshHostnameFromId(sshConnectionId int) (string, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	var hostname string
+	row := db.QueryRow("SELECT sc_hostname FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
+	err := row.Scan(&hostname)
+	if row == nil {
+		return hostname, errors.New("ssh connection doesn't exist")
+	}
+
+	return hostname, err
+}
+
 func GetSSHConnectionFromIP(ip string) (SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()

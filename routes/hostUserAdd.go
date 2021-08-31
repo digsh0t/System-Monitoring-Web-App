@@ -8,13 +8,14 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
 func HostUserAdd(w http.ResponseWriter, r *http.Request) {
 
-	//Authorization
+	// Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
@@ -40,8 +41,37 @@ func HostUserAdd(w http.ResponseWriter, r *http.Request) {
 	// Add Host User
 	ouput, err := hostUser.HostUserAdd()
 
-	// Processing output and return Json
+	// Write Event Web
 	var ansible models.AnsibleInfo
+	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionId)
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to convert id to hostname")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+	id, err := auth.ExtractUserId(r)
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to get id of creator")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+
+	var eventWeb event.EventWeb = event.EventWeb{
+		EventWebType:        "HostUser",
+		EventWebDescription: "Add user to " + host,
+		EventWebCreatorId:   id,
+	}
+	_, err = eventWeb.WriteWebEvent()
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to write web event")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+
+	// Processing output and return Json
 	fatalList, recapList := ansible.RetrieveFatalRecap(ouput)
 
 	returnJson.Set("Fatal", fatalList)

@@ -5,7 +5,9 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -35,6 +37,29 @@ func GetAllSSHKey(w http.ResponseWriter, r *http.Request) {
 	sshKeyList, err := models.GetAllSSHKeyFromDB()
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
+	}
+
+	// Write Event Web
+	returnJson := simplejson.New()
+	id, err := auth.ExtractUserId(r)
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to get id of creator")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+
+	var eventWeb event.EventWeb = event.EventWeb{
+		EventWebType:        "SSHKey",
+		EventWebDescription: "Get all sshKey",
+		EventWebCreatorId:   id,
+	}
+	_, err = eventWeb.WriteWebEvent()
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to write web event")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
 	}
 	utils.JSON(w, http.StatusOK, sshKeyList)
 }

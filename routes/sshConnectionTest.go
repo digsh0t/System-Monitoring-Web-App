@@ -9,6 +9,7 @@ import (
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -52,6 +53,21 @@ func TestSSHConnection(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		returnJson.Set("Status", status)
 		returnJson.Set("Error", err.Error())
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+
+	// Write Event Web
+
+	var eventWeb event.EventWeb = event.EventWeb{
+		EventWebType:        "SSHConnection",
+		EventWebDescription: "Test SSHconnection " + sshConnection.HostNameSSH,
+		EventWebCreatorId:   sshConnection.CreatorId,
+	}
+	_, err = eventWeb.WriteWebEvent()
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to write web event")
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -29,6 +30,10 @@ func PackageListAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Declare event web
+	var eventWeb event.EventWeb
+	eventWeb.EventWebType = "Package"
+
 	returnJson := simplejson.New()
 	vars := mux.Vars(r)
 	stringId := vars["id"]
@@ -40,6 +45,9 @@ func PackageListAll(w http.ResponseWriter, r *http.Request) {
 			utils.JSON(w, http.StatusBadRequest, returnJson)
 			return
 		}
+
+		// Get event description
+		eventWeb.EventWebDescription = "List all package from all clients"
 	} else {
 		intId, err := strconv.Atoi(stringId)
 		if err != nil {
@@ -55,6 +63,34 @@ func PackageListAll(w http.ResponseWriter, r *http.Request) {
 			utils.JSON(w, http.StatusBadRequest, returnJson)
 			return
 		}
+
+		hostname, err := models.GetSshHostnameFromId(intId)
+		if err != nil {
+			returnJson.Set("Status", false)
+			returnJson.Set("Error", "Fail to get hostname from id")
+			utils.JSON(w, http.StatusBadRequest, returnJson)
+			return
+		}
+
+		// Get event description
+		eventWeb.EventWebDescription = "List all package from " + hostname
+	}
+
+	// Write Event Web
+	id, err := auth.ExtractUserId(r)
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to get id of creator")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+	eventWeb.EventWebCreatorId = id
+	_, err = eventWeb.WriteWebEvent()
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to write web event")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
 	}
 
 	// Return json

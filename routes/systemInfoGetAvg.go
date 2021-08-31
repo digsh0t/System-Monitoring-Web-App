@@ -9,6 +9,7 @@ import (
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -49,6 +50,28 @@ func GetSystemInfoRoute(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", errors.New("fail to get system info").Error())
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+
+	// Write Event Web
+	id, err := auth.ExtractUserId(r)
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to get id of creator")
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+
+	var eventWeb event.EventWeb = event.EventWeb{
+		EventWebType:        "SystemInfp",
+		EventWebDescription: "Get Average of system info",
+		EventWebCreatorId:   id,
+	}
+	_, err = eventWeb.WriteWebEvent()
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", "Fail to write web event")
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
