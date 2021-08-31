@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"os/exec"
 	"strconv"
 	"time"
@@ -29,7 +30,7 @@ func (template *Template) RunPlaybook() error {
 	return cmd.Run()
 }
 
-func (template *Template) AddTaskToDB() error {
+func (template *Template) AddTemplateToDB() error {
 	db := database.ConnectDB()
 	defer db.Close()
 
@@ -40,4 +41,17 @@ func (template *Template) AddTaskToDB() error {
 	defer stmt.Close()
 	_, err = stmt.Exec(template.TemplateName, template.Description, template.SshKeyId, template.FilePath, template.Arguments, template.Alert)
 	return err
+}
+
+func GetTemplateFromId(temlateId int) (Template, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	var template Template
+	row := db.QueryRow("SELECT template_id, template_name, template_description, ssh_key_id, filepath, arguments, alert FROM templates WHERE template_id = ?", temlateId)
+	if row == nil {
+		return Template{}, errors.New("no template with id " + strconv.Itoa(temlateId) + " exists")
+	}
+	err := row.Scan(&template.TemplateId, &template.TemplateName, &template.Description, &template.SshKeyId, &template.FilePath, &template.Arguments, &template.Alert)
+	return template, err
 }

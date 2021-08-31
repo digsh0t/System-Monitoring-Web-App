@@ -47,7 +47,7 @@ func AddTemplate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = template.AddTaskToDB()
+	err = template.AddTemplateToDB()
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to insert template to database").Error())
 		return

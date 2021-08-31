@@ -1,25 +1,30 @@
 package routes
 
 import (
-	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
 func RunTemplate(w http.ResponseWriter, r *http.Request) {
-	var template models.Template
 
-	reqBody, err := ioutil.ReadAll(r.Body)
+	vars := mux.Vars(r)
+	templateId, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("invalid request body").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("invalid template id").Error())
 		return
 	}
 
-	json.Unmarshal(reqBody, &template)
+	template, err := models.GetTemplateFromId(templateId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read template from database").Error())
+		return
+	}
+
 	err = template.RunPlaybook()
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("invalid request body").Error())
