@@ -44,7 +44,7 @@ func (ansible *AnsibleInfo) Load(filepath string) (string, error) {
 }
 
 // RegExp Fatal And Recap from Ansible Output
-func (ansible *AnsibleInfo) ProcessingOutput(raw string) ([]string, []string) {
+func (ansible *AnsibleInfo) RetrieveFatalRecap(raw string) ([]string, []string) {
 	var fatalList []string
 	var recapList []string
 
@@ -117,7 +117,7 @@ func (recapStruct *RecapInfo) ProcessingRecap(recapList []string) ([]RecapInfo, 
 }
 
 // Get Hostname From Id And Concentrate its
-func (ansible *AnsibleInfo) ProcessingHost(hosts []string) (string, error) {
+func (ansible *AnsibleInfo) ConvertListIdToHostname(hosts []string) (string, error) {
 	var (
 		hostStr           string
 		sshConnectionList []SshConnectionInfo

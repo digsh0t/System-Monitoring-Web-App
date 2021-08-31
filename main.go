@@ -16,12 +16,16 @@ func main() {
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
 	origins := handlers.AllowedOrigins([]string{"*"})
+	// Login
 	router.HandleFunc("/login", routes.Login).Methods("POST", "OPTIONS")
+
+	// SSH Connection
 	router.HandleFunc("/sshconnection", routes.SSHCopyKey).Methods("POST", "OPTIONS")
 	router.HandleFunc("/sshconnection/{id}/test", routes.TestSSHConnection).Methods("GET", "OPTIONS")
 	router.HandleFunc("/sshconnections", routes.GetAllSSHConnection).Methods("GET", "OPTIONS")
 	router.HandleFunc("/sshconnection/{id}", routes.SSHConnectionDeleteRoute).Methods("DELETE", "OPTIONS")
 
+	// SSH Key
 	router.HandleFunc("/sshkey", routes.AddSSHKey).Methods("POST", "OPTIONS")
 	router.HandleFunc("/sshkey/{id}", routes.SSHKeyDeleteRoute).Methods("DELETE", "OPTIONS")
 	router.HandleFunc("/sshkeys", routes.GetAllSSHKey).Methods("GET", "OPTIONS")
@@ -39,7 +43,7 @@ func main() {
 	router.HandleFunc("/package/remove", routes.PackageRemove).Methods("POST")
 	router.HandleFunc("/package/list/{id}", routes.PackageListAll).Methods("GET")
 
-	// User
+	// Host User
 	router.HandleFunc("/hostuser/add", routes.HostUserAdd).Methods("POST")
 	router.HandleFunc("/hostuser/remove", routes.HostUserRemove).Methods("POST")
 	router.HandleFunc("/hostuser/list/{id}", routes.HostUserListAll).Methods("GET")
