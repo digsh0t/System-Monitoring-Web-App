@@ -1,7 +1,12 @@
 package event
 
 import (
+	"net/http"
+	"regexp"
+
+	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/database"
+	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
@@ -13,7 +18,8 @@ type EventWeb struct {
 	EventWebCreatorId   int
 }
 
-func (eventWeb *EventWeb) WriteWebEvent() (bool, error) {
+func WriteWebEvent(r *http.Request, eventType string, description string) (bool, error) {
+	var id int
 	db := database.ConnectDB()
 	defer db.Close()
 
@@ -23,8 +29,24 @@ func (eventWeb *EventWeb) WriteWebEvent() (bool, error) {
 	}
 	defer stmt.Close()
 
-	eventWeb.EventWebTimeStamp = utils.GetCurrentDateTime()
-	_, err = stmt.Exec(eventWeb.EventWebType, eventWeb.EventWebDescription, eventWeb.EventWebTimeStamp, eventWeb.EventWebCreatorId)
+	if eventType != "Login" {
+		id, err = auth.ExtractUserId(r)
+		if err != nil {
+			return false, err
+		}
+	} else {
+		pattern := "\"(.+)\""
+		r, _ := regexp.Compile(pattern)
+		submatch := r.FindStringSubmatch(description)
+		username := submatch[1]
+		id, err = models.GetIdFromUsername(username)
+		if err != nil {
+			return false, err
+		}
+	}
+	timestamp := utils.GetCurrentDateTime()
+
+	_, err = stmt.Exec(eventType, description, timestamp, id)
 	if err != nil {
 		return false, err
 	}

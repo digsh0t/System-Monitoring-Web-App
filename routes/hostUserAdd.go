@@ -50,20 +50,9 @@ func HostUserAdd(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
-	id, err := auth.ExtractUserId(r)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to get id of creator")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
 
-	var eventWeb event.EventWeb = event.EventWeb{
-		EventWebType:        "HostUser",
-		EventWebDescription: "Add user to " + host,
-		EventWebCreatorId:   id,
-	}
-	_, err = eventWeb.WriteWebEvent()
+	description := "Add host user to " + host
+	_, err = event.WriteWebEvent(r, "HostUser", description)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Fail to write web event")

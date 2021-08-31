@@ -77,13 +77,8 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write Event Web
-
-	var eventWeb event.EventWeb = event.EventWeb{
-		EventWebType:        "SSHConnection",
-		EventWebDescription: "Delete SSHconnection from " + sshConnectionInfo.HostNameSSH,
-		EventWebCreatorId:   sshConnectionInfo.CreatorId,
-	}
-	_, err = eventWeb.WriteWebEvent()
+	description := "Delete SSHconnection from " + sshConnectionInfo.HostNameSSH
+	_, err = event.WriteWebEvent(r, "SSHConnection", description)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Fail to write web event")

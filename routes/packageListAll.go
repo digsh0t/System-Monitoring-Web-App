@@ -17,6 +17,7 @@ func PackageListAll(w http.ResponseWriter, r *http.Request) {
 	var (
 		PackageList []models.PackageInstalledInfo
 		err         error
+		description string
 	)
 
 	//Authorization
@@ -30,11 +31,8 @@ func PackageListAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Declare event web
-	var eventWeb event.EventWeb
-	eventWeb.EventWebType = "Package"
-
 	returnJson := simplejson.New()
+
 	vars := mux.Vars(r)
 	stringId := vars["id"]
 	if stringId == "all" {
@@ -47,7 +45,7 @@ func PackageListAll(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Get event description
-		eventWeb.EventWebDescription = "List all package from all clients"
+		description = "List all package from all clients"
 	} else {
 		intId, err := strconv.Atoi(stringId)
 		if err != nil {
@@ -73,19 +71,11 @@ func PackageListAll(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Get event description
-		eventWeb.EventWebDescription = "List all package from " + hostname
+		description = "List all package from " + hostname
 	}
 
 	// Write Event Web
-	id, err := auth.ExtractUserId(r)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to get id of creator")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
-	eventWeb.EventWebCreatorId = id
-	_, err = eventWeb.WriteWebEvent()
+	_, err = event.WriteWebEvent(r, "Package", description)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Fail to write web event")
@@ -94,7 +84,6 @@ func PackageListAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Return json
-
 	if err != nil {
 		utils.JSON(w, http.StatusBadRequest, PackageList)
 		return

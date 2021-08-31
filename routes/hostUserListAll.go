@@ -52,20 +52,9 @@ func HostUserListAll(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
-	id, err := auth.ExtractUserId(r)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to get id of creator")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
 
-	var eventWeb event.EventWeb = event.EventWeb{
-		EventWebType:        "HostUser",
-		EventWebDescription: "List all user from " + hostname,
-		EventWebCreatorId:   id,
-	}
-	_, err = eventWeb.WriteWebEvent()
+	description := "List all user of " + hostname
+	_, err = event.WriteWebEvent(r, "HostUser", description)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Fail to write web event")

@@ -71,20 +71,8 @@ func PackageRemove(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write Event Web
-	id, err := auth.ExtractUserId(r)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to get id of creator")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
-
-	var eventWeb event.EventWeb = event.EventWeb{
-		EventWebType:        "Package",
-		EventWebDescription: "Remove package from " + hostStr,
-		EventWebCreatorId:   id,
-	}
-	_, err = eventWeb.WriteWebEvent()
+	description := "Remove package from " + hostStr
+	_, err = event.WriteWebEvent(r, "Package", description)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Fail to write web event")

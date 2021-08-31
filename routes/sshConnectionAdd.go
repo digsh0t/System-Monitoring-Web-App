@@ -112,12 +112,8 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 
 				// Write Event Web
 
-				var eventWeb event.EventWeb = event.EventWeb{
-					EventWebType:        "SSHConnection",
-					EventWebDescription: "Add SSHconnection to " + sshConnectionInfo.HostNameSSH,
-					EventWebCreatorId:   sshConnectionInfo.CreatorId,
-				}
-				_, err = eventWeb.WriteWebEvent()
+				description := "Add SSH Connection to " + sshConnectionInfo.HostNameSSH
+				_, err = event.WriteWebEvent(r, "SSHConnection", description)
 				if err != nil {
 					returnJson.Set("Status", false)
 					returnJson.Set("Error", "Fail to write web event")

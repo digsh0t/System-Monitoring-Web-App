@@ -55,20 +55,8 @@ func SSHKeyDeleteRoute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write Event Web
-	id, err := auth.ExtractUserId(r)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to get id of creator")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
-
-	var eventWeb event.EventWeb = event.EventWeb{
-		EventWebType:        "SSHKey",
-		EventWebDescription: "Delete sshKey " + strconv.Itoa(sshKeyId) + " from DB",
-		EventWebCreatorId:   id,
-	}
-	_, err = eventWeb.WriteWebEvent()
+	description := "Delete sshKey " + strconv.Itoa(sshKeyId) + " from DB"
+	_, err = event.WriteWebEvent(r, "SSHKey", description)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Fail to write web event")

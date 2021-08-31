@@ -83,13 +83,8 @@ func AddSSHKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write Event Web
-
-	var eventWeb event.EventWeb = event.EventWeb{
-		EventWebType:        "SSHKey",
-		EventWebDescription: "Add sshKey " + sshKey.KeyName + " to DB",
-		EventWebCreatorId:   sshKey.CreatorId,
-	}
-	_, err = eventWeb.WriteWebEvent()
+	description := "Add sshKey " + sshKey.KeyName + " to DB"
+	_, err = event.WriteWebEvent(r, "SSHKey", description)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Fail to write web event")

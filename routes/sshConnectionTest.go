@@ -58,13 +58,8 @@ func TestSSHConnection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write Event Web
-
-	var eventWeb event.EventWeb = event.EventWeb{
-		EventWebType:        "SSHConnection",
-		EventWebDescription: "Test SSHconnection " + sshConnection.HostNameSSH,
-		EventWebCreatorId:   sshConnection.CreatorId,
-	}
-	_, err = eventWeb.WriteWebEvent()
+	description := "Test SSHconnection " + sshConnection.HostNameSSH
+	_, err = event.WriteWebEvent(r, "SSHConnection", description)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Fail to write web event")

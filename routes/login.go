@@ -82,13 +82,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Write Event Web
-		var eventWeb event.EventWeb = event.EventWeb{
-			EventWebType:        "Login",
-			EventWebDescription: "User " + user.Username + " login to web app",
-			EventWebCreatorId:   user.UserId,
-		}
-		_, err = eventWeb.WriteWebEvent()
 		returnJson := simplejson.New()
+		description := "User \"" + user.Username + "\" login to web app"
+		_, err = event.WriteWebEvent(r, "Login", description)
 		if err != nil {
 			returnJson.Set("Status", false)
 			returnJson.Set("Error", "Fail to write web event")
@@ -97,7 +93,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//Return Login Success Authorization Json
-
 		returnJson.Set("Authorization", token)
 		returnJson.Set("Error", "")
 		utils.JSON(w, http.StatusOK, returnJson)
