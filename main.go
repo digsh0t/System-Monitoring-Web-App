@@ -48,6 +48,9 @@ func main() {
 	router.HandleFunc("/hostuser/remove", routes.HostUserRemove).Methods("POST")
 	router.HandleFunc("/hostuser/list/{id}", routes.HostUserListAll).Methods("GET")
 
+	// Event Web
+	router.HandleFunc("/eventweb", routes.GetAllEventWeb).Methods("GET")
+
 	// Custom API
 	router.HandleFunc("/pcs", routes.GetAllPcs).Methods("GET")
 
