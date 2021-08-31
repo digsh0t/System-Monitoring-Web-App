@@ -9,7 +9,7 @@ CREATE TABLE wa_users (
 );
 
 INSERT INTO wa_users (wa_users_username, wa_users_password, wa_users_role) VALUES ("trilx123","9a835b7eece9ea09bfc80b63d15b94aee929eac524544813da1962bc35081fbaea7698c84b73b7b3d7c65ead23d7abbf0d8e25e183e50f6a1f1e96f97d712afd", "admin");
-
+INSERT INTO wa_users (wa_users_username, wa_users_password, wa_users_role) VALUES ("long123","556c45b340635b61ab3a99a282d5c339115fe9e636d859edc5cdc9dabcbb701198f50c5e204dc0e3393f7c54b6116525d12e4d84690081761b42632c87002f2c", "admin");
 SELECT * FROM wa_users;
 
 CREATE TABLE  ssh_keys (
@@ -23,7 +23,9 @@ CREATE TABLE  ssh_keys (
 CREATE TABLE ssh_connections (
     sc_connection_id INT PRIMARY KEY AUTO_INCREMENT,
     sc_username VARCHAR(60),
+    sc_password varchar(50),
     sc_host varchar(60),
+    sc_hostname varchar(60),
     sc_port INT,
     creator_id INT,
     ssh_key_id INT,
@@ -31,6 +33,17 @@ CREATE TABLE ssh_connections (
     FOREIGN KEY (ssh_key_id) references ssh_keys(sk_key_id)
 );
 
-ALTER TABLE ssh_connections ADD sc_password varchar(50);
+/*ALTER TABLE ssh_connections ADD sc_password varchar(50);*/
 
 SELECT * FROM wa_users;
+
+
+CREATE TABLE package_installed (
+  pkg_id INT PRIMARY KEY AUTO_INCREMENT,
+  pkg_name VARCHAR(60),
+  pkg_date DATETIME,
+  pkg_host_id INT,
+  FOREIGN KEY (pkg_host_id) references ssh_connections(sc_connection_id)
+);
+
+

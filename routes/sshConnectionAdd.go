@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"io/ioutil"
 
@@ -111,17 +110,8 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 					utils.JSON(w, http.StatusBadRequest, returnJson)
 					return
 				}
-
-				event := models.Event{
-					EventType:   "SSH Connection",
-					Description: "SSH Connection to " + sshConnectionInfo.HostNameSSH + " created",
-					TimeStampt:  time.Now(),
-					CreatorId:   sshConnectionInfo.CreatorId,
-				}
-				models.CreateEvent(event)
-
+				fmt.Println("check")
 				utils.ReturnInsertJSON(w, success, err)
-
 			}
 		} else {
 			utils.ERROR(w, http.StatusBadRequest, err.Error())

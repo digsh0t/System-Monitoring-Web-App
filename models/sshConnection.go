@@ -88,14 +88,17 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 
 	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id) VALUES (?,?,?,?,?,?,?)")
 	if err != nil {
+
 		return false, err
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(sshConnection.UserSSH, encryptedPassword, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId)
 	if err != nil {
+
 		return false, err
 	}
+
 	return true, err
 }
 
@@ -145,6 +148,25 @@ func GetAllSSHConnectionWithPassword() ([]SshConnectionInfo, error) {
 		connectionInfos = append(connectionInfos, connectionInfo)
 	}
 	return connectionInfos, err
+}
+
+func GetSSHConnectionFromHostName(sshHostName string) (*SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	var sshConnection SshConnectionInfo
+	//var encryptedPassword string
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_host, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_hostname = ?", sshHostName)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &sshConnection.HostSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
+	if row == nil {
+		return nil, errors.New("ssh connection doesn't exist")
+	}
+
+	/*sshConnection.PasswordSSH = AESDecryptKey(encryptedPassword)
+	if err != nil {
+		return nil, errors.New("fail to retrieve ssh connection info")
+	}*/
+	return &sshConnection, err
 }
 
 func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
@@ -294,6 +316,8 @@ func GenerateInventory() error {
 		line := sshConnection.HostNameSSH + " ansible_host=" + sshConnection.HostSSH + " ansible_port=" + fmt.Sprint(sshConnection.PortSSH) + " ansible_user=" + sshConnection.UserSSH + "\n"
 		inventory += line
 	}
+
 	err = ioutil.WriteFile("/etc/ansible/hosts", []byte(inventory), 0644)
+	//fmt.Println(err.Error())
 	return err
 }

@@ -16,7 +16,6 @@ func main() {
 	methods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
 	origins := handlers.AllowedOrigins([]string{"*"})
 	router.HandleFunc("/login", routes.Login).Methods("POST", "OPTIONS")
-
 	router.HandleFunc("/sshconnection", routes.SSHCopyKey).Methods("POST", "OPTIONS")
 	router.HandleFunc("/sshconnection/{id}/test", routes.TestSSHConnection).Methods("GET", "OPTIONS")
 	router.HandleFunc("/sshconnections", routes.GetAllSSHConnection).Methods("GET", "OPTIONS")
@@ -26,7 +25,7 @@ func main() {
 	router.HandleFunc("/sshkey/{id}", routes.SSHKeyDeleteRoute).Methods("DELETE", "OPTIONS")
 	router.HandleFunc("/sshkeys", routes.GetAllSSHKey).Methods("GET", "OPTIONS")
 
-	//Get PC info
+	// Get PC info
 	router.HandleFunc("/systeminfo/{id}", routes.GetSystemInfoRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/systeminfos", routes.SystemInfoGetAllRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/receivelog", routes.Receivelog).Methods("POST", "OPTIONS")
@@ -36,11 +35,16 @@ func main() {
 	router.HandleFunc("/addufwrule", routes.AddUfwRule).Methods("POST", "OPTIONS")
 	router.HandleFunc("/delufwrule", routes.DeleteUfwRule).Methods("POST", "OPTIONS")
 
-	//Network Function
+	// Network Function
 	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")
 
-	// Load file yaml
-	router.HandleFunc("/yaml/load", routes.LoadFile).Methods("POST")
+	// Package
+	router.HandleFunc("/package/install", routes.PackageInstall).Methods("POST")
+	router.HandleFunc("/package/remove", routes.PackageRemove).Methods("POST")
+	router.HandleFunc("/package/list/{id}", routes.PackageListAll).Methods("GET")
+
+	// Custom API
+	router.HandleFunc("/pcs", routes.GetAllPcs).Methods("GET")
 
 	//API management
 	router.HandleFunc("/telegrambotoken", routes.AddTelegramBotKey).Methods("POST", "OPTIONS")
