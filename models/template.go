@@ -1,9 +1,13 @@
 package models
 
 import (
+	"bufio"
 	"errors"
+	"fmt"
+	"log"
 	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/wintltr/login-api/database"
@@ -19,6 +23,40 @@ type Template struct {
 	Alert        bool   `json:"alert"`
 }
 
+func Readln(r *bufio.Reader) (string, error) {
+	var (
+		isPrefix = true
+		err      error
+		line, ln []byte
+	)
+	for isPrefix && err == nil {
+		line, isPrefix, err = r.ReadLine()
+		ln = append(ln, line...)
+	}
+	return string(ln), err
+}
+
+func logPipe(reader *bufio.Reader) {
+
+	line, err := Readln(reader)
+	for err == nil {
+		fmt.Println("Debug: " + line)
+		line, err = Readln(reader)
+	}
+
+	if err != nil && err.Error() != "EOF" {
+		log.Println("fail to read task output")
+	}
+}
+
+func logCmd(cmd *exec.Cmd) {
+	stderr, _ := cmd.StderrPipe()
+	stdout, _ := cmd.StdoutPipe()
+
+	go logPipe(bufio.NewReader(stderr))
+	go logPipe(bufio.NewReader(stdout))
+}
+
 func (template *Template) RunPlaybook() error {
 	defer func() {
 		finishedTime := time.Now()
@@ -27,6 +65,8 @@ func (template *Template) RunPlaybook() error {
 	}()
 
 	cmd := exec.Command("ansible-playbook", template.FilePath)
+	logCmd(cmd)
+	cmd.Stdin = strings.NewReader("")
 	return cmd.Run()
 }
 
