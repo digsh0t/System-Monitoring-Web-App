@@ -181,5 +181,6 @@ func SSHKeyDelete(id int) (bool, error) {
 	if rows == 0 {
 		return false, errors.New("no SSH Connections with this ID exists")
 	}
+	
 	return true, err
 }

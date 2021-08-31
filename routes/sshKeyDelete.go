@@ -3,8 +3,10 @@ package routes
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
@@ -52,6 +54,16 @@ func SSHKeyDeleteRoute(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
+
+	creatorId, _ := auth.ExtractUserId(r)
+
+	event := models.Event{
+		EventType:   "SSH Key",
+		Description: "SSH Key " + fmt.Sprint(sshKeyId) + " deleted",
+		TimeStampt:  time.Now(),
+		CreatorId:   creatorId,
+	}
+	models.CreateEvent(event)
 
 	returnJson.Set("Status", true)
 	returnJson.Set("Error", nil)

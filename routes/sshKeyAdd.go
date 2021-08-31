@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
@@ -80,5 +82,14 @@ func AddSSHKey(w http.ResponseWriter, r *http.Request) {
 		returnJson.Set("Error", err)
 		statusCode = http.StatusCreated
 	}
+
+	event := models.Event{
+		EventType:   "SSH Key",
+		Description: "SSH Key " + fmt.Sprint(sshKey.CreatorId) + " created",
+		TimeStampt:  time.Now(),
+		CreatorId:   sshKey.CreatorId,
+	}
+	models.CreateEvent(event)
+
 	utils.JSON(w, statusCode, returnJson)
 }

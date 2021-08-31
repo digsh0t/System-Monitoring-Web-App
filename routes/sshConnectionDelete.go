@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
@@ -74,6 +75,14 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
+
+	event := models.Event{
+		EventType:   "SSH Connection",
+		Description: "SSH Connection to " + sshConnectionInfo.HostNameSSH + " deleted",
+		TimeStampt:  time.Now(),
+		CreatorId:   sshConnectionInfo.CreatorId,
+	}
+	models.CreateEvent(event)
 
 	returnJson.Set("Status", true)
 	returnJson.Set("Error", nil)
