@@ -46,6 +46,13 @@ func SSHKeyDeleteRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get SSHKey name
+	sshKey, err := models.GetSSHKeyFromId(sshKeyId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Failed to get sshkey").Error())
+		return
+	}
+
 	_, err = models.SSHKeyDelete(sshKeyId)
 	var eventStatus string
 	if err != nil {
@@ -61,7 +68,7 @@ func SSHKeyDeleteRoute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write Event Web
-	description := "Delete sshKey from DB " + eventStatus
+	description := "Delete sshKey \"" + sshKey.KeyName + "\" from DB " + eventStatus
 	_, err = event.WriteWebEvent(r, "SSHKey", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
