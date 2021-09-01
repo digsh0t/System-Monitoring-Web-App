@@ -5,31 +5,53 @@ import (
 )
 
 type HostUserInfo struct {
-	SshConnectionId []string `json:"sshConnectionId"`
-	HostUserName    string   `json:"hostUserName"`
-	HostUserComment string   `json:"hostUserComment"`
-	HostUserUID     string   `json:"hostUserUID"`
-	HostUserGroup   string   `json:"hostUserGroup"`
+	SshConnectionIdList []string `json:"sshConnectionIdList"`
+	SshConnectionId     int      `json:"sshConnectionId"`
+	HostUserName        string   `json:"hostUserName"`
+	HostUserComment     string   `json:"hostUserComment"`
+	HostUserUID         string   `json:"hostUserUID"`
+	HostUserGroup       string   `json:"hostUserGroup"`
+	HostUserPassword    string   `json:"hostuserPassword"`
+	HostUserHomeDir     string   `json:"hostuserHomeDir"`
+	HostUserShell       string   `json:"hostuserShell"`
 }
 
-func HostUserListAll(sshConnectionId int) ([]string, error) {
+func HostUserListAll(sshConnectionId int) ([]HostUserInfo, error) {
 	var (
-		users  []string
-		err    error
-		result string
+		hostUserList []HostUserInfo
+		result       string
 	)
 	SshConnectionInfo, err := GetSSHConnectionFromId(sshConnectionId)
 	if err != nil {
-		return users, err
+		return hostUserList, err
 	}
-	command := "getent passwd {1000..60000} | awk -F: '{ print $1}'"
+	command := "getent passwd {1000..60000}"
 	result, err = RunCommandFromSSHConnection(*SshConnectionInfo, command)
-	if err != nil {
-		return users, err
+	if !strings.Contains(err.Error(), "Process exited with status 2") {
+		return hostUserList, err
 	}
-	users = strings.Split(strings.TrimSpace(result), "\n")
+	lines := strings.Split(strings.TrimSpace(result), "\n")
+	for _, line := range lines {
+		var hostuser HostUserInfo
+		attributesUser := strings.Split(line, ":")
+		hostuser.SshConnectionId = sshConnectionId
+		hostuser.HostUserName = attributesUser[0]
+		hostuser.HostUserPassword = attributesUser[1]
+		hostuser.HostUserUID = attributesUser[2]
+		gid := attributesUser[3]
+		hostuser.HostUserComment = attributesUser[4]
+		hostuser.HostUserHomeDir = attributesUser[5]
+		hostuser.HostUserShell = attributesUser[6]
+		command = "getent group " + gid + " | cut -d: -f1"
+		groupname, err := RunCommandFromSSHConnection(*SshConnectionInfo, command)
+		if err != nil {
+			return hostUserList, err
+		}
+		hostuser.HostUserGroup = strings.TrimSpace(groupname)
+		hostUserList = append(hostUserList, hostuser)
+	}
 
-	return users, nil
+	return hostUserList, nil
 
 }
 
@@ -39,7 +61,7 @@ func (hostUser *HostUserInfo) HostUserAdd() (string, error) {
 		output  string
 	)
 
-	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionId)
+	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionIdList)
 	if err != nil {
 		return output, err
 	}
@@ -58,7 +80,7 @@ func (hostUser *HostUserInfo) HostUserRemove() (string, error) {
 		output  string
 	)
 
-	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionId)
+	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionIdList)
 	if err != nil {
 		return output, err
 	}

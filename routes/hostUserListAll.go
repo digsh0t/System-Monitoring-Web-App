@@ -31,13 +31,13 @@ func HostUserListAll(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to convert id string to int").Error())
 		return
 	}
-	users, err := models.HostUserListAll(intId)
+	hostUserList, err := models.HostUserListAll(intId)
 
 	// Return Json
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to get user from host").Error())
 	} else {
-		utils.JSON(w, http.StatusOK, users)
+		utils.JSON(w, http.StatusOK, hostUserList)
 	}
 
 }

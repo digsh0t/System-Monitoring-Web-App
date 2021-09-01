@@ -59,7 +59,7 @@ func HostUserRemove(w http.ResponseWriter, r *http.Request) {
 	utils.JSON(w, http.StatusBadRequest, returnJson)
 
 	// Write Event Web
-	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionId)
+	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionIdList)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to convert id string to hostname").Error())
 		return
