@@ -122,6 +122,9 @@ func CheckIfUserHasContactBot(apiToken string, username string) int64 {
 
 	updates, _ := bot.GetUpdates(updateConfig)
 
+	if len(updates) == 0 {
+		return -1
+	}
 	if strings.Contains(updates[len(updates)-1].Message.From.UserName, username) {
 		return updates[len(updates)-1].Message.Chat.ID
 	}

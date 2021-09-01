@@ -39,5 +39,6 @@ func GetTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 	}
 	returnJson := simplejson.New()
 	returnJson.Set("api_token", apiKey.ApiToken)
+	returnJson.Set("api_telegram_user", apiKey.TelegramUser)
 	utils.JSON(w, http.StatusOK, returnJson)
 }
