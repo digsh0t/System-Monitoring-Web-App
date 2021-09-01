@@ -70,29 +70,32 @@ func PackageRemove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Write Event Web
-	description := "Remove package from " + hostStr
-	_, err = event.WriteWebEvent(r, "Package", description)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to write web event")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
-
 	// Return Json
+	var eventStatus string
 	returnJson.Set("Fatal", fatalList)
 	returnJson.Set("Recap", recapList)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", err.Error())
-
+		eventStatus = "failed"
 	} else {
 		returnJson.Set("Status", true)
 		returnJson.Set("Error", nil)
+		eventStatus = "successfully"
 	}
-
 	utils.JSON(w, http.StatusOK, returnJson)
-	return
+
+	// Write Event Web
+	var description string
+	if eventStatus == "failed" {
+		description = "Package \"" + packages.Package + "\" removed from some host in list " + hostStr + " " + eventStatus
+	} else {
+		description = "Package \"" + packages.Package + "\" removed from " + hostStr + " " + eventStatus
+	}
+	_, err = event.WriteWebEvent(r, "Package", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+		return
+	}
 
 }

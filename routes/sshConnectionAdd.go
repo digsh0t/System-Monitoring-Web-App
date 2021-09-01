@@ -38,7 +38,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
 		return
 	}
-
+	var eventStatus string
 	var sshConnectionInfo models.SshConnectionInfo
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -110,22 +110,21 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				// Write Event Web
-
-				description := "Add SSH Connection to " + sshConnectionInfo.HostNameSSH
-				_, err = event.WriteWebEvent(r, "SSHConnection", description)
-				if err != nil {
-					returnJson.Set("Status", false)
-					returnJson.Set("Error", "Fail to write web event")
-					utils.JSON(w, http.StatusBadRequest, returnJson)
-					return
-				}
 				// Return Json
 				utils.ReturnInsertJSON(w, success, err)
+				eventStatus = "successfully"
 			}
 		} else {
 			utils.ERROR(w, http.StatusBadRequest, err.Error())
+			eventStatus = "failed"
 		}
+	}
+	// Write Event Web
+	description := "Add SSHConnection to " + sshConnectionInfo.HostNameSSH + " " + eventStatus
+	_, err = event.WriteWebEvent(r, "SSHConnection", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+		return
 	}
 
 }

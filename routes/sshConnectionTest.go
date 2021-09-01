@@ -50,24 +50,24 @@ func TestSSHConnection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	status, err = sshConnection.TestConnectionPublicKey()
+	var eventStatus string
 	if err != nil {
 		returnJson.Set("Status", status)
 		returnJson.Set("Error", err.Error())
 		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
+		eventStatus = "failed"
+	} else {
+		returnJson.Set("Status", status)
+		returnJson.Set("Error", "")
+		utils.JSON(w, http.StatusOK, returnJson)
+		eventStatus = "successfully"
 	}
 
 	// Write Event Web
-	description := "Test SSHconnection " + sshConnection.HostNameSSH
+	description := "Test SSHconnection " + sshConnection.HostNameSSH + " " + eventStatus
 	_, err = event.WriteWebEvent(r, "SSHConnection", description)
 	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to write web event")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
 		return
 	}
-
-	returnJson.Set("Status", status)
-	returnJson.Set("Error", "")
-	utils.JSON(w, http.StatusOK, returnJson)
 }

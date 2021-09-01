@@ -47,25 +47,25 @@ func SSHKeyDeleteRoute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = models.SSHKeyDelete(sshKeyId)
+	var eventStatus string
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", errors.New("please delete ssh connections associated with this SSH key first").Error())
 		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
+		eventStatus = "failed"
+	} else {
+		returnJson.Set("Status", true)
+		returnJson.Set("Error", nil)
+		utils.JSON(w, http.StatusOK, returnJson)
+		eventStatus = "successfully"
 	}
 
 	// Write Event Web
-	description := "Delete sshKey " + strconv.Itoa(sshKeyId) + " from DB"
+	description := "Delete sshKey from DB " + eventStatus
 	_, err = event.WriteWebEvent(r, "SSHKey", description)
 	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to write web event")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
 		return
 	}
-
-	returnJson.Set("Status", true)
-	returnJson.Set("Error", nil)
-	utils.JSON(w, http.StatusOK, returnJson)
 
 }

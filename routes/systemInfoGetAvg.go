@@ -46,22 +46,23 @@ func GetSystemInfoRoute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var systemInfo models.SysInfo
+	var eventStatus string
 	systemInfo, err = models.GetLatestSysInfo(sshConnectionId, 10)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", errors.New("fail to get system info").Error())
 		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
+		eventStatus = "failed"
+	} else {
+		utils.JSON(w, http.StatusOK, systemInfo)
+		eventStatus = "successfully"
 	}
 
 	// Write Event Web
-	description := "Get Average of system info"
+	description := "Get Average of system info " + eventStatus
 	_, err = event.WriteWebEvent(r, "SystemInfo", description)
 	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to write web event")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
 		return
 	}
-	utils.JSON(w, http.StatusOK, systemInfo)
 }

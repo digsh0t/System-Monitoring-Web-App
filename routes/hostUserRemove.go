@@ -30,9 +30,7 @@ func HostUserRemove(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
 	returnJson := simplejson.New()
 	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to retrieve Json format")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to retrieve json format").Error())
 		return
 	}
 	var hostUser models.HostUserInfo
@@ -41,37 +39,40 @@ func HostUserRemove(w http.ResponseWriter, r *http.Request) {
 	// Remove Host User
 	ouput, err := hostUser.HostUserRemove()
 
-	// Write Event Web
-	var ansible models.AnsibleInfo
-	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionId)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to convert id to hostname")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
-
-	description := "Remove host user from " + host
-	_, err = event.WriteWebEvent(r, "HostUser", description)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to write web event")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
-
 	// Processing output and return Json
+	var ansible models.AnsibleInfo
 	fatalList, recapList := ansible.RetrieveFatalRecap(ouput)
 
+	// Return Json
+	var eventStatus string
 	returnJson.Set("Fatal", fatalList)
 	returnJson.Set("Recap", recapList)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Some client fail")
+		eventStatus = "failed"
 	} else {
 		returnJson.Set("Status", true)
 		returnJson.Set("Error", nil)
+		eventStatus = "successfully"
 	}
 	utils.JSON(w, http.StatusBadRequest, returnJson)
-	return
+
+	// Write Event Web
+	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to convert id string to hostname").Error())
+		return
+	}
+	var description string
+	if eventStatus == "failed" {
+		description = "User \"" + hostUser.HostUserName + "\" removed from some host in list " + host + " " + eventStatus
+	} else {
+		description = "User \"" + hostUser.HostUserName + "\" removed from " + host + " " + eventStatus
+	}
+	_, err = event.WriteWebEvent(r, "HostUser", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+		return
+	}
 }

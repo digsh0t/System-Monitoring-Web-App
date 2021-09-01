@@ -69,24 +69,24 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = models.GenerateInventory()
+	var eventStatus string
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", errors.New("error while regenerate ansible inventory").Error())
 		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
+		eventStatus = "failed"
+	} else {
+		returnJson.Set("Status", true)
+		returnJson.Set("Error", nil)
+		utils.JSON(w, http.StatusOK, returnJson)
+		eventStatus = "successfully"
 	}
 
 	// Write Event Web
-	description := "Delete SSHconnection from " + sshConnectionInfo.HostNameSSH
+	description := "Delete SSHconnection from " + sshConnectionInfo.HostNameSSH + " " + eventStatus
 	_, err = event.WriteWebEvent(r, "SSHConnection", description)
 	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to write web event")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
 		return
 	}
-
-	returnJson.Set("Status", true)
-	returnJson.Set("Error", nil)
-	utils.JSON(w, http.StatusOK, returnJson)
 }

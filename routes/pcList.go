@@ -25,12 +25,10 @@ func GetAllPcs(w http.ResponseWriter, r *http.Request) {
 	pcList, err := models.GetAllPC()
 
 	// Return json
-
 	if err != nil {
-
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to get all pc").Error())
-		return
+	} else {
+		utils.JSON(w, http.StatusOK, pcList)
 	}
 
-	utils.JSON(w, http.StatusOK, pcList)
 }

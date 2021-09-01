@@ -38,40 +38,42 @@ func HostUserAdd(w http.ResponseWriter, r *http.Request) {
 	var hostUser models.HostUserInfo
 	json.Unmarshal(reqBody, &hostUser)
 
-	// Add Host User
 	ouput, err := hostUser.HostUserAdd()
 
-	// Write Event Web
+	// Retrieve Fatal and Recap
 	var ansible models.AnsibleInfo
-	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionId)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to convert id to hostname")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
-
-	description := "Add host user to " + host
-	_, err = event.WriteWebEvent(r, "HostUser", description)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to write web event")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
-
-	// Processing output and return Json
 	fatalList, recapList := ansible.RetrieveFatalRecap(ouput)
 
+	// Return Json
+	var eventStatus string
 	returnJson.Set("Fatal", fatalList)
 	returnJson.Set("Recap", recapList)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Some client fail")
+		eventStatus = "failed"
 	} else {
 		returnJson.Set("Status", true)
 		returnJson.Set("Error", nil)
+		eventStatus = "successfully"
 	}
 	utils.JSON(w, http.StatusBadRequest, returnJson)
-	return
+
+	// Write Event Web
+	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to convert id to hostname").Error())
+		return
+	}
+	var description string
+	if eventStatus == "failed" {
+		description = "User \"" + hostUser.HostUserName + "\" added to some host in list " + host + " " + eventStatus
+	} else {
+		description = "User \"" + hostUser.HostUserName + "\" added to " + host + " " + eventStatus
+	}
+	_, err = event.WriteWebEvent(r, "HostUser", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+		return
+	}
 }

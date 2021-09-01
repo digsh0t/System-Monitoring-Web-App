@@ -5,10 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
-	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -26,44 +24,20 @@ func HostUserListAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	returnJson := simplejson.New()
 	vars := mux.Vars(r)
 	stringId := vars["id"]
 	intId, err := strconv.Atoi(stringId)
 	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", errors.New("Fail to convert id string to int").Error())
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to convert id string to int").Error())
 		return
 	}
 	users, err := models.HostUserListAll(intId)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", errors.New("Fail to get users from host").Error())
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
-
-	// Write Event Web
-	hostname, err := models.GetSshHostnameFromId(intId)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to get hostname from id")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
-
-	description := "List all user of " + hostname
-	_, err = event.WriteWebEvent(r, "HostUser", description)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to write web event")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
 
 	// Return Json
-	utils.JSON(w, http.StatusOK, users)
-	return
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to get user from host").Error())
+	} else {
+		utils.JSON(w, http.StatusOK, users)
+	}
 
 }

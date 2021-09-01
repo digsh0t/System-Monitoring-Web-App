@@ -79,29 +79,33 @@ func PackageInstall(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Write Event Web
-	description := "Install package to " + hostStr
-	_, err = event.WriteWebEvent(r, "Package", description)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to write web event")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
-
 	// Return Json
+	var eventStatus string
 	returnJson.Set("Fatal", fatalList)
 	returnJson.Set("Recap", recapList)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", err.Error())
-
+		eventStatus = "failed"
 	} else {
 		returnJson.Set("Status", true)
 		returnJson.Set("Error", nil)
+		eventStatus = "successfully"
 	}
-
 	utils.JSON(w, http.StatusOK, returnJson)
+
+	// Write Event Web
+	var description string
+	if eventStatus == "failed" {
+		description = "Package \"" + packages.Package + "\" installed to some host in list " + hostStr + " " + eventStatus
+	} else {
+		description = "Package \"" + packages.Package + "\" installed to " + hostStr + " " + eventStatus
+	}
+	_, err = event.WriteWebEvent(r, "Package", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+		return
+	}
 	return
 
 }

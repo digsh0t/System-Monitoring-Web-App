@@ -50,6 +50,7 @@ func main() {
 
 	// Event Web
 	router.HandleFunc("/eventweb", routes.GetAllEventWeb).Methods("GET")
+	router.HandleFunc("/eventweb/delete/all", routes.DeleteAllEventWeb).Methods("GET")
 
 	// Custom API
 	router.HandleFunc("/pcs", routes.GetAllPcs).Methods("GET")

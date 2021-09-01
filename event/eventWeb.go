@@ -85,3 +85,24 @@ func GetAllEventWeb() ([]EventWeb, error) {
 	return eventWebList, err
 
 }
+
+func DeleteAllEventWeb() (bool, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	stmt, err := db.Prepare("DELETE FROM event_web")
+	if err != nil {
+		return false, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec()
+	if err != nil {
+		return false, err
+	}
+	rows, err := res.RowsAffected()
+	if rows == 0 {
+		return false, err
+	}
+	return true, err
+}
