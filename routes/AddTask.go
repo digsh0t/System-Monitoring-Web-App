@@ -11,7 +11,7 @@ import (
 	"github.com/wintltr/login-api/utils"
 )
 
-func AddTemplate(w http.ResponseWriter, r *http.Request) {
+func AddTask(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -33,30 +33,26 @@ func AddTemplate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var template models.Template
-
-	reqBody, err := ioutil.ReadAll(r.Body)
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("invalid request body").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read request body").Error())
 		return
 	}
 
-	err = json.Unmarshal(reqBody, &template)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read template info").Error())
-		return
-	}
+	var task models.Task
+	json.Unmarshal(body, &task)
 
-	template.UserId, err = auth.ExtractUserId(r)
+	task.UserId, err = auth.ExtractUserId(r)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read user id from token").Error())
 		return
 	}
 
-	err = template.AddTemplateToDB()
+	task.Status = "waiting"
+	task.AddTaskToDB()
+	err = task.Run()
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to insert template to database").Error())
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	utils.JSON(w, http.StatusCreated, nil)
 }

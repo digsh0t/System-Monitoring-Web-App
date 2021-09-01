@@ -50,9 +50,9 @@ func main() {
 	router.HandleFunc("/telegrambotoken", routes.AddTelegramBotKey).Methods("POST", "OPTIONS")
 	router.HandleFunc("/telegrambotoken", routes.GetTelegramBotKey).Methods("GET", "OPTIONS")
 
-	//Template management
+	//Template & Task management
 	router.HandleFunc("/templates", routes.AddTemplate).Methods("POST", "OPTIONS")
-	router.HandleFunc("/templates/{id}/run", routes.RunTemplate).Methods("GET", "OPTIONS")
+	router.HandleFunc("/tasks", routes.AddTask).Methods("POST", "OPTIONS")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
