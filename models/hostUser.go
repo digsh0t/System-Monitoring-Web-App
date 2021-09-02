@@ -27,8 +27,10 @@ func HostUserListAll(sshConnectionId int) ([]HostUserInfo, error) {
 	}
 	command := "getent passwd {1000..60000}"
 	result, err = RunCommandFromSSHConnection(*SshConnectionInfo, command)
-	if !strings.Contains(err.Error(), "Process exited with status 2") {
-		return hostUserList, err
+	if err != nil {
+		if !strings.Contains(err.Error(), "Process exited with status 2") {
+			return hostUserList, err
+		}
 	}
 	lines := strings.Split(strings.TrimSpace(result), "\n")
 	for _, line := range lines {
