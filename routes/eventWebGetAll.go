@@ -26,7 +26,7 @@ func GetAllEventWeb(w http.ResponseWriter, r *http.Request) {
 
 	// Return json
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to get all pc").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to get all event web log").Error())
 	} else {
 		utils.JSON(w, http.StatusOK, eventWebList)
 	}
