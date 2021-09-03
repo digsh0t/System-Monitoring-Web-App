@@ -5,8 +5,10 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -58,5 +60,14 @@ func AddTemplate(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to insert template to database").Error())
 		return
 	}
+
+	// Write Event Web
+	description := "Task Id \"" + strconv.Itoa(template.TemplateId) + "\" created "
+	_, err = event.WriteWebEvent(r, "Template", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write template event").Error())
+		return
+	}
+
 	utils.JSON(w, http.StatusCreated, nil)
 }

@@ -5,8 +5,10 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -50,9 +52,23 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 
 	task.Status = "waiting"
 	task.AddTaskToDB()
+	// Write Event Web
+	description := "Task Id \"" + strconv.Itoa(task.TaskId) + "\" waiting to run"
+	_, err = event.WriteWebEvent(r, "Task", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write task event").Error())
+		return
+	}
 	err = task.Run()
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	// Write Event Web
+	description = "Task Id \"" + strconv.Itoa(task.TaskId) + "\" finished with result: " + task.Status
+	_, err = event.WriteWebEvent(r, "Task", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write task event").Error())
 		return
 	}
 }

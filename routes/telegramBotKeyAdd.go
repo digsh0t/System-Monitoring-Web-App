@@ -8,6 +8,7 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -56,6 +57,14 @@ func AddTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			utils.ERROR(w, http.StatusBadRequest, errors.New("fail to insert api key to db").Error())
 		}
+	}
+
+	// Write Event Web
+	description := "Telegram bot key added"
+	_, err = event.WriteWebEvent(r, "Bot", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write bot key event").Error())
+		return
 	}
 
 	returnJson := simplejson.New()
