@@ -71,5 +71,14 @@ func main() {
 	router.HandleFunc("/tasks", routes.AddTask).Methods("POST", "OPTIONS")
 	router.HandleFunc("/tasks/{id}/logs", routes.GetTaskLog).Methods("GET", "OPTIONS")
 
+	//Log file alert
+	router.HandleFunc("/watchfile", routes.WatchFile).Methods("POST", "OPTIONS")
+
+	//Log file serving
+	var dir = "/var/log/remotelogs/"
+	d := http.Dir(dir)
+	fileserver := http.FileServer(d)
+	router.PathPrefix("/logs/").Handler(http.StripPrefix("/logs/", fileserver))
+
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
