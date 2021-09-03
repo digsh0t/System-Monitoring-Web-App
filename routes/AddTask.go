@@ -3,6 +3,7 @@ package routes
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/wintltr/login-api/auth"
@@ -10,8 +11,7 @@ import (
 	"github.com/wintltr/login-api/utils"
 )
 
-// Get SSh connection from DB
-func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
+func AddTask(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -22,7 +22,8 @@ func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -32,12 +33,26 @@ func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sshConnectionList, err := models.GetAllSSHConnection()
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		utils.JSON(w, http.StatusBadRequest, err.Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read request body").Error())
 		return
 	}
 
-	utils.JSON(w, http.StatusOK, sshConnectionList)
+	var task models.Task
+	json.Unmarshal(body, &task)
 
+	task.UserId, err = auth.ExtractUserId(r)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read user id from token").Error())
+		return
+	}
+
+	task.Status = "waiting"
+	task.AddTaskToDB()
+	err = task.Run()
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
 }

@@ -4,14 +4,8 @@
     - name: Allow all access to port for Ubuntu and Kali
       ufw:
         rule: allow
-        port: "{{ port }}"
+        from_port: "{{ from_port }}"
         proto: "{{ protocol }}"
-      when: (ansible_facts['distribution'] == "Ubuntu") or
-        (ansible_facts['distribution'] == "Kali GNU/Linux")
-
-    - name: Allow all access to port for CentOS
-      firewalld:
-        port: "{{ port }}/{{ protocol }}"
-        permanent: true
-        state: enabled
-      when: ansible_facts['distribution'] == "CentOS"
+        from_ip: "{{ from_ip }}"
+        to_ip: "{{ to_ip }}"
+        to_port: "{{ to_port }}"

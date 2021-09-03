@@ -1,0 +1,12 @@
+- name: Delete a rule in ufw
+  hosts: "{{ host }}"
+  tasks:
+  - name: Delete OpenSSH rule
+    ufw:
+      rule: allow
+      from_port: "{{ from_port }}"
+      proto: "{{ protocol }}"
+      from_ip: "{{ from_ip }}"
+      to_ip: "{{ to_ip }}"
+      to_port: "{{ to_port }}"
+      delete: true

@@ -6,12 +6,11 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/wintltr/login-api/goroutines"
 	"github.com/wintltr/login-api/routes"
 )
 
 func main() {
-	go goroutines.CheckClientOnlineStatusGour()
+	//go goroutines.CheckClientOnlineStatusGour()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
@@ -34,6 +33,11 @@ func main() {
 	router.HandleFunc("/systeminfo/{id}", routes.GetSystemInfoRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/systeminfos", routes.SystemInfoGetAllRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/receivelog", routes.Receivelog).Methods("POST", "OPTIONS")
+	router.HandleFunc("/getufwsettings/{id}", routes.UfwRulesGet).Methods("GET", "OPTIONS")
+
+	//Config client settings
+	router.HandleFunc("/addufwrule", routes.AddUfwRule).Methods("POST", "OPTIONS")
+	router.HandleFunc("/delufwrule", routes.DeleteUfwRule).Methods("POST", "OPTIONS")
 
 	// Network Function
 	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")
@@ -57,6 +61,15 @@ func main() {
 
 	// Custom API
 	router.HandleFunc("/pcs", routes.GetAllPcs).Methods("GET")
+
+	//API management
+	router.HandleFunc("/telegrambotoken", routes.AddTelegramBotKey).Methods("POST", "OPTIONS")
+	router.HandleFunc("/telegrambotoken", routes.GetTelegramBotKey).Methods("GET", "OPTIONS")
+
+	//Template & Task management
+	router.HandleFunc("/templates", routes.AddTemplate).Methods("POST", "OPTIONS")
+	router.HandleFunc("/tasks", routes.AddTask).Methods("POST", "OPTIONS")
+	router.HandleFunc("/tasks/{id}/logs", routes.GetTaskLog).Methods("GET", "OPTIONS")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
