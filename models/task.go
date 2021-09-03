@@ -140,6 +140,11 @@ func (task *Task) RunPlaybook() error {
 		return errors.New("fail to get template of task")
 	}
 
+	//If task provide no arguments, use template's argument
+	if task.OverridedArgs == "" {
+		task.OverridedArgs = template.Arguments
+	}
+
 	args, _ := task.PrepareArgs()
 	args = append(args, template.FilePath)
 
