@@ -84,6 +84,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Fail to create token while login")
 		}
 
+		// Write Event Web
+		description := "User \"" + user.Username + "\" login to web app " + eventStatus
+		_, err = event.WriteWebEvent(r, "Login", description)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+			return
+		}
+
 		//Return Login Success Authorization Json
 		returnJson := simplejson.New()
 		returnJson.Set("Authorization", token)
@@ -91,13 +99,4 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusOK, returnJson)
 		eventStatus = "successfully"
 	}
-
-	// Write Event Web
-	description := "User \"" + user.Username + "\" login to web app " + eventStatus
-	_, err = event.WriteWebEvent(r, "Login", description)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
-		return
-	}
-
 }

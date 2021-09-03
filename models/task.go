@@ -140,10 +140,21 @@ func (task *Task) RunPlaybook() error {
 		return errors.New("fail to get template of task")
 	}
 
-	cmd := exec.Command("ansible-playbook", template.FilePath)
+	args, _ := task.PrepareArgs()
+	args = append(args, template.FilePath)
+
+	cmd := exec.Command("ansible-playbook", args...)
 	task.logCmd(cmd)
 	cmd.Stdin = strings.NewReader("")
 	return cmd.Run()
+}
+
+func (task *Task) PrepareArgs() ([]string, error) {
+	var args []string
+	if task.OverridedArgs != "" {
+		args = append(args, "--extra-vars="+task.OverridedArgs)
+	}
+	return args, nil
 }
 
 func (task *Task) Run() error {

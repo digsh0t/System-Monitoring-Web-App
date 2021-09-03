@@ -60,15 +60,12 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = task.Run()
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
 	// Write Event Web
 	description = "Task Id \"" + strconv.Itoa(task.TaskId) + "\" finished with result: " + task.Status
-	_, err = event.WriteWebEvent(r, "Task", description)
+	event.WriteWebEvent(r, "Task", description)
+
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write task event").Error())
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
 }
