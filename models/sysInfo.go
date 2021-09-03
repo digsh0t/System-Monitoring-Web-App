@@ -8,11 +8,13 @@ import (
 )
 
 type SysInfo struct {
-	ConnectionId int    `json:"id"`
-	HostnameSSH  string `json:"hostnameSSH"`
-	AvgCPU       string `json:"avgcpu"`
-	AvgMem       string `json:"avgmem"`
-	Timestamp    string `json:"timestamp"`
+	ConnectionId int       `json:"id"`
+	HostnameSSH  string    `json:"hostnameSSH"`
+	AvgCPU       string    `json:"avgcpu"`
+	AvgMem       string    `json:"avgmem"`
+	Timestamp    string    `json:"timestamp"`
+	UfwStatus    bool      `json:"ufwstatus"`
+	UfwRules     []UfwRule `json:"ufwrulelist"`
 }
 
 type OnlineStatus struct {
@@ -53,9 +55,11 @@ func GetLatestSysInfo(sshConnectionId int, interval int) (SysInfo, error) {
 
 	current, _ := time.Parse(layout, time.Now().Format("01-02-2006 15:04:05"))
 	diff := current.Sub(t)
+	sshConnection, _ := GetSSHConnectionFromId(sshConnectionId)
 	if diff.Seconds() > float64(interval) {
 		sysInfo = SysInfo{}
 		sysInfo.ConnectionId = sshConnectionId
+		sysInfo.HostnameSSH = sshConnection.HostNameSSH
 	}
 	return sysInfo, err
 }

@@ -33,14 +33,14 @@ func AESEncryptKey(privateKey string) string {
 	return ciphertext
 }
 
-func AESDecryptKey(encryptedPrivateKey string) string {
+func AESDecryptKey(encryptedPrivateKey string) (string, error) {
 	utils.EnvInit()
 	aesKey := os.Getenv("AES_KEY")
 	plaintext, err := decrypt([]byte(aesKey), encryptedPrivateKey)
 	if err != nil {
-		fmt.Println(err)
+		return plaintext, errors.New("fail to decrypt message")
 	}
-	return plaintext
+	return plaintext, err
 }
 
 func encrypt(key []byte, message string) (encmess string, err error) {
@@ -181,5 +181,6 @@ func SSHKeyDelete(id int) (bool, error) {
 	if rows == 0 {
 		return false, errors.New("no SSH Connections with this ID exists")
 	}
+	
 	return true, err
 }

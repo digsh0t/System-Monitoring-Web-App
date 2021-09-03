@@ -23,8 +23,16 @@ func Receivelog(w http.ResponseWriter, r *http.Request) {
 	ipport := fmt.Sprint(r.RemoteAddr)
 	ip := strings.Split(ipport, ":")[0]
 	sshConnection, _ := models.GetSSHConnectionFromIP(ip)
+
+	err = models.InsertUfwToDB(sshConnection.HostNameSSH, sshConnection.SSHConnectionId, sysInfo.UfwStatus, sysInfo.UfwRules)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	err = models.InsertSysInfoToDB(sysInfo, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.SSHConnectionId)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
 	}
 }
