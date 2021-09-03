@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"time"
 
@@ -149,32 +150,84 @@ func GetAllPackageFromHostID(HostId int) ([]PackageInstalledInfo, error) {
 
 }
 
-func GetAllPackage() ([]PackageInstalledInfo, error) {
+func GetAllCommonPackage(stringId string, length string) ([]PackageInstalledInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
 	var PackageList []PackageInstalledInfo
-	selDB, err := db.Query("SELECT * FROM package_installed")
+	query := "SELECT pkg_name FROM package_installed WHERE pkg_host_id IN (" + stringId + ") GROUP BY pkg_name HAVING COUNT(DISTINCT pkg_host_id) = " + length + ";"
+	selDB, err := db.Query(query)
 	if err != nil {
 		return PackageList, err
 	}
 
 	var Package PackageInstalledInfo
 	for selDB.Next() {
-		var id, hostId int
-		var name, date string
-
-		err = selDB.Scan(&id, &name, &date, &hostId)
+		var name string
+		err = selDB.Scan(&name)
 		if err != nil {
 			return PackageList, err
 		}
-		Package.PackageId = id
 		Package.PackageName = name
-		Package.PackageDate = date
-		Package.SSHConnectionId = hostId
 		PackageList = append(PackageList, Package)
 	}
 
 	return PackageList, err
 
+}
+
+func ListAllPackge(hostList []string) ([]PackageInstalledInfo, error) {
+
+	var (
+		packageList []PackageInstalledInfo
+		err         error
+	)
+
+	// Display installed package on one host
+	if len(hostList) == 1 && hostList[0] != "all" {
+		intId, err := strconv.Atoi(hostList[0])
+		if err != nil {
+			return packageList, err
+		}
+		packageList, err = GetAllPackageFromHostID(intId)
+		if err != nil {
+			return packageList, err
+		}
+
+		// Display package on some host or all
+	} else {
+		var stringId string
+		var length int
+		if hostList[0] == "all" {
+			sshConnectionList, err := GetAllSSHConnection()
+			if err != nil {
+				return packageList, err
+			}
+
+			// Concentrate list sshConnectionId
+			for index, sshConnection := range sshConnectionList {
+				stringId += strconv.Itoa(sshConnection.SSHConnectionId)
+				if index != len(sshConnectionList)-1 {
+					stringId += ","
+				}
+			}
+
+			length = len(sshConnectionList)
+
+		} else {
+			for index, host := range hostList {
+				stringId += host
+				if index != len(host)-1 {
+					stringId += ","
+				}
+			}
+			length = len(hostList)
+		}
+
+		packageList, err = GetAllCommonPackage(stringId, strconv.Itoa(length))
+		if err != nil {
+			return packageList, err
+		}
+	}
+	return packageList, err
 }

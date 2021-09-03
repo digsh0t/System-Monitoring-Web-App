@@ -41,7 +41,7 @@ func main() {
 	// Package
 	router.HandleFunc("/package/install", routes.PackageInstall).Methods("POST")
 	router.HandleFunc("/package/remove", routes.PackageRemove).Methods("POST")
-	router.HandleFunc("/package/list/{id}", routes.PackageListAll).Methods("GET")
+	router.HandleFunc("/package/list", routes.PackageListAll).Methods("POST")
 
 	// Host User
 	router.HandleFunc("/hostuser/add", routes.HostUserAdd).Methods("POST")
