@@ -19,6 +19,7 @@ type Task struct {
 	StartTime     time.Time `json:"start_time"`
 	EndTime       time.Time `json:"end_time"`
 	Status        string    `json:"status"`
+	Alert         bool      `json:"alert"`
 	UserId        int       `json:"user_id"`
 }
 
@@ -155,6 +156,9 @@ func (task *Task) Run() error {
 	if err != nil && !strings.Contains(err.Error(), "fail to read task output") {
 		task.Log("Task Id: " + strconv.Itoa(task.TaskId) + " failed")
 		task.Status = "failed"
+		if task.Alert {
+			SendTelegramMessage(task.EndTime.String() + ": Task Id " + strconv.Itoa(task.TaskId) + " is finished with ERROR")
+		}
 	} else {
 		task.Log("Task Id: " + strconv.Itoa(task.TaskId) + " has ran succesfully")
 		task.Status = "success"
@@ -162,4 +166,27 @@ func (task *Task) Run() error {
 
 	task.UpdateTask()
 	return err
+}
+
+func GetTaskLog(taskId int) ([]TaskResult, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := `SELECT task_id, timestamp, message FROM task_results WHERE task_id = ?`
+	selDB, err := db.Query(query, taskId)
+	if err != nil {
+		return nil, err
+	}
+
+	var taskResult TaskResult
+	var manyTaskResults []TaskResult
+	for selDB.Next() {
+		err = selDB.Scan(&taskResult.TaskId, &taskResult.Timestamp, &taskResult.Message)
+		if err != nil {
+			return nil, errors.New("fail to get task results from Database")
+		}
+
+		manyTaskResults = append(manyTaskResults, taskResult)
+	}
+	return manyTaskResults, err
 }

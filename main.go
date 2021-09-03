@@ -6,13 +6,11 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/routes"
 )
 
 func main() {
 	//go goroutines.CheckClientOnlineStatusGour()
-	models.SendTelegramMessage("lô cc")
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
@@ -55,6 +53,7 @@ func main() {
 	//Template & Task management
 	router.HandleFunc("/templates", routes.AddTemplate).Methods("POST", "OPTIONS")
 	router.HandleFunc("/tasks", routes.AddTask).Methods("POST", "OPTIONS")
+	router.HandleFunc("/tasks/{id}/logs", routes.GetTaskLog).Methods("GET", "OPTIONS")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
