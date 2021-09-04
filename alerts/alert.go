@@ -42,7 +42,7 @@ func WatchFile(filepath string) {
 					if dif != "" {
 						dif = strings.Trim(dif, "\n")
 						models.SendTelegramMessage("NEW ALERT FROM LOG " + filepath + ": \n" + dif)
-						log.Println("Different:", dif)
+						//log.Println("Different:", dif)
 						old = current
 					}
 				}
