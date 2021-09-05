@@ -171,18 +171,21 @@ func (task *Task) Run() error {
 	task.EndTime = time.Now()
 
 	if err != nil && !strings.Contains(err.Error(), "fail to read task output") {
-		task.Log("Task Id: " + strconv.Itoa(task.TaskId) + " failed")
 		task.Status = "failed"
-		if task.Alert {
-			SendTelegramMessage(task.EndTime.String() + ": Task Id " + strconv.Itoa(task.TaskId) + " is finished with ERROR")
-		}
 	} else {
-		task.Log("Task Id: " + strconv.Itoa(task.TaskId) + " has ran succesfully")
 		task.Status = "success"
 	}
 
-	task.UpdateTask()
+	task.UpdateStatus()
 	return err
+}
+
+func (task *Task) UpdateStatus() error {
+	task.Log("Task Id:" + strconv.Itoa(task.TaskId) + " run " + task.Status)
+	if task.Alert {
+		SendTelegramMessage(task.EndTime.String() + ": Task Id " + strconv.Itoa(task.TaskId) + " is finished with result: " + task.Status)
+	}
+	return task.UpdateTask()
 }
 
 func GetTaskLog(taskId int) ([]TaskResult, error) {
