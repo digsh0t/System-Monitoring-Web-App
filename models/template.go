@@ -10,7 +10,7 @@ import (
 type Template struct {
 	TemplateId   int    `json:"template_id"`
 	TemplateName string `json:"template_name"`
-	Description  string `json:"description"`
+	Description  string `json:"template_description"`
 	SshKeyId     int    `json:"ssh_key_id"`
 	FilePath     string `json:"filepath"`
 	Arguments    string `json:"arguments"`
