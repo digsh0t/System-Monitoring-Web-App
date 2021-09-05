@@ -8,8 +8,8 @@ import (
 )
 
 type Template struct {
-	TemplateId   int    `json:"Template_id"`
-	TemplateName string `json:"Template_name"`
+	TemplateId   int    `json:"template_id"`
+	TemplateName string `json:"template_name"`
 	Description  string `json:"description"`
 	SshKeyId     int    `json:"ssh_key_id"`
 	FilePath     string `json:"filepath"`
