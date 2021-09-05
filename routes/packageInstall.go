@@ -8,7 +8,6 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
-	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -101,7 +100,7 @@ func PackageInstall(w http.ResponseWriter, r *http.Request) {
 	} else {
 		description = "Package \"" + packages.Package + "\" installed to " + hostStr + " " + eventStatus
 	}
-	_, err = event.WriteWebEvent(r, "Package", description)
+	_, err = models.WriteWebEvent(r, "Package", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
 		return

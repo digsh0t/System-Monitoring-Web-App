@@ -1,4 +1,4 @@
-package event
+package models
 
 import (
 	"net/http"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/database"
-	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
@@ -39,7 +38,7 @@ func WriteWebEvent(r *http.Request, eventType string, description string) (bool,
 		r, _ := regexp.Compile(pattern)
 		submatch := r.FindStringSubmatch(description)
 		username := submatch[1]
-		id, err = models.GetIdFromUsername(username)
+		id, err = GetIdFromUsername(username)
 		if err != nil {
 			return false, err
 		}

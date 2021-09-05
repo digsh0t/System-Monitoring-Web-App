@@ -6,7 +6,7 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
-	"github.com/wintltr/login-api/event"
+	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
@@ -23,7 +23,7 @@ func DeleteAllEventWeb(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = event.DeleteAllEventWeb()
+	_, err = models.DeleteAllEventWeb()
 
 	// Return Json
 	returnJson := simplejson.New()
@@ -41,7 +41,7 @@ func DeleteAllEventWeb(w http.ResponseWriter, r *http.Request) {
 
 	// Write Event Web
 	description := "Delete all event web " + eventStatus
-	_, err = event.WriteWebEvent(r, "Event", description)
+	_, err = models.WriteWebEvent(r, "Event", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
 		return

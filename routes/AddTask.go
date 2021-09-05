@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/wintltr/login-api/auth"
-	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -54,7 +53,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	task.AddTaskToDB()
 	// Write Event Web
 	description := "Task Id \"" + strconv.Itoa(task.TaskId) + "\" waiting to run"
-	_, err = event.WriteWebEvent(r, "Task", description)
+	_, err = models.WriteWebEvent(r, "Task", description)
 	if err != nil {
 		task.Status = "failed"
 		task.UpdateStatus()
@@ -64,7 +63,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	err = task.Run()
 	// Write Event Web
 	description = "Task Id \"" + strconv.Itoa(task.TaskId) + "\" finished with result: " + task.Status
-	event.WriteWebEvent(r, "Task", description)
+	models.WriteWebEvent(r, "Task", description)
 
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())

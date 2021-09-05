@@ -8,7 +8,6 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
-	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -70,7 +69,7 @@ func HostUserRemove(w http.ResponseWriter, r *http.Request) {
 	} else {
 		description = "User \"" + hostUser.HostUserName + "\" removed from " + host + " " + eventStatus
 	}
-	_, err = event.WriteWebEvent(r, "HostUser", description)
+	_, err = models.WriteWebEvent(r, "HostUser", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
 		return
