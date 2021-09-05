@@ -2,6 +2,7 @@ package models
 
 import (
 	"bufio"
+	"database/sql"
 	"errors"
 	"log"
 	"os/exec"
@@ -205,4 +206,36 @@ func GetTaskLog(taskId int) ([]TaskResult, error) {
 		manyTaskResults = append(manyTaskResults, taskResult)
 	}
 	return manyTaskResults, err
+}
+
+func GetAllTasks(templateId int) ([]Task, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := `SELECT task_id, template_id, overrided_args, start_time, end_time, status, user_id FROM tasks WHERE template_id = ?`
+	selDB, err := db.Query(query, templateId)
+	if !selDB.Next() {
+		return nil, errors.New("template id not exists")
+	}
+	if err != nil {
+		return nil, err
+	}
+	var startTime, endTime sql.NullTime
+	var task Task
+	var taskList []Task
+	for selDB.Next() {
+		err = selDB.Scan(&task.TaskId, &task.TemplateId, &task.OverridedArgs, &startTime, &endTime, &task.Status, &task.UserId)
+		if err != nil {
+			return nil, errors.New("fail to get tasks from database with template id: " + strconv.Itoa(templateId))
+			//return nil, err
+		}
+		if startTime.Valid && endTime.Valid {
+			task.StartTime = startTime.Time
+			task.EndTime = endTime.Time
+		}
+		taskList = append(taskList, task)
+		task.StartTime = time.Time{}
+		task.EndTime = time.Time{}
+	}
+	return taskList, err
 }
