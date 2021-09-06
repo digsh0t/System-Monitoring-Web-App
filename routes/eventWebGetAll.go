@@ -12,7 +12,7 @@ import (
 func GetAllEventWeb(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -22,11 +22,11 @@ func GetAllEventWeb(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	eventWebList, err := event.GetAllEventWeb()
+	eventWebList, err := event.GetAllEventWeb(r)
 
 	// Return json
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to get all event web log").Error())
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
 	} else {
 		utils.JSON(w, http.StatusOK, eventWebList)
 	}
