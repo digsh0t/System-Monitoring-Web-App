@@ -1,13 +1,11 @@
 package routes
 
 import (
-	"crypto/sha512"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
@@ -16,32 +14,6 @@ import (
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
-
-func hashPassword(password string) string {
-	// convert password to byte slice
-	var passwordBytes = []byte(password)
-
-	// Load SALT environment variable from .env file
-	utils.EnvInit()
-	salt := os.Getenv("SALT")
-	var saltBytes = []byte(salt)
-
-	passwordBytes = append(passwordBytes, saltBytes...)
-
-	// Create sha-512 hasger
-	var sha512Hasher = sha512.New()
-
-	// Write password bytes to the hasher
-	sha512Hasher.Write(passwordBytes)
-
-	// Get the SHA-512 hashed password
-	var hashedPasswordBytes = sha512Hasher.Sum(nil)
-
-	// Convert hashed password byte array to string
-	result := fmt.Sprintf("%x", hashedPasswordBytes)
-
-	return result
-}
 
 //Login handler to handle login
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +43,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	hashedPassword := hashPassword(user.Password)
+	hashedPassword := models.HashPassword(user.Password)
 	row := db.QueryRow("SELECT wa_users_id, wa_users_username, wa_users_role FROM wa_users WHERE wa_users_username = ? AND wa_users_password = ?", user.Username, hashedPassword)
 	err = row.Scan(&user.UserId, &user.Username, &user.Role)
 	var eventStatus string
