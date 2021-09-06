@@ -112,3 +112,11 @@ func CheckAuth(r *http.Request, authorizedRoles []string) (bool, error) {
 		return false, err
 	}
 }
+
+func RetrieveTokenData(r *http.Request) (*TokenData, error) {
+	tokenData, err := ExtractTokenMetadata(r)
+	if err != nil {
+		return tokenData, err
+	}
+	return tokenData, err
+}
