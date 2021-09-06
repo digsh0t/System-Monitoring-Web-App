@@ -29,6 +29,7 @@ func WriteWebEvent(r *http.Request, eventType string, description string) (bool,
 	}
 	defer stmt.Close()
 
+	// Get User Id
 	if eventType != "Login" {
 		id, err = auth.ExtractUserId(r)
 		if err != nil {
@@ -44,8 +45,8 @@ func WriteWebEvent(r *http.Request, eventType string, description string) (bool,
 			return false, err
 		}
 	}
-	timestamp := utils.GetCurrentDateTime()
 
+	timestamp := utils.GetCurrentDateTime()
 	_, err = stmt.Exec(eventType, description, timestamp, id)
 	if err != nil {
 		return false, err

@@ -53,7 +53,8 @@ func main() {
 	router.HandleFunc("/hostuser/list/{id}", routes.HostUserListAll).Methods("GET")
 
 	// User command history
-	router.HandleFunc("/history/list/{id}", routes.HistoryListAll).Methods("GET")
+	// Not finished
+	//router.HandleFunc("/history/list/{id}", routes.HistoryListAll).Methods("GET")
 
 	// Event Web
 	router.HandleFunc("/eventweb", routes.GetAllEventWeb).Methods("GET")
@@ -70,6 +71,12 @@ func main() {
 	router.HandleFunc("/templates", routes.AddTemplate).Methods("POST", "OPTIONS")
 	router.HandleFunc("/tasks", routes.AddTask).Methods("POST", "OPTIONS")
 	router.HandleFunc("/tasks/{id}/logs", routes.GetTaskLog).Methods("GET", "OPTIONS")
+
+	// Web app user
+	router.HandleFunc("/wauser/add", routes.AddWebAppUser).Methods("POST")
+	router.HandleFunc("/wauser/remove/{id}", routes.DeleteWebAppUser).Methods("GET")
+	router.HandleFunc("/wauser/update", routes.UpdateWebAppUser).Methods("POST")
+	router.HandleFunc("/wauser/list", routes.ListAllWebAppUser).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
