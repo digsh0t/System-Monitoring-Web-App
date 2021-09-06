@@ -43,6 +43,7 @@ CREATE TABLE package_installed (
   pkg_date DATETIME,
   pkg_host_id INT,
   FOREIGN KEY (pkg_host_id) references ssh_connections(sc_connection_id)
+  ON DELETE CASCADE
 );
 
 
@@ -53,6 +54,7 @@ CREATE TABLE event_web (
   ev_web_timestamp DATETIME,
   ev_web_creator_id INT,
   FOREIGN KEY (ev_creator_id) references wa_users(wa_users_id)
+  
 );
 
 

@@ -22,6 +22,7 @@ func GetTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("please login").Error())

@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -47,6 +48,7 @@ func GetTelegramAPIKey() (ApiKey, error) {
 		return apiKey, errors.New("telegram api key doesn't exist")
 	}
 	if err != nil {
+		fmt.Println(err.Error())
 		return apiKey, errors.New("fail to retrieve telegram api key info")
 	}
 
@@ -121,7 +123,6 @@ func CheckIfUserHasContactBot(apiToken string, username string) int64 {
 	updateConfig := tgbotapi.NewUpdate(0)
 
 	updates, _ := bot.GetUpdates(updateConfig)
-
 	if len(updates) == 0 {
 		return -1
 	}
