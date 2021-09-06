@@ -48,6 +48,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	err = row.Scan(&user.UserId, &user.Username, &user.Role)
 	var eventStatus string
 	if err != nil {
+		fmt.Println("erro", err.Error())
 		utils.ERROR(w, http.StatusUnauthorized, "Wrong Username or Password")
 		eventStatus = "failed"
 	} else {

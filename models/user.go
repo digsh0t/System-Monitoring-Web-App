@@ -93,12 +93,18 @@ func UpdateWepAppUser(user User) (bool, error) {
 		return false, errors.New("username and password must be equal or greater than 6")
 	}
 
-	result, err := CheckUserNameExist(user.Username)
-	if !result && err != nil {
-		return false, errors.New("failed to check user from db")
+	beforeUsername, err := GetUsernameFromId(user.UserId)
+	if err != nil {
+		return false, errors.New("failed to update user")
 	}
-	if result && err == nil {
-		return false, errors.New("username existed, please to another username")
+	if user.Username != beforeUsername {
+		result, err := CheckUserNameExist(user.Username)
+		if !result && err != nil {
+			return false, errors.New("failed to check user from db")
+		}
+		if result && err == nil {
+			return false, errors.New("username existed, please to another username")
+		}
 	}
 
 	err = UpdateUserToDB(user)
@@ -128,7 +134,7 @@ func InsertUserToDB(user User) error {
 	}
 	defer stmt.Close()
 
-	hashedPassword := HashPassword(user.Username)
+	hashedPassword := HashPassword(user.Password)
 	_, err = stmt.Exec(user.Username, hashedPassword, user.Role)
 	if err != nil {
 		return err
@@ -169,7 +175,7 @@ func UpdateUserToDB(user User) error {
 	}
 	defer stmt.Close()
 
-	hashedPassword := HashPassword(user.Username)
+	hashedPassword := HashPassword(user.Password)
 	_, err = stmt.Exec(user.Username, hashedPassword, user.Role, user.UserId)
 	if err != nil {
 		return err
