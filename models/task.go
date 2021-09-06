@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+	"net/http"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -20,8 +21,8 @@ type Task struct {
 	StartTime     time.Time `json:"start_time"`
 	EndTime       time.Time `json:"end_time"`
 	Status        string    `json:"status"`
-	Alert         bool      `json:"alert"`
-	UserId        int       `json:"user_id"`
+	Alert         bool
+	UserId        int `json:"user_id"`
 }
 
 type TaskResult struct {
@@ -241,4 +242,23 @@ func GetAllTasks(templateId int) ([]Task, error) {
 		task.EndTime = time.Time{}
 	}
 	return taskList, err
+}
+
+func (task *Task) RunTask(r *http.Request) error {
+	task.Status = "waiting"
+	task.AddTaskToDB()
+	// Write Event Web
+	description := "Task Id \"" + strconv.Itoa(task.TaskId) + "\" waiting to run"
+	_, err := WriteWebEvent(r, "Task", description)
+	if err != nil {
+		task.Status = "failed"
+		task.UpdateStatus()
+		return errors.New("Fail to write task event")
+	}
+	err = task.Run()
+	// Write Event Web
+	description = "Task Id \"" + strconv.Itoa(task.TaskId) + "\" finished with result: " + task.Status
+	WriteWebEvent(r, "Task", description)
+
+	return err
 }

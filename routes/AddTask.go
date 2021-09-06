@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
@@ -48,25 +47,16 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read user id from token").Error())
 		return
 	}
-
-	task.Status = "waiting"
-	task.AddTaskToDB()
-	// Write Event Web
-	description := "Task Id \"" + strconv.Itoa(task.TaskId) + "\" waiting to run"
-	_, err = models.WriteWebEvent(r, "Task", description)
+	template, err := models.GetTemplateFromId(task.TemplateId)
 	if err != nil {
-		task.Status = "failed"
-		task.UpdateStatus()
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write task event").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("no template with this id exists").Error())
 		return
 	}
-	err = task.Run()
-	// Write Event Web
-	description = "Task Id \"" + strconv.Itoa(task.TaskId) + "\" finished with result: " + task.Status
-	models.WriteWebEvent(r, "Task", description)
+	task.Alert = template.Alert
 
+	err = task.RunTask(r)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
 	}
+
 }

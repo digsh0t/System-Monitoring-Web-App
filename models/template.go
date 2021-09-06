@@ -14,6 +14,7 @@ type Template struct {
 	SshKeyId     int    `json:"ssh_key_id"`
 	FilePath     string `json:"filepath"`
 	Arguments    string `json:"arguments"`
+	Alert        bool   `json:"alert"`
 	UserId       int    `json:"user_id"`
 }
 
@@ -21,12 +22,12 @@ func (template *Template) AddTemplateToDB() error {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO templates (template_name, template_description, ssh_key_id, filepath, arguments, user_id) VALUES (?,?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO templates (template_name, template_description, ssh_key_id, filepath, arguments, alert, user_id) VALUES (?,?,?,?,?,?,?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(template.TemplateName, template.Description, template.SshKeyId, template.FilePath, template.Arguments, template.UserId)
+	_, err = stmt.Exec(template.TemplateName, template.Description, template.SshKeyId, template.FilePath, template.Arguments, template.Alert, template.UserId)
 	return err
 }
 
@@ -35,11 +36,11 @@ func GetTemplateFromId(temlateId int) (Template, error) {
 	defer db.Close()
 
 	var template Template
-	row := db.QueryRow("SELECT template_id, template_name, template_description, ssh_key_id, filepath, arguments FROM templates WHERE template_id = ?", temlateId)
+	row := db.QueryRow("SELECT template_id, template_name, template_description, ssh_key_id, filepath, arguments, alert FROM templates WHERE template_id = ?", temlateId)
 	if row == nil {
 		return Template{}, errors.New("no template with id " + strconv.Itoa(temlateId) + " exists")
 	}
-	err := row.Scan(&template.TemplateId, &template.TemplateName, &template.Description, &template.SshKeyId, &template.FilePath, &template.Arguments)
+	err := row.Scan(&template.TemplateId, &template.TemplateName, &template.Description, &template.SshKeyId, &template.FilePath, &template.Arguments, &template.Alert)
 	return template, err
 }
 
@@ -47,7 +48,7 @@ func GetAllTemplate() ([]Template, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	query := `SELECT template_id, template_name, template_description, ssh_key_id, filepath, arguments, user_id 
+	query := `SELECT template_id, template_name, template_description, ssh_key_id, filepath, arguments, alert, user_id 
 			  FROM templates`
 	selDB, err := db.Query(query)
 	if err != nil {
@@ -57,7 +58,7 @@ func GetAllTemplate() ([]Template, error) {
 	var template Template
 	var templateList []Template
 	for selDB.Next() {
-		err = selDB.Scan(&template.TemplateId, &template.TemplateName, &template.Description, &template.SshKeyId, &template.FilePath, &template.Arguments, &template.UserId)
+		err = selDB.Scan(&template.TemplateId, &template.TemplateName, &template.Description, &template.SshKeyId, &template.FilePath, &template.Arguments, &template.Alert, &template.UserId)
 		if err != nil {
 			return nil, err
 		}
