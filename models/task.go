@@ -316,6 +316,28 @@ func (task *Task) RunTask(r *http.Request) error {
 	return err
 }
 
+func GetTaskFromTaskId(taskId int) (Task, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	var task Task
+	var startTime, endTime sql.NullTime
+	row := db.QueryRow("SELECT task_id, template_id, overrided_args, start_time, end_time, status, user_id, cron_id FROM tasks WHERE task_id = ?", taskId)
+	err := row.Scan(&task.TaskId, &task.TemplateId, &task.OverridedArgs, &startTime, &endTime, &task.Status, &task.UserId, &task.CronId)
+	if row == nil {
+		return task, errors.New("task id " + strconv.Itoa(taskId) + " doesn't exist")
+	}
+	if err != nil {
+		return task, errors.New("task id " + strconv.Itoa(taskId) + " doesn't exist or fail to retrieve task from database")
+	}
+	if startTime.Valid && endTime.Valid {
+		task.StartTime = startTime.Time
+		task.EndTime = endTime.Time
+	}
+
+	return task, err
+}
+
 func (task *Task) CronRunTask(r *http.Request) error {
 	// id, _ := C.AddFunc(task.CronTime, func() { task.RunTask(r) })
 	var err error
