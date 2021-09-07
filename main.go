@@ -75,7 +75,7 @@ func main() {
 	router.HandleFunc("/templates/{id}/tasks", routes.GetAllTask).Methods("GET", "OPTIONS")
 	router.HandleFunc("/tasks", routes.AddTask).Methods("POST", "OPTIONS")
 	router.HandleFunc("/tasks/{id}/logs", routes.GetTaskLog).Methods("GET", "OPTIONS")
-	router.HandleFunc("/tasks/cron/{id}/stop", routes.RemoveCronRoute).Methods("GET", "OPTIONS")
+	router.HandleFunc("/tasks/{id}/cron/stop", routes.RemoveCronRoute).Methods("GET", "OPTIONS")
 
 	//Log file alert
 	router.HandleFunc("/watchfile", routes.WatchFile).Methods("POST", "OPTIONS")
