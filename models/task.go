@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/robfig/cron/v3"
 	"github.com/wintltr/login-api/database"
 )
 
@@ -24,6 +25,7 @@ type Task struct {
 	Status        string    `json:"status"`
 	Alert         bool
 	UserId        int `json:"user_id"`
+	CronId        cron.EntryID
 }
 
 type TaskResult struct {
@@ -93,15 +95,27 @@ func LogTaskResult(taskResult TaskResult) error {
 }
 
 func (task *Task) UpdateTask() error {
+	queryString := "UPDATE tasks SET status = ?, start_time = ?, end_time = ?, cron_id=0 WHERE task_id = ?"
+	if task.StartTime.IsZero() && task.EndTime.IsZero() {
+		queryString = "UPDATE tasks SET status = ?, cron_id=0 WHERE task_id = ?"
+	} else if task.EndTime.IsZero() {
+		queryString = "UPDATE tasks SET status = ?, start_time = ?, cron_id=0 WHERE task_id = ?"
+	}
 	db := database.ConnectDB()
 	defer db.Close()
 
-	stmt, err := db.Prepare("UPDATE tasks SET status = ?, start_time = ?, end_time = ? WHERE task_id = ?")
+	stmt, err := db.Prepare(queryString)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(task.Status, task.StartTime, task.EndTime, task.TaskId)
+	if task.StartTime.IsZero() && task.EndTime.IsZero() {
+		_, err = stmt.Exec(task.Status, task.TaskId)
+	} else if task.EndTime.IsZero() {
+		_, err = stmt.Exec(task.Status, task.StartTime, task.TaskId)
+	} else {
+		_, err = stmt.Exec(task.Status, task.StartTime, task.EndTime, task.TaskId)
+	}
 	return err
 }
 
@@ -140,12 +154,12 @@ func (task *Task) AddCronTaskToDB() error {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO tasks (template_id, overrided_args, start_time, status, user_id) VALUES (?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO tasks (template_id, overrided_args, start_time, status, cron_id, user_id) VALUES (?,?,?,?,?,?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(task.TemplateId, task.OverridedArgs, task.StartTime, task.Status, task.UserId)
+	_, err = stmt.Exec(task.TemplateId, task.OverridedArgs, task.StartTime, task.Status, task.CronId, task.UserId)
 	if err != nil {
 		return err
 	}
@@ -315,6 +329,7 @@ func (task *Task) CronRunTask(r *http.Request) error {
 		isNewRun = true
 	})
 	CurrentEntryCh <- id
+	task.CronId = id
 	C.Start()
 	defer C.Stop()
 	if err != nil {
