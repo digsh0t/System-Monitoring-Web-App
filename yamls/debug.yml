@@ -1,5 +1,5 @@
 ---
-- hosts: localhost
+- hosts: '{{ host }}'
   tasks:
   - debug:
       var: ansible_facts["default_ipv4"]

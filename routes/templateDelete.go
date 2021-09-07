@@ -12,7 +12,7 @@ import (
 	"github.com/wintltr/login-api/utils"
 )
 
-func GetTaskLog(w http.ResponseWriter, r *http.Request) {
+func DeleteTemplate(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -23,10 +23,9 @@ func GetTaskLog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
 	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("please login").Error())
 		return
 	}
 	if !isAuthorized {
@@ -35,15 +34,16 @@ func GetTaskLog(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	taskId, err := strconv.Atoi(vars["id"])
+	templateId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("invalid id").Error())
+		return
+	}
+
+	err = models.DeleteTemplateFromId(templateId)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	logList, err := models.GetTaskLog(taskId)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	utils.JSON(w, http.StatusOK, logList)
+
 }

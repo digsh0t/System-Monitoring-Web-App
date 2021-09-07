@@ -8,7 +8,6 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
-	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -58,7 +57,7 @@ func UpdateWebAppUser(w http.ResponseWriter, r *http.Request) {
 
 	// Write Event Web
 	description := "Update web app user " + user.Username + " " + status
-	_, err = event.WriteWebEvent(r, "wauser", description)
+	_, err = models.WriteWebEvent(r, "wauser", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write task event").Error())
 		return

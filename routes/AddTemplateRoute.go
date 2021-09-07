@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/wintltr/login-api/auth"
-	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -63,7 +62,7 @@ func AddTemplate(w http.ResponseWriter, r *http.Request) {
 
 	// Write Event Web
 	description := "Task Id \"" + strconv.Itoa(template.TemplateId) + "\" created "
-	_, err = event.WriteWebEvent(r, "Template", description)
+	_, err = models.WriteWebEvent(r, "Template", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write template event").Error())
 		return

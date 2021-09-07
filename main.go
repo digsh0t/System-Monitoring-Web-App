@@ -6,11 +6,13 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/routes"
 )
 
 func main() {
 	//go goroutines.CheckClientOnlineStatusGour()
+	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
@@ -69,8 +71,21 @@ func main() {
 
 	//Template & Task management
 	router.HandleFunc("/templates", routes.AddTemplate).Methods("POST", "OPTIONS")
+	router.HandleFunc("/templates", routes.GetAllTemplate).Methods("GET", "OPTIONS")
+	router.HandleFunc("/templates/{id}", routes.DeleteTemplate).Methods("DELETE", "OPTIONS")
+	router.HandleFunc("/templates/{id}/tasks", routes.GetAllTask).Methods("GET", "OPTIONS")
 	router.HandleFunc("/tasks", routes.AddTask).Methods("POST", "OPTIONS")
 	router.HandleFunc("/tasks/{id}/logs", routes.GetTaskLog).Methods("GET", "OPTIONS")
+	router.HandleFunc("/tasks/{id}/cron/stop", routes.RemoveCronRoute).Methods("GET", "OPTIONS")
+
+	//Log file alert
+	router.HandleFunc("/watchfile", routes.WatchFile).Methods("POST", "OPTIONS")
+
+	//Log file serving
+	var dir = "/var/log/remotelogs/"
+	d := http.Dir(dir)
+	fileserver := http.FileServer(d)
+	router.PathPrefix("/logs/").Handler(http.StripPrefix("/logs/", fileserver))
 
 	// Web app user
 	router.HandleFunc("/wauser/add", routes.AddWebAppUser).Methods("POST")

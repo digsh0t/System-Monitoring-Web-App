@@ -8,7 +8,6 @@ import (
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
-	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -60,7 +59,7 @@ func DeleteWebAppUser(w http.ResponseWriter, r *http.Request) {
 
 	// Write Event Web
 	description := "Delete web app user " + username + " " + status
-	_, err = event.WriteWebEvent(r, "wauser", description)
+	_, err = models.WriteWebEvent(r, "wauser", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write task event").Error())
 		return

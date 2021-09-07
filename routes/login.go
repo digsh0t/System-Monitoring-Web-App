@@ -10,7 +10,6 @@ import (
 	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/database"
-	"github.com/wintltr/login-api/event"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
@@ -57,6 +56,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Fail to create token while login")
 		}
 
+		// Write Event Web
+		description := "User \"" + user.Username + "\" login to web app " + eventStatus
+		_, err = models.WriteWebEvent(r, "Login", description)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+			return
+		}
+
 		//Return Login Success Authorization Json
 		returnJson := simplejson.New()
 		returnJson.Set("Authorization", token)
@@ -64,13 +71,4 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusOK, returnJson)
 		eventStatus = "successfully"
 	}
-
-	// Write Event Web
-	description := "User \"" + user.Username + "\" login to web app " + eventStatus
-	_, err = event.WriteWebEvent(r, "Login", description)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
-		return
-	}
-
 }

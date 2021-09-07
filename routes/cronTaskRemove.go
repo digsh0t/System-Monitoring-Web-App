@@ -12,7 +12,7 @@ import (
 	"github.com/wintltr/login-api/utils"
 )
 
-func GetTaskLog(w http.ResponseWriter, r *http.Request) {
+func RemoveCronRoute(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -35,15 +35,15 @@ func GetTaskLog(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	taskId, err := strconv.Atoi(vars["id"])
+	id, _ := strconv.Atoi(vars["id"])
+	task, err := models.GetTaskFromTaskId(id)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	logList, err := models.GetTaskLog(taskId)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
+	if task.CronId == 0 {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("task id "+strconv.Itoa(id)+" is not a cron task or task has stopped").Error())
 		return
 	}
-	utils.JSON(w, http.StatusOK, logList)
+	models.RemoveEntry(int(task.CronId))
 }

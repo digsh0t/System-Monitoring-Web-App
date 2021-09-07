@@ -3,16 +3,15 @@ package routes
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
-	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/wintltr/login-api/alerts"
 	"github.com/wintltr/login-api/auth"
-	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
-func GetTaskLog(w http.ResponseWriter, r *http.Request) {
+func WatchFile(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -34,16 +33,18 @@ func GetTaskLog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	taskId, err := strconv.Atoi(vars["id"])
+	type file struct {
+		Filepath string `json:"filepath"`
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
 	}
-	logList, err := models.GetTaskLog(taskId)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	utils.JSON(w, http.StatusOK, logList)
+
+	var f file
+	json.Unmarshal(body, &f)
+
+	go alerts.WatchFile(f.Filepath)
+
 }

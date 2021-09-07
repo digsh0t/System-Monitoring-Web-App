@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/wintltr/login-api/auth"
-	"github.com/wintltr/login-api/event"
+	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
@@ -22,7 +22,7 @@ func GetAllEventWeb(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	eventWebList, err := event.GetAllEventWeb(r)
+	eventWebList, err := models.GetAllEventWeb(r)
 
 	// Return json
 	if err != nil {
