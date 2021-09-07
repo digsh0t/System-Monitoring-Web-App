@@ -77,6 +77,7 @@ func main() {
 	router.HandleFunc("/wauser/remove/{id}", routes.DeleteWebAppUser).Methods("GET")
 	router.HandleFunc("/wauser/update", routes.UpdateWebAppUser).Methods("POST")
 	router.HandleFunc("/wauser/list", routes.ListAllWebAppUser).Methods("GET")
+	router.HandleFunc("/wauser/list/{id}", routes.ListWebAppUser).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

@@ -116,11 +116,23 @@ func UpdateWepAppUser(user User) (bool, error) {
 
 func ListAllWepAppUser() ([]User, error) {
 	var waUserList []User
-	waUserList, err := GetUserFromDB()
+	waUserList, err := GetAllUserFromDB()
 	if err != nil {
 		return waUserList, err
 	}
 	return waUserList, err
+}
+
+func ListWepAppUser(waUserId int) (User, error) {
+	var waUser User
+	waUser, err := GetUserByIdFromDB(waUserId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return waUser, errors.New("No user matched with this Id")
+		}
+		return waUser, errors.New("Failed to list web app user")
+	}
+	return waUser, err
 }
 
 // Insert Wep App User
@@ -184,7 +196,7 @@ func UpdateUserToDB(user User) error {
 }
 
 // List All Wep App User
-func GetUserFromDB() ([]User, error) {
+func GetAllUserFromDB() ([]User, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
@@ -212,6 +224,22 @@ func GetUserFromDB() ([]User, error) {
 	}
 
 	return waUserList, err
+
+}
+
+// List Wep App User By Id
+func GetUserByIdFromDB(waUserId int) (User, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	var waUser User
+	row := db.QueryRow("SELECT wa_users_id, wa_users_username, wa_users_role FROM wa_users WHERE wa_users_id = ?", waUserId)
+	err := row.Scan(&waUser.UserId, &waUser.Username, &waUser.Role)
+	if err != nil {
+		return waUser, err
+	}
+
+	return waUser, err
 
 }
 
