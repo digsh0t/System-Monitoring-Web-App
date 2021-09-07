@@ -306,12 +306,13 @@ func (task *Task) CronRunTask(r *http.Request) error {
 	// id, _ := C.AddFunc(task.CronTime, func() { task.RunTask(r) })
 	var err error
 	var nextRun time.Time
+	var isNewRun bool = true
 	id, _ := C.AddFunc(task.CronTime, func() {
-		err = task.Prepare(r, time.Now())
 		err = task.Run()
 		// Write Event Web
 		description := "Task Id \"" + strconv.Itoa(task.TaskId) + "\" finished with result: " + task.Status
 		WriteWebEvent(r, "Task", description)
+		isNewRun = true
 	})
 	CurrentEntryCh <- id
 	C.Start()
@@ -323,10 +324,13 @@ func (task *Task) CronRunTask(r *http.Request) error {
 		time.Sleep(time.Second)
 		if !C.Entry(id).Valid() {
 			return nil
-		} else if nextRun != C.Entry(id).Next { //If next run has changed (cron run is repeating), add new event log and update nextRun
-			description := "New task based on template \" " + strconv.Itoa(task.TemplateId) + "\" schedule to run at: " + C.Entry(id).Next.String()
+		} else if nextRun != C.Entry(id).Next && isNewRun { //If next run has changed (cron run is repeating), add new event log and update nextRun
+			err = task.Prepare(r, C.Entry(id).Next)
+			description := "Task id \" " + strconv.Itoa(task.TaskId) + "\" schedule to run at: " + C.Entry(id).Next.String()
 			WriteWebEvent(r, "Task", description)
 			nextRun = C.Entry(id).Next
+
+			isNewRun = false
 		}
 	}
 }
