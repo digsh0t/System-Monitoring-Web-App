@@ -305,6 +305,7 @@ func (task *Task) RunTask(r *http.Request) error {
 func (task *Task) CronRunTask(r *http.Request) error {
 	// id, _ := C.AddFunc(task.CronTime, func() { task.RunTask(r) })
 	var err error
+	var nextRun time.Time
 	id, _ := C.AddFunc(task.CronTime, func() {
 		err = task.Prepare(r, time.Now())
 		err = task.Run()
@@ -320,5 +321,12 @@ func (task *Task) CronRunTask(r *http.Request) error {
 	}
 	for {
 		time.Sleep(time.Second)
+		if !C.Entry(id).Valid() {
+			return nil
+		} else if nextRun != C.Entry(id).Next { //If next run has changed (cron run is repeating), add new event log and update nextRun
+			description := "New task based on template \" " + strconv.Itoa(task.TemplateId) + "\" schedule to run at: " + C.Entry(id).Next.String()
+			WriteWebEvent(r, "Task", description)
+			nextRun = C.Entry(id).Next
+		}
 	}
 }
