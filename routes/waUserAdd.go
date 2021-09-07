@@ -42,16 +42,19 @@ func AddWebAppUser(w http.ResponseWriter, r *http.Request) {
 
 	// Return json
 	returnJson := simplejson.New()
-	returnJson.Set("Status", result)
+	var statusCode int
 	var status string
+	returnJson.Set("Status", result)
 	if err != nil {
 		returnJson.Set("Error", err.Error())
+		statusCode = http.StatusBadRequest
 		status = "failed"
 	} else {
 		returnJson.Set("Error", err)
+		statusCode = http.StatusOK
 		status = "successfully"
 	}
-	utils.JSON(w, http.StatusBadRequest, returnJson)
+	utils.JSON(w, statusCode, returnJson)
 
 	// Write Event Web
 	description := "Add new web app user " + user.Username + " " + status

@@ -45,15 +45,18 @@ func DeleteWebAppUser(w http.ResponseWriter, r *http.Request) {
 	// Return json
 	returnJson := simplejson.New()
 	returnJson.Set("Status", result)
+	var statusCode int
 	var status string
 	if err != nil {
 		returnJson.Set("Error", "Fail to delete user")
 		status = "failed"
+		statusCode = http.StatusBadRequest
 	} else {
 		returnJson.Set("Error", err)
 		status = "successfully"
+		statusCode = http.StatusOK
 	}
-	utils.JSON(w, http.StatusBadRequest, returnJson)
+	utils.JSON(w, statusCode, returnJson)
 
 	// Write Event Web
 	description := "Delete web app user " + username + " " + status

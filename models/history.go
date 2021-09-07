@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -29,7 +28,6 @@ func HistoryListAll(sshConnectionId int) ([]HistoryInfo, error) {
 			return historyList, err
 		}
 	}
-	fmt.Println("result", result)
 	lines := strings.Split(strings.TrimSpace(result), "\n")
 	for _, line := range lines {
 

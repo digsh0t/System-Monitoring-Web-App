@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -48,7 +47,6 @@ func GetTelegramAPIKey() (ApiKey, error) {
 		return apiKey, errors.New("telegram api key doesn't exist")
 	}
 	if err != nil {
-		fmt.Println(err.Error())
 		return apiKey, errors.New("fail to retrieve telegram api key info")
 	}
 
