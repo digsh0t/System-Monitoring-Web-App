@@ -323,7 +323,12 @@ func (task *Task) CronRunTask(r *http.Request) error {
 	for {
 		time.Sleep(time.Second)
 		if !C.Entry(id).Valid() {
-			return nil
+
+			task.Status = "halted"
+			description := "Task Id \"" + strconv.Itoa(task.TaskId) + "\" finished with result: " + task.Status
+			WriteWebEvent(r, "Task", description)
+			return task.UpdateStatus()
+
 		} else if nextRun != C.Entry(id).Next && isNewRun { //If next run has changed (cron run is repeating), add new event log and update nextRun
 			err = task.Prepare(r, C.Entry(id).Next)
 			description := "Task id \" " + strconv.Itoa(task.TaskId) + "\" schedule to run at: " + C.Entry(id).Next.String()
