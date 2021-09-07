@@ -54,9 +54,12 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	}
 	task.Alert = template.Alert
 
-	err = task.RunTask(r)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
+	if task.CronTime != "" {
+		go task.CronRunTask(r)
+	} else {
+		err = task.RunTask(r)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
+		}
 	}
-
 }

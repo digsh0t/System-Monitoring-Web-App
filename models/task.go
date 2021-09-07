@@ -20,6 +20,7 @@ type Task struct {
 	OverridedArgs string    `json:"overrided_args"`
 	StartTime     time.Time `json:"start_time"`
 	EndTime       time.Time `json:"end_time"`
+	CronTime      string    `json:"cron_time"`
 	Status        string    `json:"status"`
 	Alert         bool
 	UserId        int `json:"user_id"`
@@ -127,6 +128,24 @@ func (task *Task) AddTaskToDB() error {
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(task.TemplateId, task.OverridedArgs, task.Status, task.UserId)
+	if err != nil {
+		return err
+	}
+
+	err = task.GetLatestTaskId()
+	return err
+}
+
+func (task *Task) AddCronTaskToDB() error {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	stmt, err := db.Prepare("INSERT INTO tasks (template_id, overrided_args, start_time, status, user_id) VALUES (?,?,?,?,?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(task.TemplateId, task.OverridedArgs, task.StartTime, task.Status, task.UserId)
 	if err != nil {
 		return err
 	}
@@ -244,21 +263,59 @@ func GetAllTasks(templateId int) ([]Task, error) {
 	return taskList, err
 }
 
-func (task *Task) RunTask(r *http.Request) error {
+func (task *Task) Prepare(r *http.Request, startTime time.Time) error {
 	task.Status = "waiting"
-	task.AddTaskToDB()
-	// Write Event Web
-	description := "Task Id \"" + strconv.Itoa(task.TaskId) + "\" waiting to run"
-	_, err := WriteWebEvent(r, "Task", description)
+	var err error
+	if task.CronTime != "" {
+		task.StartTime = startTime
+		err = task.AddCronTaskToDB()
+		if err != nil {
+			task.Status = "failed"
+			task.UpdateStatus()
+			return errors.New("Fail to write task event")
+		}
+		return err
+	} else {
+		task.AddTaskToDB()
+		// Write Event Web
+		description := "Task Id \"" + strconv.Itoa(task.TaskId) + "\" waiting to run"
+		_, err := WriteWebEvent(r, "Task", description)
+		if err != nil {
+			task.Status = "failed"
+			task.UpdateStatus()
+			return errors.New("Fail to write task event")
+		}
+		return err
+	}
+}
+
+func (task *Task) RunTask(r *http.Request) error {
+	err := task.Prepare(r, time.Now())
 	if err != nil {
-		task.Status = "failed"
-		task.UpdateStatus()
-		return errors.New("Fail to write task event")
+		return err
 	}
 	err = task.Run()
 	// Write Event Web
-	description = "Task Id \"" + strconv.Itoa(task.TaskId) + "\" finished with result: " + task.Status
+	description := "Task Id \"" + strconv.Itoa(task.TaskId) + "\" finished with result: " + task.Status
 	WriteWebEvent(r, "Task", description)
 
 	return err
+}
+
+func (task *Task) CronRunTask(r *http.Request) error {
+	// id, _ := C.AddFunc(task.CronTime, func() { task.RunTask(r) })
+	id, _ := C.AddFunc(task.CronTime, func() {
+		task.RunTask(r)
+	})
+	CurrentEntryCh <- id
+	C.Start()
+	defer C.Stop()
+	//Add task to database
+	err := task.Prepare(r, C.Entry(id).Next)
+	if err != nil {
+		return err
+	}
+	for {
+		time.Sleep(time.Second)
+	}
 }
