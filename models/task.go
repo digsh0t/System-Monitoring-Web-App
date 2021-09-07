@@ -304,14 +304,17 @@ func (task *Task) RunTask(r *http.Request) error {
 
 func (task *Task) CronRunTask(r *http.Request) error {
 	// id, _ := C.AddFunc(task.CronTime, func() { task.RunTask(r) })
+	var err error
 	id, _ := C.AddFunc(task.CronTime, func() {
-		task.RunTask(r)
+		err = task.Prepare(r, time.Now())
+		err = task.Run()
+		// Write Event Web
+		description := "Task Id \"" + strconv.Itoa(task.TaskId) + "\" finished with result: " + task.Status
+		WriteWebEvent(r, "Task", description)
 	})
 	CurrentEntryCh <- id
 	C.Start()
 	defer C.Stop()
-	//Add task to database
-	err := task.Prepare(r, C.Entry(id).Next)
 	if err != nil {
 		return err
 	}

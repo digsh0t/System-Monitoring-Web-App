@@ -13,7 +13,6 @@ import (
 func main() {
 	//go goroutines.CheckClientOnlineStatusGour()
 	go models.RemoveEntryChannel()
-	go models.CurrentEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})

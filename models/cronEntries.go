@@ -19,7 +19,6 @@ func RemoveEntryChannel() {
 	for {
 		x, ok := <-RemoveEntryCh
 		if ok {
-			fmt.Printf("Value %d was read to remove entry.\n", x)
 			C.Remove(x)
 		} else {
 			fmt.Println("Channel closed!")
