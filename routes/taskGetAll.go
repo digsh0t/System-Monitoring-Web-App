@@ -30,7 +30,14 @@ func GetAllTask(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("invalid template id").Error())
 		return
 	}
-	taskList, err := models.GetAllTasks(templateId)
+
+	template, err := models.GetTemplateFromId(templateId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("failed to get template for id: "+strconv.Itoa(templateId)).Error())
+		return
+	}
+
+	taskList, err := models.GetAllTasks(template)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return

@@ -23,8 +23,8 @@ type Task struct {
 	EndTime       time.Time `json:"end_time"`
 	CronTime      string    `json:"cron_time"`
 	Status        string    `json:"status"`
-	Alert         bool
-	UserId        int `json:"user_id"`
+	Alert         bool      `json:"alert"`
+	UserId        int       `json:"user_id"`
 	CronId        cron.EntryID
 }
 
@@ -245,12 +245,12 @@ func GetTaskLog(taskId int) ([]TaskResult, error) {
 	return manyTaskResults, err
 }
 
-func GetAllTasks(templateId int) ([]Task, error) {
+func GetAllTasks(template Template) ([]Task, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
 	query := `SELECT task_id, template_id, overrided_args, start_time, end_time, status, user_id FROM tasks WHERE template_id = ?`
-	selDB, err := db.Query(query, templateId)
+	selDB, err := db.Query(query, template.TemplateId)
 	if !selDB.Next() {
 		return nil, errors.New("template id not exists")
 	}
@@ -263,13 +263,16 @@ func GetAllTasks(templateId int) ([]Task, error) {
 	for selDB.Next() {
 		err = selDB.Scan(&task.TaskId, &task.TemplateId, &task.OverridedArgs, &startTime, &endTime, &task.Status, &task.UserId)
 		if err != nil {
-			return nil, errors.New("fail to get tasks from database with template id: " + strconv.Itoa(templateId))
+			return nil, errors.New("fail to get tasks from database with template id: " + strconv.Itoa(template.TemplateId))
 			//return nil, err
 		}
 		if startTime.Valid && endTime.Valid {
 			task.StartTime = startTime.Time
 			task.EndTime = endTime.Time
+		} else if startTime.Valid {
+			task.StartTime = startTime.Time
 		}
+		task.Alert = template.Alert
 		taskList = append(taskList, task)
 		task.StartTime = time.Time{}
 		task.EndTime = time.Time{}
@@ -368,6 +371,8 @@ func (task *Task) CronRunTask(r *http.Request) error {
 
 		} else if nextRun != C.Entry(id).Next && isNewRun { //If next run has changed (cron run is repeating), add new event log and update nextRun
 			err = task.Prepare(r, C.Entry(id).Next)
+			//Reset endtime as task could reuse old endtime
+			task.EndTime = time.Time{}
 			description := "Task id \" " + strconv.Itoa(task.TaskId) + "\" schedule to run at: " + C.Entry(id).Next.String()
 			WriteWebEvent(r, "Task", description)
 			nextRun = C.Entry(id).Next
