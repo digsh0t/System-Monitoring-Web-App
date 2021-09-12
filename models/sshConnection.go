@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/wintltr/login-api/database"
@@ -22,6 +23,7 @@ type SshConnectionInfo struct {
 	PortSSH         int    `json:"portSSH"`
 	CreatorId       int    `json:"creatorId"`
 	SSHKeyId        int    `json:"sshKeyId"`
+	OsType          string `json:"osType"`
 }
 
 //Read private key from private key file
@@ -333,5 +335,49 @@ func GenerateInventory() error {
 
 	err = ioutil.WriteFile("/etc/ansible/hosts", []byte(inventory), 0644)
 	//fmt.Println(err.Error())
+	return err
+}
+
+// Get OS Type of PC
+func (sshConnection *SshConnectionInfo) GetOsType() (string, error) {
+	var (
+		osType string
+		err    error
+	)
+
+	// Initialize extra value for loading yaml
+	var extraValue map[string]string = map[string]string{"host": sshConnection.HostNameSSH}
+	output, err := LoadYAML("./yamls/checkOsType.yml", extraValue)
+	if err != nil {
+		return osType, errors.New("fail to load yaml file")
+	}
+
+	// Retrieving value from Json format
+	value := ExtractJsonValue(output, []string{"msg"})
+	osType = value[0]
+	if strings.Contains(osType, "Windows") {
+		osType = "Windows"
+	}
+
+	return osType, err
+
+}
+
+// Update Os Type to DB
+func (sshconnection *SshConnectionInfo) UpdateOsType() error {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := "UPDATE ssh_connections SET sc_ostype = ? WHERE sc_hostname = ?"
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(sshconnection.OsType, sshconnection.HostNameSSH)
+	if err != nil {
+		return err
+	}
 	return err
 }

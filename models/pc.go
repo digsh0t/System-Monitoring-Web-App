@@ -45,6 +45,8 @@ func GetAllPcsState() ([]PcInfo, error) {
 		pcsState []PcInfo
 		err      error
 	)
+
+	// Get List of PC
 	pcsState, err = GetAllPC()
 	if err != nil {
 		return pcsState, errors.New("fail to get all pc")
@@ -56,6 +58,8 @@ func GetAllPcsState() ([]PcInfo, error) {
 		if err != nil {
 			return pcsState, errors.New("fail to get sshConnection")
 		}
+
+		// Run remote command to check pc "running" or "shutdown"
 		result, err := RunCommandFromSSHConnection(*sshConnection, "whoami")
 		if err != nil {
 			state = "shutdown"

@@ -1,0 +1,6 @@
+- name: Check Os file yaml
+  hosts: "{{ host }}"
+  gather_facts: true
+  tasks:
+  - name: Check Os type
+    debug: msg="{{ ansible_distribution }}"
