@@ -67,8 +67,8 @@ func (hostUser *HostUserInfo) HostUserAdd() (string, error) {
 	if err != nil {
 		return output, err
 	}
-	ansible.ExtraValue = map[string]string{"host": host, "name": hostUser.HostUserName, "comment": hostUser.HostUserComment, "uid": hostUser.HostUserUID, "group": hostUser.HostUserGroup}
-	output, err = ansible.Load("./yamls/add_host_user.yml")
+	extraValue := map[string]string{"host": host, "name": hostUser.HostUserName, "comment": hostUser.HostUserComment, "uid": hostUser.HostUserUID, "group": hostUser.HostUserGroup}
+	output, err = LoadYAML("./yamls/add_host_user.yml", extraValue)
 	if err != nil {
 		return output, err
 	}
@@ -86,8 +86,8 @@ func (hostUser *HostUserInfo) HostUserRemove() (string, error) {
 	if err != nil {
 		return output, err
 	}
-	ansible.ExtraValue = map[string]string{"host": host, "name": hostUser.HostUserName}
-	output, err = ansible.Load("./yamls/remove_host_user.yml")
+	extraValue := map[string]string{"host": host, "name": hostUser.HostUserName}
+	output, err = LoadYAML("./yamls/remove_host_user.yml", extraValue)
 	if err != nil {
 		return output, err
 	}

@@ -24,7 +24,7 @@ type RecapInfo struct {
 }
 
 // Load Yaml File
-func (ansible *AnsibleInfo) Load(filepath string) (string, error) {
+func LoadYAML(filepath string, extraValue map[string]string) (string, error) {
 	var (
 		out bytes.Buffer
 		err error
@@ -32,7 +32,7 @@ func (ansible *AnsibleInfo) Load(filepath string) (string, error) {
 
 	// Establish command for load package
 	command := "ansible-playbook " + filepath + " -e \""
-	for k, v := range ansible.ExtraValue {
+	for k, v := range extraValue {
 		command += k + "=" + v + " "
 	}
 	command += "\""

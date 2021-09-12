@@ -34,7 +34,7 @@ type Host struct {
 // Input a text and array of keys that need to find
 // Response to the array of values corresponding to keys
 
-func extractJsonValue(ansibleOutput string, keys []string) []string {
+func ExtractJsonValue(ansibleOutput string, keys []string) []string {
 	var valueList []string
 	var isFound bool = false
 
@@ -97,7 +97,7 @@ func GetAllDefaultIP() ([]Host, error) {
 			if node.ClientOS == "linux" {
 				Output, _ := exec.Command("ansible", node.ClientName, "-m", "setup", "-a", "filter=ansible_default_ipv4").Output()
 				ansibleOutput := string(Output)
-				valueIPv4 := extractJsonValue(ansibleOutput, []string{"address", "netmask", "gateway", "interface"})
+				valueIPv4 := ExtractJsonValue(ansibleOutput, []string{"address", "netmask", "gateway", "interface"})
 
 				var ipv4 IPv4Info
 				var ipv6 IPv6Info
@@ -111,7 +111,7 @@ func GetAllDefaultIP() ([]Host, error) {
 
 				Output, _ = exec.Command("ansible", node.ClientName, "-m", "setup", "-a", "filter=ansible_default_ipv6").Output()
 				ansibleOutput = string(Output)
-				valueIPv6 := extractJsonValue(ansibleOutput, []string{"address", "gateway"})
+				valueIPv6 := ExtractJsonValue(ansibleOutput, []string{"address", "gateway"})
 				ipv6.Address = valueIPv6[0]
 				ipv6.Gateway = valueIPv6[1]
 				Interfaces.Ipv6 = ipv6
