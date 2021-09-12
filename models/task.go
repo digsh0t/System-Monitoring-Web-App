@@ -251,7 +251,7 @@ func GetAllTasks(template Template) ([]Task, error) {
 
 	query := `SELECT task_id, template_id, overrided_args, start_time, end_time, status, user_id FROM tasks WHERE template_id = ?`
 	selDB, err := db.Query(query, template.TemplateId)
-	if !selDB.Next() {
+	if err != nil {
 		return nil, errors.New("template id not exists")
 	}
 	if err != nil {
