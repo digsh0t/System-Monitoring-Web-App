@@ -40,33 +40,23 @@ func GetAllPC() ([]PcInfo, error) {
 
 }
 
-func GetAllPcsState() ([]PcInfo, error) {
-	var (
-		pcsState []PcInfo
-		err      error
-	)
+func GetPcStateByID(sshConnectionId int) (string, error) {
+	var pcState string
 
-	// Get List of PC
-	pcsState, err = GetAllPC()
+	sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
 	if err != nil {
-		return pcsState, errors.New("fail to get all pc")
-
+		return pcState, errors.New("fail to get sshConnection")
 	}
-	for index, pc := range pcsState {
-		var state string
-		sshConnection, err := GetSSHConnectionFromId(pc.SshConnectionId)
-		if err != nil {
-			return pcsState, errors.New("fail to get sshConnection")
-		}
 
-		// Run remote command to check pc "running" or "shutdown"
-		result, err := RunCommandFromSSHConnection(*sshConnection, "whoami")
-		if err != nil {
-			state = "shutdown"
-		} else if err == nil && result != "" {
-			state = "running"
-		}
-		pcsState[index].State = state
+	// Run remote command to check pc "running" or "shutdown"
+	result, err := RunCommandFromSSHConnection(*sshConnection, "whoami")
+	if err != nil {
+		pcState = "shutdown"
+		// Avoid returning error make function working not correctly
+		err = nil
+	} else if err == nil && result != "" {
+		pcState = "running"
 	}
-	return pcsState, err
+
+	return pcState, err
 }

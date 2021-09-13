@@ -15,6 +15,8 @@ type SysInfo struct {
 	Timestamp    string    `json:"timestamp"`
 	UfwStatus    bool      `json:"ufwstatus"`
 	UfwRules     []UfwRule `json:"ufwrulelist"`
+	State        string    `json:"state"`
+	OsType       string    `json:"osType"`
 }
 
 type OnlineStatus struct {
@@ -71,6 +73,13 @@ func GetAllSysInfo(sshConnectionList []SshConnectionInfo) ([]SysInfo, error) {
 
 	for _, sshConnection := range sshConnectionList {
 		sysInfo, err = GetLatestSysInfo(sshConnection.SSHConnectionId, 10)
+		if err != nil {
+			return sysInfoList, err
+		}
+
+		// Append OsType and State of machine to sysInfo
+		sysInfo.OsType = sshConnection.OsType
+		sysInfo.State, err = GetPcStateByID(sshConnection.SSHConnectionId)
 		if err != nil {
 			return sysInfoList, err
 		}

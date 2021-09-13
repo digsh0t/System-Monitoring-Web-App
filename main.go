@@ -64,7 +64,6 @@ func main() {
 
 	// Custom API
 	router.HandleFunc("/pcs", routes.GetAllPcs).Methods("GET")
-	router.HandleFunc("/pcs/state", routes.GetAllPcsState).Methods("GET")
 
 	//API management
 	router.HandleFunc("/telegrambotoken", routes.AddTelegramBotKey).Methods("POST", "OPTIONS")
