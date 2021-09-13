@@ -345,7 +345,7 @@ func (sshConnection *SshConnectionInfo) GetOsType() (string, error) {
 		err    error
 	)
 
-	// Initialize extra value for loading yaml
+	// Initialize extra value and run yaml file
 	var extraValue map[string]string = map[string]string{"host": sshConnection.HostNameSSH}
 	output, err := LoadYAML("./yamls/checkOsType.yml", extraValue)
 	if err != nil {
@@ -355,6 +355,8 @@ func (sshConnection *SshConnectionInfo) GetOsType() (string, error) {
 	// Retrieving value from Json format
 	value := ExtractJsonValue(output, []string{"msg"})
 	osType = value[0]
+
+	// Convert friendly name for windows type
 	if strings.Contains(osType, "Windows") {
 		osType = "Windows"
 	}
