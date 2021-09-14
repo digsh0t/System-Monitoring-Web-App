@@ -1,10 +1,15 @@
 package models
 
-import "github.com/wintltr/login-api/database"
+import (
+	"errors"
+
+	"github.com/wintltr/login-api/database"
+)
 
 type PcInfo struct {
 	SshConnectionId       int    `json:"id"`
 	SshConnectionHostName string `json:"hostnameSSH"`
+	State                 string `json:"state"`
 }
 
 func GetAllPC() ([]PcInfo, error) {
@@ -33,4 +38,25 @@ func GetAllPC() ([]PcInfo, error) {
 
 	return pcInfoList, err
 
+}
+
+func GetPcStateByID(sshConnectionId int) (string, error) {
+	var pcState string
+
+	sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
+	if err != nil {
+		return pcState, errors.New("fail to get sshConnection")
+	}
+
+	// Run remote command to check pc "running" or "shutdown"
+	result, err := RunCommandFromSSHConnection(*sshConnection, "whoami")
+	if err != nil {
+		pcState = "shutdown"
+		// Avoid returning error make function working not correctly
+		err = nil
+	} else if err == nil && result != "" {
+		pcState = "running"
+	}
+
+	return pcState, err
 }

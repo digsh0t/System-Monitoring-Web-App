@@ -47,14 +47,15 @@ func PackageInstall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var extraValue map[string]string
 	if packages.Mode == "1" {
 		// Install By Name
-		ansible.ExtraValue = map[string]string{"host": hostStr, "package": packages.Package}
+		extraValue = map[string]string{"host": hostStr, "package": packages.Package}
 	} else if packages.Mode == "2" {
 		// Install By Link
-		ansible.ExtraValue = map[string]string{"host": hostStr, "link": packages.Link}
+		extraValue = map[string]string{"host": hostStr, "link": packages.Link}
 	}
-	output, err := ansible.Load("./yamls/" + packages.File)
+	output, err := models.LoadYAML("./yamls/"+packages.File, extraValue)
 
 	// Processing Output From Ansible
 	fatalList, recapList := ansible.RetrieveFatalRecap(output)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/wintltr/login-api/database"
@@ -22,6 +23,7 @@ type SshConnectionInfo struct {
 	PortSSH         int    `json:"portSSH"`
 	CreatorId       int    `json:"creatorId"`
 	SSHKeyId        int    `json:"sshKeyId"`
+	OsType          string `json:"osType"`
 }
 
 //Read private key from private key file
@@ -130,7 +132,7 @@ func GetAllSSHConnectionWithPassword() ([]SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_password, sc_port, creator_id, ssh_key_id 
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_password, sc_port, creator_id, ssh_key_id, sc_ostype 
 			  FROM ssh_connections`
 	selDB, err := db.Query(query)
 	if err != nil {
@@ -140,7 +142,7 @@ func GetAllSSHConnectionWithPassword() ([]SshConnectionInfo, error) {
 	var connectionInfo SshConnectionInfo
 	var connectionInfos []SshConnectionInfo
 	for selDB.Next() {
-		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PasswordSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId)
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PasswordSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId, &connectionInfo.OsType)
 		if err != nil {
 			return nil, err
 		}
@@ -394,5 +396,48 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithSSHKey(cmd string) (strin
 		err = session.Run(cmd)
 		return b.String(), err
 	}
+}
 
+// Get OS Type of PC
+func (sshConnection *SshConnectionInfo) GetOsType() (string, error) {
+	var (
+		osType string
+		err    error
+	)
+
+	// Initialize extra value and run yaml file
+	var extraValue map[string]string = map[string]string{"host": sshConnection.HostNameSSH}
+	output, err := LoadYAML("./yamls/checkOsType.yml", extraValue)
+	if err != nil {
+		return osType, errors.New("fail to load yaml file")
+	}
+
+	// Retrieving value from Json format
+	value := ExtractJsonValue(output, []string{"msg"})
+	osType = value[0]
+
+	// Convert friendly name for windows type
+	if strings.Contains(osType, "Windows") {
+		osType = "Windows"
+	}
+	return osType, err
+}
+
+// Update Os Type to DB
+func (sshconnection *SshConnectionInfo) UpdateOsType() error {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := "UPDATE ssh_connections SET sc_ostype = ? WHERE sc_hostname = ?"
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(sshconnection.OsType, sshconnection.HostNameSSH)
+	if err != nil {
+		return err
+	}
+	return err
 }

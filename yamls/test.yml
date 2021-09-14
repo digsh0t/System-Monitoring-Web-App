@@ -1,4 +1,8 @@
 - name: Run Test
   hosts: "{{ host }}"
   tasks:
-  
+  - name: test client
+    command: hostname
+    register: out
+
+  - debug: var=out.stdout_lines

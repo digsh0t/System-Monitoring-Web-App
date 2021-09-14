@@ -46,8 +46,8 @@ func PackageRemove(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
-	ansible.ExtraValue = map[string]string{"host": hostStr, "package": packages.Package}
-	output, err := ansible.Load("./yamls/" + packages.File)
+	extraValue := map[string]string{"host": hostStr, "package": packages.Package}
+	output, err := models.LoadYAML("./yamls/"+packages.File, extraValue)
 
 	// Processing Output From Ansible
 	fatalList, recapList := ansible.RetrieveFatalRecap(output)
