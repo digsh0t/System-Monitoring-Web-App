@@ -338,6 +338,66 @@ func GenerateInventory() error {
 	return err
 }
 
+//Run command through SSH using SSH keys
+func (sshConnection *SshConnectionInfo) RunCommandFromSSHConnectionUseKeys(command string) (string, error) {
+	result, err := sshConnection.ExecCommandWithSSHKey(command)
+	return result, err
+}
+
+func (sshConnection *SshConnectionInfo) connectSSHWithSSHKeys() (*ssh.Client, error) {
+	//If private key is incorrect or wrong format, return error immediately
+	var auth []ssh.AuthMethod
+	authMethod, err := ProcessPrivateKey(sshConnection.SSHKeyId)
+	if err != nil {
+		return nil, err
+	}
+	//Else continue testing connection using the above key
+	auth = append(auth, authMethod)
+
+	sshConfig := &ssh.ClientConfig{
+		User:            sshConnection.UserSSH,
+		Auth:            auth,
+		Timeout:         30 * time.Second,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	addr := fmt.Sprintf("%s:%d", sshConnection.HostSSH, sshConnection.PortSSH)
+
+	sshClient, err := ssh.Dial("tcp", addr, sshConfig)
+	if err != nil {
+		return sshClient, err
+	}
+
+	return sshClient, nil
+}
+
+func (sshConnection *SshConnectionInfo) ExecCommandWithSSHKey(cmd string) (string, error) {
+
+	var (
+		session   *ssh.Session
+		sshClient *ssh.Client
+		err       error
+	)
+
+	//create ssh connect
+	sshClient, err = sshConnection.connectSSHWithSSHKeys()
+	if err != nil {
+		return "Wrong username or password to connect remote server", err
+	} else {
+		defer sshClient.Close()
+		//create a session. It is one session per command
+		session, err = sshClient.NewSession()
+		if err != nil {
+			return "Failed to open new session", err
+		}
+		defer session.Close()
+		var b bytes.Buffer //import "bytes"
+		session.Stdout = &b
+		err = session.Run(cmd)
+		return b.String(), err
+	}
+}
+
 // Get OS Type of PC
 func (sshConnection *SshConnectionInfo) GetOsType() (string, error) {
 	var (
@@ -360,9 +420,7 @@ func (sshConnection *SshConnectionInfo) GetOsType() (string, error) {
 	if strings.Contains(osType, "Windows") {
 		osType = "Windows"
 	}
-
 	return osType, err
-
 }
 
 // Update Os Type to DB
