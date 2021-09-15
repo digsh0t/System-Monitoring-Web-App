@@ -22,7 +22,7 @@ func HistoryListAll(sshConnectionId int) ([]HistoryInfo, error) {
 	}
 	//command := "HISTTIMEFORMAT=\"%d/%m/%y %T \" && history"
 	command := "history | less"
-	result, err := RunCommandFromSSHConnection(*SshConnectionInfo, command)
+	result, err := SshConnectionInfo.RunCommandFromSSHConnectionUseKeys(command)
 	if err != nil {
 		if !strings.Contains(err.Error(), "Process exited with status 2") {
 			return historyList, err

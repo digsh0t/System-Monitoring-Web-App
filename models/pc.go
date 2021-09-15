@@ -49,7 +49,7 @@ func GetPcStateByID(sshConnectionId int) (string, error) {
 	}
 
 	// Run remote command to check pc "running" or "shutdown"
-	result, err := RunCommandFromSSHConnection(*sshConnection, "whoami")
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys("whoami")
 	if err != nil {
 		pcState = "shutdown"
 		// Avoid returning error make function working not correctly

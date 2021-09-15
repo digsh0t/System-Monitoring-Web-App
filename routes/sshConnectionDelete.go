@@ -51,14 +51,6 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
 	}
-	cmd := `echo "y" | if grep -v key` + strconv.Itoa(sshConnectionInfo.SSHKeyId) + ` $HOME/.ssh/authorized_keys > $HOME/.ssh/tmp; then cat $HOME/.ssh/tmp > $HOME/.ssh/authorized_keys && rm $HOME/.ssh/tmp; fi;`
-	_, err = models.ExecCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", errors.New("error while removing SSH Connection key from remote server").Error())
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
 
 	_, err = models.DeleteSSHConnection(sshConnectionId)
 	if err != nil {

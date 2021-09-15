@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"io/ioutil"
 
@@ -52,87 +51,58 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 		returnJson.Set("Error", errors.New("your public key does not exist, please generate a pair public and private key").Error())
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
-
 	} else {
-
-		sshKey, err := models.GetSSHKeyFromId(sshConnectionInfo.SSHKeyId)
+		//Test the SSH connection using public key if works
+		success, err := sshConnectionInfo.TestConnectionPublicKey()
 		if err != nil {
-			utils.ERROR(w, http.StatusBadRequest, err.Error())
-			return
-		}
+			returnJson.Set("Status", success)
+			returnJson.Set("Error", err.Error())
+			utils.JSON(w, http.StatusBadRequest, returnJson)
+		} else {
 
-		decrypted, err := models.AESDecryptKey(sshKey.PrivateKey)
-		if err != nil {
-			utils.ERROR(w, http.StatusBadRequest, err.Error())
-			return
-		}
-
-		data, err := models.GeneratePublicKey([]byte(decrypted))
-		if err != nil {
-			utils.ERROR(w, http.StatusBadRequest, err.Error())
-			return
-		}
-
-		publicKey := strings.TrimSuffix(string(data), "\n") + " key" + fmt.Sprint(sshKey.SSHKeyId) + "\n"
-		cmd := "echo" + " \"" + publicKey + "\" " + ">> ~/.ssh/authorized_keys"
-		models.ExecCommand("mkdir ~/.ssh", sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
-		_, err = models.ExecCommand(cmd, sshConnectionInfo.UserSSH, sshConnectionInfo.PasswordSSH, sshConnectionInfo.HostSSH, sshConnectionInfo.PortSSH)
-		if err == nil {
-
-			//Test the SSH connection using public key if works
-			success, err := sshConnectionInfo.TestConnectionPublicKey()
+			sshConnectionInfo.CreatorId, err = auth.ExtractUserId(r)
 			if err != nil {
-				returnJson.Set("Status", success)
+				returnJson.Set("Status", false)
 				returnJson.Set("Error", err.Error())
 				utils.JSON(w, http.StatusBadRequest, returnJson)
-			} else {
-
-				sshConnectionInfo.CreatorId, err = auth.ExtractUserId(r)
-				if err != nil {
-					returnJson.Set("Status", false)
-					returnJson.Set("Error", err.Error())
-					utils.JSON(w, http.StatusBadRequest, returnJson)
-					return
-				}
-
-				success, err = sshConnectionInfo.AddSSHConnectionToDB()
-				if err != nil {
-					returnJson.Set("Status", false)
-					returnJson.Set("Error", err.Error())
-					utils.JSON(w, http.StatusBadRequest, returnJson)
-					return
-				}
-
-				err = models.GenerateInventory()
-				if err != nil {
-					returnJson.Set("Status", false)
-					returnJson.Set("Error", errors.New("error while regenerate ansible inventory").Error())
-					utils.JSON(w, http.StatusBadRequest, returnJson)
-					return
-				}
-
-				// Get Os Type of PC and update to DB
-				sshConnectionInfo.OsType, err = sshConnectionInfo.GetOsType()
-				if err != nil {
-					utils.ERROR(w, http.StatusBadRequest, err.Error())
-					return
-				}
-				err := sshConnectionInfo.UpdateOsType()
-				if err != nil {
-					returnJson.Set("Status", false)
-					returnJson.Set("Error", errors.New("error while updating os type to database"))
-					utils.JSON(w, http.StatusBadRequest, returnJson)
-					return
-				}
-
-				// Return Json
-				utils.ReturnInsertJSON(w, success, err)
-				eventStatus = "successfully"
+				return
 			}
-		} else {
-			utils.ERROR(w, http.StatusBadRequest, err.Error())
-			eventStatus = "failed"
+
+			success, err = sshConnectionInfo.AddSSHConnectionToDB()
+			if err != nil {
+				returnJson.Set("Status", false)
+				returnJson.Set("Error", err.Error())
+				utils.JSON(w, http.StatusBadRequest, returnJson)
+				return
+			}
+
+			err = models.GenerateInventory()
+			if err != nil {
+				returnJson.Set("Status", false)
+				returnJson.Set("Error", errors.New("error while regenerate ansible inventory").Error())
+				utils.JSON(w, http.StatusBadRequest, returnJson)
+				return
+			}
+
+			// Get Os Type of PC and update to DB
+			sshConnectionInfo.OsType, err = sshConnectionInfo.GetOsType()
+			if err != nil {
+				utils.ERROR(w, http.StatusBadRequest, err.Error())
+				return
+			}
+			err := sshConnectionInfo.UpdateOsType()
+			if err != nil {
+				returnJson.Set("Status", false)
+				returnJson.Set("Error", errors.New("error while updating os type to database"))
+				utils.JSON(w, http.StatusBadRequest, returnJson)
+				return
+			}
+
+			// Return Json
+			utils.ReturnInsertJSON(w, success, err)
+			eventStatus = "successfully"
 		}
+
 	}
 	// Write Event Web
 	description := "Add SSHConnection to " + sshConnectionInfo.HostNameSSH + " " + eventStatus

@@ -26,7 +26,7 @@ func HostUserListAll(sshConnectionId int) ([]HostUserInfo, error) {
 		return hostUserList, err
 	}
 	command := "getent passwd {1000..60000}"
-	result, err = RunCommandFromSSHConnection(*SshConnectionInfo, command)
+	result, err = SshConnectionInfo.RunCommandFromSSHConnectionUseKeys(command)
 	if err != nil {
 		if !strings.Contains(err.Error(), "Process exited with status 2") {
 			return hostUserList, err
@@ -45,7 +45,7 @@ func HostUserListAll(sshConnectionId int) ([]HostUserInfo, error) {
 		hostuser.HostUserHomeDir = attributesUser[5]
 		hostuser.HostUserShell = attributesUser[6]
 		command = "getent group " + gid + " | cut -d: -f1"
-		groupname, err := RunCommandFromSSHConnection(*SshConnectionInfo, command)
+		groupname, err := SshConnectionInfo.RunCommandFromSSHConnectionUseKeys(command)
 		if err != nil {
 			return hostUserList, err
 		}
