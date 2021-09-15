@@ -94,5 +94,9 @@ func main() {
 	router.HandleFunc("/wauser/list", routes.ListAllWebAppUser).Methods("GET")
 	router.HandleFunc("/wauser/list/{id}", routes.ListWebAppUser).Methods("GET")
 
+	// Network Automation: Vyos
+	router.HandleFunc("/vyos/list/{id}", routes.GetInfoVyos).Methods("GET")
+	router.HandleFunc("/vyos/config/ip", routes.ConfigIPVyos).Methods("POST")
+
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

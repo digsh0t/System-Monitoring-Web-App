@@ -1,0 +1,16 @@
+- name: Network module
+  connection: network_cli
+  gather_facts: false
+  hosts: "{{ host }}"
+  tasks:
+  - name: Remove eth0 IPv4 address
+    vyos_l3_interface:
+     name: "{{ interface }}"
+     state: absent
+
+  - name: Replace device configurations of listed interfaces with provided configurations
+    vyos_l3_interface:
+     name: "{{ interface }}"
+     ipv4: "{{ address4 }}"
+     ipv6: "{{ address6 }}"
+           
