@@ -12,28 +12,6 @@ import (
 
 func main() {
 	//go goroutines.CheckClientOnlineStatusGour()
-	firewallRule := `
-
-	Protocol      : UDP
-	LocalPort     : 162
-	RemotePort    : Any
-	IcmpType      : Any
-	DynamicTarget : Any
-	
-	Protocol      : UDP
-	LocalPort     : 162
-	RemotePort    : Any
-	IcmpType      : Any
-	DynamicTarget : Any
-	
-	Protocol      : TCP
-	LocalPort     : Any
-	RemotePort    : Any
-	IcmpType      : Any
-	DynamicTarget :
-	
-	`
-	models.ParsePortFirewallRuleFromPowershell(firewallRule)
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
