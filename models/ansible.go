@@ -44,7 +44,7 @@ func LoadYAML(filepath string, extraValue map[string]string) (string, error) {
 }
 
 // RegExp Fatal And Recap from Ansible Output
-func (ansible *AnsibleInfo) RetrieveFatalRecap(raw string) ([]string, []string) {
+func RetrieveFatalRecap(raw string) ([]string, []string) {
 	var fatalList []string
 	var recapList []string
 
@@ -117,7 +117,7 @@ func (recapStruct *RecapInfo) ProcessingRecap(recapList []string) ([]RecapInfo, 
 }
 
 // Get Hostname From Id And Concentrate its
-func (ansible *AnsibleInfo) ConvertListIdToHostname(hosts []string) (string, error) {
+func ConvertListIdToHostname(hosts []string) (string, error) {
 	var (
 		hostStr           string
 		sshConnectionList []SshConnectionInfo

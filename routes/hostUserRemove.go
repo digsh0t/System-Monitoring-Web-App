@@ -39,8 +39,7 @@ func HostUserRemove(w http.ResponseWriter, r *http.Request) {
 	ouput, err := hostUser.HostUserRemove()
 
 	// Processing output and return Json
-	var ansible models.AnsibleInfo
-	fatalList, recapList := ansible.RetrieveFatalRecap(ouput)
+	fatalList, recapList := models.RetrieveFatalRecap(ouput)
 
 	// Return Json
 	var eventStatus string
@@ -58,7 +57,7 @@ func HostUserRemove(w http.ResponseWriter, r *http.Request) {
 	utils.JSON(w, http.StatusBadRequest, returnJson)
 
 	// Write Event Web
-	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionIdList)
+	host, err := models.ConvertListIdToHostname(hostUser.SshConnectionIdList)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to convert id string to hostname").Error())
 		return

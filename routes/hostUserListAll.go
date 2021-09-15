@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
@@ -40,4 +41,10 @@ func HostUserListAll(w http.ResponseWriter, r *http.Request) {
 		utils.JSON(w, http.StatusOK, hostUserList)
 	}
 
+}
+
+func TrimStringOfIP(s string) string {
+	s = strings.TrimLeft(s, "[\"")
+	s = strings.TrimRight(s, "]\"m[b10u\\'")
+	return s
 }

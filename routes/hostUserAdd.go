@@ -40,8 +40,7 @@ func HostUserAdd(w http.ResponseWriter, r *http.Request) {
 	ouput, err := hostUser.HostUserAdd()
 
 	// Retrieve Fatal and Recap
-	var ansible models.AnsibleInfo
-	fatalList, recapList := ansible.RetrieveFatalRecap(ouput)
+	fatalList, recapList := models.RetrieveFatalRecap(ouput)
 
 	// Return Json
 	var eventStatus string
@@ -59,7 +58,7 @@ func HostUserAdd(w http.ResponseWriter, r *http.Request) {
 	utils.JSON(w, http.StatusBadRequest, returnJson)
 
 	// Write Event Web
-	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionIdList)
+	host, err := models.ConvertListIdToHostname(hostUser.SshConnectionIdList)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to convert id to hostname").Error())
 		return

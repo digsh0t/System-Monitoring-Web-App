@@ -59,11 +59,10 @@ func HostUserListAll(sshConnectionId int) ([]HostUserInfo, error) {
 
 func (hostUser *HostUserInfo) HostUserAdd() (string, error) {
 	var (
-		ansible AnsibleInfo
-		output  string
+		output string
 	)
 
-	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionIdList)
+	host, err := ConvertListIdToHostname(hostUser.SshConnectionIdList)
 	if err != nil {
 		return output, err
 	}
@@ -78,11 +77,10 @@ func (hostUser *HostUserInfo) HostUserAdd() (string, error) {
 
 func (hostUser *HostUserInfo) HostUserRemove() (string, error) {
 	var (
-		ansible AnsibleInfo
-		output  string
+		output string
 	)
 
-	host, err := ansible.ConvertListIdToHostname(hostUser.SshConnectionIdList)
+	host, err := ConvertListIdToHostname(hostUser.SshConnectionIdList)
 	if err != nil {
 		return output, err
 	}
