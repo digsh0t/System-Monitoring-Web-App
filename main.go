@@ -12,6 +12,16 @@ import (
 
 func main() {
 	//go goroutines.CheckClientOnlineStatusGour()
+	// sshConnection, _ := models.GetSSHConnectionFromId(32)
+	// firewallRule, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM iptables"`)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// iptables, err := models.ParseIptables(firewallRule)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// fmt.Println(iptables)
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
