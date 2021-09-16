@@ -2,6 +2,7 @@ package routes
 
 import (
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -29,4 +30,17 @@ func GetWindowsFirewall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.JSON(w, http.StatusOK, firewallRules)
+}
+
+func AddWindowsFirewall(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read windows firewall rules from ssh connection").Error())
+		return
+	}
+	err = models.AddFirewallRule(string(body))
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to add new windows firewall rules to client windows machine").Error())
+		return
+	}
 }

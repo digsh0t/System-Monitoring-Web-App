@@ -112,6 +112,7 @@ func main() {
 
 	//Windows Firewall Settings
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("GET")
+	router.HandleFunc("/firewall", routes.AddWindowsFirewall).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

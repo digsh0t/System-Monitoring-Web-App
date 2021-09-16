@@ -1,8 +1,6 @@
 package models
 
 import (
-	"bytes"
-	"fmt"
 	"log"
 	"os/exec"
 
@@ -38,15 +36,6 @@ func RunAnsiblePlaybookWithjson(extraVars string, filepath string) error {
 
 	log.Println(args)
 	cmd := exec.Command("ansible-playbook", args...)
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
 	err := cmd.Run()
-	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		return err
-	}
-	fmt.Println("Result: " + out.String())
 	return err
 }
