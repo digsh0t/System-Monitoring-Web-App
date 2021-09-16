@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	"database/sql"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -17,13 +18,14 @@ import (
 type SshConnectionInfo struct {
 	SSHConnectionId int    `json:"sshConnectionId"`
 	UserSSH         string `json:"userSSH"`
-	PasswordSSH     string `json:"passwordSSH"`
 	HostNameSSH     string `json:"hostnameSSH"`
 	HostSSH         string `json:"hostSSH"`
 	PortSSH         int    `json:"portSSH"`
 	CreatorId       int    `json:"creatorId"`
 	SSHKeyId        int    `json:"sshKeyId"`
 	OsType          string `json:"osType"`
+	IsNetwork       bool   `json:"isNetwork"`
+	NetworkOS       string `json:"networkOS"`
 }
 
 //Read private key from private key file
@@ -72,6 +74,9 @@ func (sshConnection *SshConnectionInfo) TestConnectionPublicKey() (bool, error) 
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
+	// Specific cipher alogithm for connecting network device
+	cipherOrder := sshConfig.Ciphers
+	sshConfig.Ciphers = append(cipherOrder, "aes128-ctr", "aes192-ctr", "aes256-ctr", "arcfour256", "arcfour128", "arcfour", "aes128-cbc")
 	addr := fmt.Sprintf("%s:%d", sshConnection.HostSSH, sshConnection.PortSSH)
 
 	_, err = ssh.Dial("tcp", addr, sshConfig)
@@ -86,16 +91,14 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	encryptedPassword := AESEncryptKey(sshConnection.PasswordSSH)
-
-	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id) VALUES (?,?,?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos) VALUES (?,?,?,?,?,?,?,?)")
 	if err != nil {
 
 		return false, err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(sshConnection.UserSSH, encryptedPassword, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId)
+	_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId, sshConnection.IsNetwork, sshConnection.NetworkOS)
 	if err != nil {
 
 		return false, err
@@ -108,7 +111,7 @@ func GetAllSSHConnection() ([]SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id 
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos 
 			  FROM ssh_connections`
 	selDB, err := db.Query(query)
 	if err != nil {
@@ -118,11 +121,12 @@ func GetAllSSHConnection() ([]SshConnectionInfo, error) {
 	var connectionInfo SshConnectionInfo
 	var connectionInfos []SshConnectionInfo
 	for selDB.Next() {
-		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId)
+		var networkOS sql.NullString
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId, &connectionInfo.IsNetwork, &networkOS)
 		if err != nil {
 			return nil, err
 		}
-
+		connectionInfo.NetworkOS = networkOS.String
 		connectionInfos = append(connectionInfos, connectionInfo)
 	}
 	return connectionInfos, err
@@ -132,7 +136,7 @@ func GetAllSSHConnectionWithPassword() ([]SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_password, sc_port, creator_id, ssh_key_id, sc_ostype 
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype 
 			  FROM ssh_connections`
 	selDB, err := db.Query(query)
 	if err != nil {
@@ -142,7 +146,7 @@ func GetAllSSHConnectionWithPassword() ([]SshConnectionInfo, error) {
 	var connectionInfo SshConnectionInfo
 	var connectionInfos []SshConnectionInfo
 	for selDB.Next() {
-		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PasswordSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId, &connectionInfo.OsType)
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId, &connectionInfo.OsType)
 		if err != nil {
 			return nil, err
 		}
@@ -157,17 +161,12 @@ func GetSSHConnectionFromHostName(sshHostName string) (*SshConnectionInfo, error
 	defer db.Close()
 
 	var sshConnection SshConnectionInfo
-	//var encryptedPassword string
 	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_host, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_hostname = ?", sshHostName)
 	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &sshConnection.HostSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
 	if row == nil {
 		return nil, errors.New("ssh connection doesn't exist")
 	}
 
-	/*sshConnection.PasswordSSH = AESDecryptKey(encryptedPassword)
-	if err != nil {
-		return nil, errors.New("fail to retrieve ssh connection info")
-	}*/
 	return &sshConnection, err
 }
 
@@ -176,9 +175,8 @@ func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 	defer db.Close()
 
 	var sshConnection SshConnectionInfo
-	var encryptedPassword string
-	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
-	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &encryptedPassword, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
 	if row == nil {
 		return nil, errors.New("ssh connection doesn't exist")
 	}
@@ -186,10 +184,6 @@ func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 		return nil, errors.New("fail to retrieve ssh connection info")
 	}
 
-	sshConnection.PasswordSSH, err = AESDecryptKey(encryptedPassword)
-	if err != nil {
-		return nil, errors.New("fail to decrypt ssh connection password")
-	}
 	return &sshConnection, err
 }
 
@@ -212,9 +206,8 @@ func GetSSHConnectionFromIP(ip string) (SshConnectionInfo, error) {
 	defer db.Close()
 
 	var sshConnection SshConnectionInfo
-	var encryptedPassword string
-	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_host = ?", ip)
-	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &encryptedPassword, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_host = ?", ip)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
 	if row == nil {
 		return sshConnection, errors.New("ssh connection doesn't exist")
 	}
@@ -255,73 +248,6 @@ func DeleteSSHConnection(id int) (bool, error) {
 	return true, err
 }
 
-//Get SSH Connection and run command on it
-func RunCommandFromSSHConnection(sshConnection SshConnectionInfo, command string) (string, error) {
-	result, err := ExecCommand(command, sshConnection.UserSSH, sshConnection.PasswordSSH, sshConnection.HostSSH, sshConnection.PortSSH)
-	return result, err
-}
-
-func connectSSH(user, password, host string, port int) (*ssh.Client, error) {
-	var (
-		auth         []ssh.AuthMethod
-		addr         string
-		clientConfig *ssh.ClientConfig
-		sshClient    *ssh.Client
-		err          error
-	)
-
-	// get auth method
-
-	auth = make([]ssh.AuthMethod, 0)
-	auth = append(auth, ssh.Password(password))
-
-	clientConfig = &ssh.ClientConfig{
-		User:            user,
-		Auth:            auth,
-		Timeout:         30 * time.Second,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	}
-
-	// connect to ssh
-
-	addr = fmt.Sprintf("%s:%d", host, port)
-
-	sshClient, err = ssh.Dial("tcp", addr, clientConfig)
-	if err != nil {
-		return sshClient, err
-	}
-
-	return sshClient, nil
-}
-
-func ExecCommand(cmd string, userSSH string, passwordSSH string, hostSSH string, portSSH int) (string, error) {
-
-	var (
-		session   *ssh.Session
-		sshClient *ssh.Client
-		err       error
-	)
-
-	//create ssh connect
-	sshClient, err = connectSSH(userSSH, passwordSSH, hostSSH, portSSH)
-	if err != nil {
-		return "Wrong username or password to connect remote server", err
-	} else {
-		defer sshClient.Close()
-		//create a session. It is one session per command
-		session, err = sshClient.NewSession()
-		if err != nil {
-			return "Failed to open new session", err
-		}
-		defer session.Close()
-		var b bytes.Buffer //import "bytes"
-		session.Stdout = &b
-		err = session.Run(cmd)
-		return b.String(), err
-	}
-
-}
-
 func GenerateInventory() error {
 	sshConnectionList, err := GetAllSSHConnection()
 	if err != nil {
@@ -329,12 +255,16 @@ func GenerateInventory() error {
 	}
 	var inventory string
 	for _, sshConnection := range sshConnectionList {
-		line := sshConnection.HostNameSSH + " ansible_host=" + sshConnection.HostSSH + " ansible_port=" + fmt.Sprint(sshConnection.PortSSH) + " ansible_user=" + sshConnection.UserSSH + "\n"
+		var line string
+		if sshConnection.IsNetwork {
+			line = sshConnection.HostNameSSH + " ansible_host=" + sshConnection.HostSSH + " ansible_port=" + fmt.Sprint(sshConnection.PortSSH) + " ansible_user=" + sshConnection.UserSSH + " ansible_network_os=" + sshConnection.NetworkOS + "\n"
+		} else {
+			line = sshConnection.HostNameSSH + " ansible_host=" + sshConnection.HostSSH + " ansible_port=" + fmt.Sprint(sshConnection.PortSSH) + " ansible_user=" + sshConnection.UserSSH + "\n"
+		}
 		inventory += line
 	}
 
 	err = ioutil.WriteFile("/etc/ansible/hosts", []byte(inventory), 0644)
-	//fmt.Println(err.Error())
 	return err
 }
 
@@ -399,17 +329,15 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithSSHKey(cmd string) (strin
 }
 
 // Get OS Type of PC
-func (sshConnection *SshConnectionInfo) GetOsType() (string, error) {
-	var (
-		osType string
-		err    error
-	)
+func (sshConnection *SshConnectionInfo) GetOsType() string {
+	var osType string
 
 	// Initialize extra value and run yaml file
 	var extraValue map[string]string = map[string]string{"host": sshConnection.HostNameSSH}
 	output, err := LoadYAML("./yamls/checkOsType.yml", extraValue)
 	if err != nil {
-		return osType, errors.New("fail to load yaml file")
+		osType = "Unknown"
+		return osType
 	}
 
 	// Retrieving value from Json format
@@ -420,7 +348,7 @@ func (sshConnection *SshConnectionInfo) GetOsType() (string, error) {
 	if strings.Contains(osType, "Windows") {
 		osType = "Windows"
 	}
-	return osType, err
+	return osType
 }
 
 // Update Os Type to DB
