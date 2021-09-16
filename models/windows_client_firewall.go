@@ -89,14 +89,40 @@ func ParsePortNetshFirewallRuleFromPowershell(result string) ([]PortNetshFirewal
 			rule.EdgeTraversal = tmpArray[10]
 			rule.Action = tmpArray[11]
 			ruleList = append(ruleList, rule)
-			log.Println(len(ruleList))
-			if len(ruleList) == 531 {
-				log.Println(line)
-			}
 		}
 	}
-	log.Println(ruleList)
 	return ruleList, nil
+}
+
+type AppliedFirewallRule struct {
+	Host       []string `json:"host"`
+	RuleName   string   `json:"name"`
+	Enabled    string   `json:"enabled"`
+	Direction  string   `json:"direction"`
+	Profiles   string   `json:"profiles"`
+	Grouping   string   `json:"grouping"`
+	LocalIP    string   `json:"local_ip"`
+	RemoteIP   string   `json:"remote_ip"`
+	Protocol   string   `json:"protocol"`
+	LocalPort  string   `json:"local_port"`
+	RemotePort string   `json:"remote_port"`
+	Action     string   `json:"action"`
+}
+
+func AddFirewallRule(firewallJson string) error {
+	err := RunAnsiblePlaybookWithjson(firewallJson, "./yamls/windows_client/add_firewall_rule.yml")
+	if err != nil {
+		log.Println(err)
+	}
+	return err
+}
+
+func DeleteFirewallRule(ruleNameJson string) error {
+	err := RunAnsiblePlaybookWithjson(ruleNameJson, "./yamls/windows_client/delete_firewall_rule.yml")
+	if err != nil {
+		log.Println(err)
+	}
+	return err
 }
 
 func ParsePortFirewallRuleFromPowershell(result string) ([]PortFirewallRule, error) {

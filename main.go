@@ -12,7 +12,9 @@ import (
 
 func main() {
 	//go goroutines.CheckClientOnlineStatusGour()
-	// sshConnection, _ := models.GetSSHConnectionFromId(32)
+	sshConnection, _ := models.GetSSHConnectionFromId(33)
+	firewall, _ := sshConnection.GetWindowsFirewall("in")
+	log.Println(firewall)
 	// firewallRule, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM iptables"`)
 	// if err != nil {
 	// 	log.Println(err)
@@ -22,6 +24,9 @@ func main() {
 	// 	log.Println(err)
 	// }
 	// fmt.Println(iptables)
+
+	// firewallSetting := `{"host":"vmware-windows", "name":"add firewall test-in"}`
+	// models.DeleteFirewallRule(firewallSetting)
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})

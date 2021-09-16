@@ -1,6 +1,11 @@
 package models
 
-import ansibler "github.com/febrianrendak/go-ansible"
+import (
+	"log"
+	"os/exec"
+
+	ansibler "github.com/febrianrendak/go-ansible"
+)
 
 func RunAnsiblePlaybookWithVars(extraVars map[string]interface{}, filepath string) error {
 
@@ -19,4 +24,16 @@ func RunAnsiblePlaybookWithVars(extraVars map[string]interface{}, filepath strin
 		panic(err)
 	}
 	return err
+}
+
+func RunAnsiblePlaybookWithjson(extraVars string, filepath string) error {
+
+	var args []string
+	if extraVars != "" {
+		args = append(args, "--extra-vars="+extraVars)
+	}
+	args = append(args, filepath)
+	log.Println(args)
+	cmd := exec.Command("ansible-playbook", args...)
+	return cmd.Run()
 }

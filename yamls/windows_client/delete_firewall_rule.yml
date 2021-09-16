@@ -1,0 +1,7 @@
+- name: Delete Windows Firewall Rule
+  hosts: "{{ host }}"
+  tasks:
+  - name: Delete Firewall rule
+    win_firewall_rule:
+      name: "{{ name }}"
+      state: "absent"
