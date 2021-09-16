@@ -115,5 +115,8 @@ func main() {
 	router.HandleFunc("/firewall", routes.AddWindowsFirewall).Methods("POST")
 	router.HandleFunc("/firewall", routes.RemoveWindowsFirewallRule).Methods("DELETE")
 
+	//Windows Programs Management
+	router.HandleFunc("/{id}/programs", routes.GetWindowsInstalledProgram).Methods("GET")
+
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

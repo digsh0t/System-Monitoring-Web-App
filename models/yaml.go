@@ -1,7 +1,6 @@
 package models
 
 import (
-	"log"
 	"os/exec"
 
 	ansibler "github.com/febrianrendak/go-ansible"
@@ -34,7 +33,6 @@ func RunAnsiblePlaybookWithjson(extraVars string, filepath string) error {
 		args = append(args, "--extra-vars", extraVars)
 	}
 
-	log.Println(args)
 	cmd := exec.Command("ansible-playbook", args...)
 	err := cmd.Run()
 	return err

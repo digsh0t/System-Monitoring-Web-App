@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -388,4 +389,15 @@ func (sshConnection *SshConnectionInfo) GetWindowsFirewall(direction string) ([]
 	}
 	firewallRules, err = ParsePortNetshFirewallRuleFromPowershell(firewallRule)
 	return firewallRules, err
+}
+
+func (sshConnection *SshConnectionInfo) GetInstalledProgram() ([]Programs, error) {
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM programs"`)
+	if err != nil {
+		return nil, err
+	}
+	var installedPrograms []Programs
+
+	err = json.Unmarshal([]byte(result), &installedPrograms)
+	return installedPrograms, err
 }
