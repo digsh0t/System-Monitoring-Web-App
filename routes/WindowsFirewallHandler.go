@@ -35,12 +35,25 @@ func GetWindowsFirewall(w http.ResponseWriter, r *http.Request) {
 func AddWindowsFirewall(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read windows firewall rules from ssh connection").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read windows firewall rules from client windows machine").Error())
 		return
 	}
 	err = models.AddFirewallRule(string(body))
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to add new windows firewall rules to client windows machine").Error())
+		return
+	}
+}
+
+func RemoveWindowsFirewallRule(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read windows firewall rules from client windows machine").Error())
+		return
+	}
+	err = models.DeleteFirewallRule(string(body))
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to delete firewall rule from client windows machine").Error())
 		return
 	}
 }
