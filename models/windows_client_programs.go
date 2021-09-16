@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"path/filepath"
 )
 
 type Programs struct {
@@ -16,9 +17,21 @@ type Programs struct {
 	IdentifyingNumber string `json:"identifying_number"`
 }
 
-func InstallWindowsProgram(hostUrlDesFilenameJson string) error {
+func InstallWindowsProgram(host interface{}, url string, dest string) error {
 
-	err := RunAnsiblePlaybookWithjson(hostUrlDesFilenameJson, "yamls/windows_client/add_windows_program.yml")
+	type installInfo struct {
+		Host     interface{} `json:"host"`
+		Url      string      `json:"url"`
+		Dest     string      `json:"dest"`
+		Filename string      `json:"filename"`
+	}
+
+	filename := filepath.Base(url)
+	jsonArgs, err := json.Marshal(installInfo{Host: host, Url: url, Dest: dest, Filename: filename})
+	if err != nil {
+		return err
+	}
+	err = RunAnsiblePlaybookWithjson(string(jsonArgs), "yamls/windows_client/add_windows_program.yml")
 	return err
 }
 

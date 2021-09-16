@@ -40,7 +40,9 @@ func InstallWindowsProgram(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read install info").Error())
 		return
 	}
-	err = models.InstallWindowsProgram(string(body))
+	var bodyMap map[string]interface{}
+	json.Unmarshal(body, &bodyMap)
+	err = models.InstallWindowsProgram(bodyMap["host"], fmt.Sprintf("%v", bodyMap["url"]), fmt.Sprintf("%v", bodyMap["dest"]))
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to install program to client machine").Error())
 		return
