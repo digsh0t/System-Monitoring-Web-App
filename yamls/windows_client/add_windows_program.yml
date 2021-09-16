@@ -1,0 +1,19 @@
+
+- name: Add new Windows Firewall Rule
+  hosts: "{{ host }}"
+  tasks:
+
+  - name: Download msi to folder temp
+    win_get_url:
+      url: "{{ url }}"
+      dest: "{{ dest + filename }}"
+      force: no
+
+  - name: Install msi locally omitting the product_id
+    win_package:
+      path: "{{ dest + filename }}"
+      state: present
+
+
+#Sample msi link:https://the.earth.li/~sgtatham/putty/latest/w64/putty-64bit-0.76-installer.msi
+#Example usage:ansible-playbook -e '{"host":"vmware-windows","url":"https://the.earth.li/~sgtatham/putty/latest/w64/putty-64bit-0.76-installer.msi","dest":"C:\\Users\\wintltr\\AppData\\Local\\Temp","filename":"putty-64bit-0.76-installer.msi"}' yamls/windows_client/add_windows_program.yml

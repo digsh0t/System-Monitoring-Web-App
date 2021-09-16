@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"path/filepath"
 )
 
 type Programs struct {
@@ -25,4 +26,37 @@ func GetInstalledProgram(sshConnection SshConnectionInfo) ([]Programs, error) {
 
 	err = json.Unmarshal([]byte(result), &installedPrograms)
 	return installedPrograms, err
+}
+
+func InstallWindowsProgram(host []string, url string, dest string) error {
+
+	type installInfo struct {
+		Host     []string `json:"host"`
+		Url      string   `json:"url"`
+		Dest     string   `json:"dest"`
+		Filename string   `json:"filename"`
+	}
+
+	filename := filepath.Base(url)
+	jsonArgs, err := json.Marshal(installInfo{Host: host, Url: url, Dest: dest, Filename: filename})
+	if err != nil {
+		return err
+	}
+	err = RunAnsiblePlaybookWithjson(string(jsonArgs), "yamls/windows_client/add_windows_program.yml")
+	return err
+}
+
+func DeleteWindowsProgram(host []string, productId string) error {
+
+	type deleteInfo struct {
+		Host      []string `json:"host"`
+		ProductId string   `json:"product_id"`
+	}
+
+	jsonArgs, err := json.Marshal(deleteInfo{Host: host, ProductId: productId})
+	if err != nil {
+		return err
+	}
+	err = RunAnsiblePlaybookWithjson(string(jsonArgs), "yamls/windows_client/delete_windows_program.yml")
+	return err
 }

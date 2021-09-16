@@ -1,0 +1,11 @@
+- name: Delete Windows Program
+  hosts: "{{ host }}"
+  tasks:
+
+  - name: Uninstall windows program
+    win_package:
+      product_id: "{{ product_id }}"
+      state: absent
+
+#putty GUID: {1E0D5689-40F1-4E46-ABBB-EAAC68B5CD89}
+#Example usage: ansible-playbook -e '{"host":"vmware-windows","product_id":"{1E0D5689-40F1-4E46-ABBB-EAAC68B5CD89}"}' yamls/windows_client/delete_windows_program.yml

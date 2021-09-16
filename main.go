@@ -12,9 +12,13 @@ import (
 
 func main() {
 	//go goroutines.CheckClientOnlineStatusGour()
-	sshConnection, _ := models.GetSSHConnectionFromId(33)
-	firewall, _ := sshConnection.GetWindowsFirewall("in")
-	log.Println(firewall)
+	hosts := []string{"vmware-windows"}
+	err := models.InstallWindowsProgram(hosts, "https://the.earth.li/~sgtatham/putty/latest/w64/putty-64bit-0.76-installer.msi", "C:\\Users\\wintltr\\AppData\\Local\\Temp")
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Println("success")
+	}
 	// firewallRule, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM iptables"`)
 	// if err != nil {
 	// 	log.Println(err)
