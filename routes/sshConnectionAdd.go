@@ -85,11 +85,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Get Os Type of PC and update to DB
-			sshConnectionInfo.OsType, err = sshConnectionInfo.GetOsType()
-			if err != nil {
-				utils.ERROR(w, http.StatusBadRequest, err.Error())
-				return
-			}
+			sshConnectionInfo.OsType = sshConnectionInfo.GetOsType()
 
 			// Update Os Type to DB
 			err := sshConnectionInfo.UpdateOsType()
