@@ -1,7 +1,6 @@
 package models
 
 import (
-	"log"
 	"strings"
 )
 
@@ -111,17 +110,11 @@ type AppliedFirewallRule struct {
 
 func AddFirewallRule(firewallJson string) error {
 	err := RunAnsiblePlaybookWithjson(firewallJson, "./yamls/windows_client/add_firewall_rule.yml")
-	if err != nil {
-		log.Println(err)
-	}
 	return err
 }
 
 func DeleteFirewallRule(ruleNameJson string) error {
 	err := RunAnsiblePlaybookWithjson(ruleNameJson, "./yamls/windows_client/delete_firewall_rule.yml")
-	if err != nil {
-		log.Println(err)
-	}
 	return err
 }
 
@@ -147,6 +140,9 @@ func ParsePortFirewallRuleFromPowershell(result string) ([]PortFirewallRule, err
 			ruleList = append(ruleList, rule)
 		}
 	}
-	log.Println(ruleList)
 	return ruleList, nil
+}
+
+func GetWindowsFirewallRule(direction string) {
+
 }

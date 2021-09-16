@@ -12,13 +12,6 @@ import (
 
 func main() {
 	//go goroutines.CheckClientOnlineStatusGour()
-	hosts := []string{"vmware-windows"}
-	err := models.InstallWindowsProgram(hosts, "https://the.earth.li/~sgtatham/putty/latest/w64/putty-64bit-0.76-installer.msi", "C:\\Users\\wintltr\\AppData\\Local\\Temp")
-	if err != nil {
-		log.Println(err)
-	} else {
-		log.Println("success")
-	}
 	// firewallRule, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM iptables"`)
 	// if err != nil {
 	// 	log.Println(err)
@@ -116,6 +109,9 @@ func main() {
 	// Network Automation: Vyos
 	router.HandleFunc("/vyos/list/{id}", routes.GetInfoVyos).Methods("GET")
 	router.HandleFunc("/vyos/config/ip", routes.ConfigIPVyos).Methods("POST")
+
+	//Windows Firewall Settings
+	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
