@@ -117,6 +117,8 @@ func main() {
 
 	//Windows Programs Management
 	router.HandleFunc("/{id}/programs", routes.GetWindowsInstalledProgram).Methods("GET")
+	router.HandleFunc("/programs", routes.InstallWindowsProgram).Methods("POST")
+	router.HandleFunc("/programs", routes.RemoveWindowsProgram).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
