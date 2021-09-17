@@ -133,6 +133,36 @@ func GetAllSSHConnection() ([]SshConnectionInfo, error) {
 	return connectionInfos, err
 }
 
+func GetAllOSSSHConnection(osType string) ([]SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+	var query string
+	if osType == "Linux" {
+		query = `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos 
+			  FROM ssh_connections WHERE sc_ostype='Ubuntu' or sc_ostype='CentOS'`
+	} else {
+		query = `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos 
+			  FROM ssh_connections WHERE sc_ostype='Windows'`
+	}
+	selDB, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var connectionInfo SshConnectionInfo
+	var connectionInfos []SshConnectionInfo
+	for selDB.Next() {
+		var networkOS sql.NullString
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId, &connectionInfo.IsNetwork, &networkOS)
+		if err != nil {
+			return nil, err
+		}
+		connectionInfo.NetworkOS = networkOS.String
+		connectionInfos = append(connectionInfos, connectionInfo)
+	}
+	return connectionInfos, err
+}
+
 func GetAllSSHConnectionWithPassword() ([]SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
