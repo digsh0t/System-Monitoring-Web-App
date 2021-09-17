@@ -289,6 +289,8 @@ func GenerateInventory() error {
 		var line string
 		if sshConnection.IsNetwork {
 			line = sshConnection.HostNameSSH + " ansible_host=" + sshConnection.HostSSH + " ansible_port=" + fmt.Sprint(sshConnection.PortSSH) + " ansible_user=" + sshConnection.UserSSH + " ansible_network_os=" + sshConnection.NetworkOS + "\n"
+		} else if strings.Contains(sshConnection.OsType, "Windows") {
+			line = sshConnection.HostNameSSH + " ansible_host=" + sshConnection.HostSSH + " ansible_port=" + fmt.Sprint(sshConnection.PortSSH) + " ansible_user=" + sshConnection.UserSSH + " ansible_connection=ssh ansible_shell_type=cmd" + "\n"
 		} else {
 			line = sshConnection.HostNameSSH + " ansible_host=" + sshConnection.HostSSH + " ansible_port=" + fmt.Sprint(sshConnection.PortSSH) + " ansible_user=" + sshConnection.UserSSH + "\n"
 		}

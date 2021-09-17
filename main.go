@@ -24,6 +24,16 @@ func main() {
 
 	// firewallSetting := `{"host":"vmware-windows", "name":"add firewall test-in"}`
 	// models.DeleteFirewallRule(firewallSetting)
+	sshConnection, err := models.GetSSHConnectionFromId(33)
+	if err != nil {
+		log.Println(err)
+	}
+	userList, err := sshConnection.GetLocalUsers()
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(userList)
+
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
@@ -122,6 +132,8 @@ func main() {
 
 	//Add new ssh connection
 	router.HandleFunc("/newsshconnection", routes.AddNewSSHConnection).Methods("POST")
+
+	//
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

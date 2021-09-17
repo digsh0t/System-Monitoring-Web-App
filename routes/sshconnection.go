@@ -3,7 +3,9 @@ package routes
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"strings"
 
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
@@ -16,6 +18,7 @@ func AddNewSSHConnection(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	log.Println(strings.Split(r.RemoteAddr, ":")[0])
 
 	type receivedInfo struct {
 		UserSSH   string `json:"user_ssh"`
@@ -50,7 +53,7 @@ func AddNewSSHConnection(w http.ResponseWriter, r *http.Request) {
 	//Add received info to ssh connection
 	sshConnection.HostNameSSH = info.Hostname
 	//sshConnection.HostNameSSH = "vmware-ubuntu"
-	sshConnection.HostSSH = info.IP
+	sshConnection.HostSSH = strings.Split(r.RemoteAddr, ":")[0]
 	//sshConnection.HostSSH = "192.168.163.139"
 	sshConnection.PortSSH = info.Port
 	sshConnection.OsType = info.OSType
