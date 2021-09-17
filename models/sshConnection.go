@@ -389,3 +389,28 @@ func (sshConnection *SshConnectionInfo) GetWindowsFirewall(direction string) ([]
 	firewallRules, err = ParsePortNetshFirewallRuleFromPowershell(firewallRule)
 	return firewallRules, err
 }
+
+// Network:Vyos
+// List All
+func ListAllVyOS() ([]SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos
+			  FROM ssh_connections WHERE sc_isnetwork=true AND sc_networkos = "vyos"`
+	selDB, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var connectionInfo SshConnectionInfo
+	var connectionInfos []SshConnectionInfo
+	for selDB.Next() {
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId, &connectionInfo.IsNetwork, &connectionInfo.NetworkOS)
+		if err != nil {
+			return nil, err
+		}
+		connectionInfos = append(connectionInfos, connectionInfo)
+	}
+	return connectionInfos, err
+}

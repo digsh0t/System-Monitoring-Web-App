@@ -50,8 +50,7 @@ func PackageRemove(w http.ResponseWriter, r *http.Request) {
 
 	// Processing Output From Ansible
 	fatalList, recapList := models.RetrieveFatalRecap(output)
-	var recapStruct models.RecapInfo
-	recapStructList, errRecap := recapStruct.ProcessingRecap(recapList)
+	recapStructList, errRecap := models.ParseRecap(recapList)
 	if errRecap != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", "Fail to process output from ansible")

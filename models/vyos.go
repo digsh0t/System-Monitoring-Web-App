@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/Jeffail/gabs"
@@ -24,7 +23,7 @@ type L3_VyosInterfaces struct {
 }
 
 type VyOsJson struct {
-	NetworkId int          `json:"networkId"`
+	Host      []int        `json:"host"`
 	Interface string       `json:"interface"`
 	IPv4      IPv4VyosInfo `json:"ipv4"`
 	IPv6      IPv6VyosInfo `json:"ipv6"`
@@ -62,24 +61,24 @@ func GetInterfacesVyos(hostname string) ([]L3_VyosInterfaces, error) {
 	}
 
 	// Get substring from ansible output
-	data := utils.ExtractSubString(ouput, "ok: [vyos] => ", "PLAY RECAP")
-
+	data := utils.ExtractSubString(ouput, " => ", "PLAY RECAP")
 	// Parse Json format
 	jsonParsed, err := gabs.ParseJSON([]byte(data))
 	if err != nil {
-		fmt.Println(err.Error())
+		return interfacesList, err
 	}
 
 	value, err := jsonParsed.Search("msg", "l3_interfaces").Children()
 	if err != nil {
-		fmt.Println(err.Error())
+		return interfacesList, err
 	}
 
 	for _, child := range value {
 		var interfaces L3_VyosInterfaces
 		// Get Interface name
 		if child.Exists("name") {
-			interfaces.Name = child.Search("name").String()
+			result := strings.Trim(child.Search("name").String(), "\"")
+			interfaces.Name = result
 		}
 		// Get Ipv4
 		if child.Exists("ipv4", "address") {
@@ -105,7 +104,7 @@ func ConfigIPVyos(vyosJson VyOsJson) (string, error) {
 		err    error
 	)
 	// Get Hostname from Id
-	hostname, err := GetSshHostnameFromId(vyosJson.NetworkId)
+	hostname, err := ConvertListIdToHostnameVer2(vyosJson.Host)
 	if err != nil {
 		return output, errors.New("fail to get hostname")
 	}

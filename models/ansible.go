@@ -26,8 +26,9 @@ type RecapInfo struct {
 // Load Yaml File
 func LoadYAML(filepath string, extraValue map[string]string) (string, error) {
 	var (
-		out bytes.Buffer
-		err error
+		out    bytes.Buffer
+		err    error
+		output string
 	)
 
 	// Establish command for load package
@@ -39,8 +40,11 @@ func LoadYAML(filepath string, extraValue map[string]string) (string, error) {
 	cmd := exec.Command("/bin/bash", "-c", command)
 	cmd.Stdout = &out
 	err = cmd.Run()
-	ouput := out.String()
-	return ouput, err
+	if err != nil {
+		return output, err
+	}
+	output = out.String()
+	return output, err
 }
 
 // RegExp Fatal And Recap from Ansible Output
@@ -75,15 +79,18 @@ func RetrieveFatalRecap(raw string) ([]string, []string) {
 }
 
 // Convert Recap To Struct Format
-func (recapStruct *RecapInfo) ProcessingRecap(recapList []string) ([]RecapInfo, error) {
-	var recapStructList []RecapInfo
-	var err error
+func ParseRecap(recapList []string) ([]RecapInfo, error) {
+	var (
+		recapInfo     RecapInfo
+		recapInfoList []RecapInfo
+		err           error
+	)
 
 	for _, line := range recapList {
 		pattern := "^(.+)\\s+:"
 		r, _ := regexp.Compile(pattern)
 		stringSubmatch := r.FindStringSubmatch(line)
-		recapStruct.ClientName = stringSubmatch[1]
+		recapInfo.ClientName = strings.TrimSpace(stringSubmatch[1])
 
 		for _, keyword := range []string{"ok", "changed", "unreachable", "failed", "skipped", "rescued", "ignored"} {
 			pattern = keyword + "=" + "([0-9]+)"
@@ -95,28 +102,40 @@ func (recapStruct *RecapInfo) ProcessingRecap(recapList []string) ([]RecapInfo, 
 			}
 			switch keyword {
 			case "ok":
-				recapStruct.Ok = number
+				recapInfo.Ok = number
 			case "changed":
-				recapStruct.Changed = number
+				recapInfo.Changed = number
 			case "unreachable":
-				recapStruct.Unreachable = number
+				recapInfo.Unreachable = number
 			case "failed":
-				recapStruct.Failed = number
+				recapInfo.Failed = number
 			case "skipped":
-				recapStruct.Skipped = number
+				recapInfo.Skipped = number
 			case "rescued":
-				recapStruct.Rescued = number
+				recapInfo.Rescued = number
 			case "ignored":
-				recapStruct.Ignored = number
+				recapInfo.Ignored = number
 			}
 		}
-		recapStructList = append(recapStructList, *recapStruct)
+		recapInfoList = append(recapInfoList, recapInfo)
 
 	}
-	return recapStructList, err
+	return recapInfoList, err
 }
 
-// Get Hostname From Id And Concentrate its
+func AnalyzeRecap(RecapInfoList []RecapInfo) map[string]bool {
+	result := make(map[string]bool)
+	for _, recapInfo := range RecapInfoList {
+		if recapInfo.Failed > 0 {
+			result[recapInfo.ClientName] = false
+		} else {
+			result[recapInfo.ClientName] = true
+		}
+	}
+	return result
+}
+
+// Get Hostname From Ids type []string And Concentrate its
 func ConvertListIdToHostname(hosts []string) (string, error) {
 	var (
 		hostStr           string
@@ -142,5 +161,22 @@ func ConvertListIdToHostname(hosts []string) (string, error) {
 			hostStr += sshConnection.HostNameSSH + ","
 		}
 	}
+	return hostStr, err
+}
+
+// Get Hostname From Ids type []int And Concentrate its
+func ConvertListIdToHostnameVer2(hosts []int) (string, error) {
+	var (
+		hostStr string
+		err     error
+	)
+	for _, id := range hosts {
+		sshConnection, err := GetSSHConnectionFromId(id)
+		if err != nil {
+			return "", err
+		}
+		hostStr += sshConnection.HostNameSSH + ","
+	}
+
 	return hostStr, err
 }

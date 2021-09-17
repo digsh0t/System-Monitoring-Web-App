@@ -37,16 +37,30 @@ func ConfigIPVyos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Config IP
 	output, err := models.ConfigIPVyos(vyosJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	// Get fatalList and recapList
 	fatalList, recapList := models.RetrieveFatalRecap(output)
 
+	// Parse recapList for analyzing
+	recapInfoList, err := models.ParseRecap(recapList)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to parse recap").Error())
+		return
+	}
+
+	// Analyzing recap
+	result := models.AnalyzeRecap(recapInfoList)
+
+	// Return Json
 	returnJson := simplejson.New()
-	returnJson.Set("fatalList", fatalList)
-	returnJson.Set("recapList", recapList)
+	returnJson.Set("FatalList", fatalList)
+	returnJson.Set("Status", result)
 	utils.JSON(w, http.StatusOK, returnJson)
 
 }

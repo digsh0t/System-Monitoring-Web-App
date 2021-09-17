@@ -1,6 +1,8 @@
 package utils
 
-import "strings"
+import (
+	"strings"
+)
 
 func FindInStringArray(slice []string, val string) bool {
 	for _, item := range slice {

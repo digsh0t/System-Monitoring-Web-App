@@ -12,9 +12,9 @@ import (
 
 func main() {
 	//go goroutines.CheckClientOnlineStatusGour()
-	sshConnection, _ := models.GetSSHConnectionFromId(33)
-	firewall, _ := sshConnection.GetWindowsFirewall("in")
-	log.Println(firewall)
+	//sshConnection, _ := models.GetSSHConnectionFromId(33)
+	//firewall, _ := sshConnection.GetWindowsFirewall("in")
+	//log.Println(firewall)
 	// firewallRule, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM iptables"`)
 	// if err != nil {
 	// 	log.Println(err)
@@ -112,6 +112,7 @@ func main() {
 	// Network Automation: Vyos
 	router.HandleFunc("/vyos/list/{id}", routes.GetInfoVyos).Methods("GET")
 	router.HandleFunc("/vyos/config/ip", routes.ConfigIPVyos).Methods("POST")
+	router.HandleFunc("/vyos/list", routes.ListAllVyOS).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
