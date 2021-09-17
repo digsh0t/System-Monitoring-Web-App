@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 
 	"golang.org/x/crypto/ssh"
@@ -218,8 +217,6 @@ func GetKeyIdFromPublicKey(pubKey string) (int, error) {
 			return -1, err
 		}
 		currentPub, err := GeneratePublicKey([]byte(privKey))
-		log.Println(string(currentPub))
-		log.Println(pubKey)
 		if err != nil {
 			return -1, err
 		}

@@ -92,14 +92,14 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos) VALUES (?,?,?,?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_isnetwork, sc_networkos) VALUES (?,?,?,?,?,?,?,?,?)")
 	if err != nil {
 
 		return false, err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId, sshConnection.IsNetwork, sshConnection.NetworkOS)
+	_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkOS)
 	if err != nil {
 
 		return false, err
