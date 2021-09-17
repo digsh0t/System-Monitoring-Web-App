@@ -44,23 +44,30 @@ func ConfigIPVyos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get fatalList and recapList
-	fatalList, recapList := models.RetrieveFatalRecap(output)
-
-	// Parse recapList for analyzing
-	recapInfoList, err := models.ParseRecap(recapList)
+	// Processing Output From Ansible
+	status, fatals, err := models.ProcessingAnsibleOutput(output)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to parse recap").Error())
+		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
 		return
 	}
 
-	// Analyzing recap
-	result := models.AnalyzeRecap(recapInfoList)
-
 	// Return Json
 	returnJson := simplejson.New()
-	returnJson.Set("FatalList", fatalList)
-	returnJson.Set("Status", result)
+	returnJson.Set("Status", status)
+	returnJson.Set("Fatal", fatals)
 	utils.JSON(w, http.StatusOK, returnJson)
+
+	// Write Event Web
+	hostname, err := models.ConvertListIdToHostnameVer2(vyosJson.Host)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to get hostname")
+		return
+	}
+	description := "Config IP to network device " + hostname + " successfully"
+	_, err = models.WriteWebEvent(r, "SSHConnection", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 
 }
