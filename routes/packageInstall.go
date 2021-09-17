@@ -26,23 +26,18 @@ func PackageInstall(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve Json Format
-	var packages models.PackageInfo
+	var packages models.PackageJson
 	reqBody, err := ioutil.ReadAll(r.Body)
-	returnJson := simplejson.New()
 	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to retrieve json format")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to parse json").Error())
 		return
 	}
 	json.Unmarshal(reqBody, &packages)
 
 	// Load File Yaml Install
-	hostStr, err := models.ConvertListIdToHostname(packages.Host)
+	hostStr, err := models.ConvertListIdToHostnameVer2(packages.Host)
 	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to processing list host")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
 		return
 	}
 
@@ -55,55 +50,30 @@ func PackageInstall(w http.ResponseWriter, r *http.Request) {
 		extraValue = map[string]string{"host": hostStr, "link": packages.Link}
 	}
 	output, err := models.LoadYAML("./yamls/"+packages.File, extraValue)
-
-	// Processing Output From Ansible
-	fatalList, recapList := models.RetrieveFatalRecap(output)
-	recapStructList, errRecap := models.ParseRecap(recapList)
-	if errRecap != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to process output from ansible")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to load yaml")
 		return
 	}
 
-	// Add Successful Installed Package to DB
-	if packages.Mode == "1" {
-		_, errPackge := models.AddPackage(recapStructList, packages.Package)
-		if errPackge != nil {
-			returnJson.Set("Status", false)
-			returnJson.Set("Error", "Fail to add installed package to db ")
-			utils.JSON(w, http.StatusBadRequest, returnJson)
-			return
-		}
+	// Processing Output From Ansible
+	status, fatalList, err := models.ProcessingAnsibleOutput(output)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+		return
 	}
 
 	// Return Json
-	var eventStatus string
+	returnJson := simplejson.New()
 	returnJson.Set("Fatal", fatalList)
-	returnJson.Set("Recap", recapList)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", err.Error())
-		eventStatus = "failed"
-	} else {
-		returnJson.Set("Status", true)
-		returnJson.Set("Error", nil)
-		eventStatus = "successfully"
-	}
+	returnJson.Set("Status", status)
 	utils.JSON(w, http.StatusOK, returnJson)
 
 	// Write Event Web
-	var description string
-	if eventStatus == "failed" {
-		description = "Package \"" + packages.Package + "\" installed to some host in list " + hostStr + " " + eventStatus
-	} else {
-		description = "Package \"" + packages.Package + "\" installed to " + hostStr + " " + eventStatus
-	}
+	description := "Package \"" + packages.Package + "\" installed to " + hostStr + " successfully"
 	_, err = models.WriteWebEvent(r, "Package", description)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 		return
 	}
-	return
 
 }

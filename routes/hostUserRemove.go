@@ -27,7 +27,7 @@ func HostUserRemove(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve Json Format
 	reqBody, err := ioutil.ReadAll(r.Body)
-	returnJson := simplejson.New()
+
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to retrieve json format").Error())
 		return
@@ -36,24 +36,19 @@ func HostUserRemove(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &hostUser)
 
 	// Remove Host User
-	ouput, err := hostUser.HostUserRemove()
+	output, err := hostUser.HostUserRemove()
 
-	// Processing output and return Json
-	fatalList, recapList := models.RetrieveFatalRecap(ouput)
+	// Processing Output From Ansible
+	status, fatalList, err := models.ProcessingAnsibleOutput(output)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+		return
+	}
 
 	// Return Json
-	var eventStatus string
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatalList)
-	returnJson.Set("Recap", recapList)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Some client fail")
-		eventStatus = "failed"
-	} else {
-		returnJson.Set("Status", true)
-		returnJson.Set("Error", nil)
-		eventStatus = "successfully"
-	}
 	utils.JSON(w, http.StatusBadRequest, returnJson)
 
 	// Write Event Web
@@ -62,12 +57,8 @@ func HostUserRemove(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to convert id string to hostname").Error())
 		return
 	}
-	var description string
-	if eventStatus == "failed" {
-		description = "User \"" + hostUser.HostUserName + "\" removed from some host in list " + host + " " + eventStatus
-	} else {
-		description = "User \"" + hostUser.HostUserName + "\" removed from " + host + " " + eventStatus
-	}
+
+	description := "User \"" + hostUser.HostUserName + "\" removed from " + host + " successfully"
 	_, err = models.WriteWebEvent(r, "HostUser", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())

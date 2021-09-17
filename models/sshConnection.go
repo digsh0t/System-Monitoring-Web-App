@@ -175,8 +175,8 @@ func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 	defer db.Close()
 
 	var sshConnection SshConnectionInfo
-	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
-	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId)
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &sshConnection.SSHKeyId, &sshConnection.OsType)
 	if row == nil {
 		return nil, errors.New("ssh connection doesn't exist")
 	}

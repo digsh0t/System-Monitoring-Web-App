@@ -6,6 +6,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/Jeffail/gabs"
+	"github.com/wintltr/login-api/utils"
 )
 
 type AnsibleInfo struct {
@@ -41,41 +44,73 @@ func LoadYAML(filepath string, extraValue map[string]string) (string, error) {
 	cmd.Stdout = &out
 	err = cmd.Run()
 	if err != nil {
-		return output, err
+		// "Exit status 2" means Ansible displays fatal error but our funtion still works correctly
+		if err.Error() == "exit status 2" || err.Error() == "exit status 4" {
+			err = nil
+		} else {
+			return output, err
+		}
 	}
 	output = out.String()
 	return output, err
 }
 
 // RegExp Fatal And Recap from Ansible Output
-func RetrieveFatalRecap(raw string) ([]string, []string) {
-	var fatalList []string
-	var recapList []string
+func ProcessingAnsibleOutput(ansible_output string) (map[string]bool, []string, error) {
+	var (
+		status    map[string]bool
+		fatalList []string
+		recapList []string
+		err       error
+	)
 
 	// Extracting Fatal
-	text := strings.Split(raw, "\n")
+	text := strings.Split(ansible_output, "\n")
 	for _, line := range text {
 		pattern := "^fatal"
 		r, _ := regexp.Compile(pattern)
 		if r.MatchString(line) {
-			fatalList = append(fatalList, line)
+			msg, err := ParseFatal(line)
+			if err != nil {
+				return status, fatalList, err
+			}
+			fatalList = append(fatalList, msg)
 		}
 	}
 
 	// Extracting PLAY RECAP **********
 	pattern := "PLAY RECAP .+\n"
 	r, _ := regexp.Compile(pattern)
-	strIndex := r.FindStringIndex(raw)
-	tmp := raw[strIndex[1]:]
+	strIndex := r.FindStringIndex(ansible_output)
+	tmp := ansible_output[strIndex[1]:]
 	text = strings.Split(tmp, "\n")
 	for _, line := range text {
 		if line != "" {
 			recapList = append(recapList, line)
 		}
 	}
+	recapInfoList, err := ParseRecap(recapList)
+	if err != nil {
+		return status, fatalList, err
+	}
+	status = AnalyzeRecap(recapInfoList)
 
-	return fatalList, recapList
+	return status, fatalList, err
 
+}
+
+func ParseFatal(line string) (string, error) {
+	var (
+		msg string
+		err error
+	)
+	data := utils.ExtractSubStringByStartIndex(line, " => ")
+	jsonParsed, err := gabs.ParseJSON([]byte(data))
+	if err != nil {
+		return msg, err
+	}
+	msg = jsonParsed.Search("msg").String()
+	return msg, err
 }
 
 // Convert Recap To Struct Format
@@ -126,7 +161,7 @@ func ParseRecap(recapList []string) ([]RecapInfo, error) {
 func AnalyzeRecap(RecapInfoList []RecapInfo) map[string]bool {
 	result := make(map[string]bool)
 	for _, recapInfo := range RecapInfoList {
-		if recapInfo.Failed > 0 {
+		if recapInfo.Failed > 0 || recapInfo.Unreachable > 0 {
 			result[recapInfo.ClientName] = false
 		} else {
 			result[recapInfo.ClientName] = true

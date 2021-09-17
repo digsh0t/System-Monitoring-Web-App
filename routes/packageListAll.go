@@ -30,11 +30,11 @@ func PackageListAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Parse Json
-	var hostList models.PackageInfo
-	json.Unmarshal(reqBody, &hostList)
+	var packageJson models.PackageJson
+	json.Unmarshal(reqBody, &packageJson)
 
 	// Called List All Package
-	packageList, err := models.ListAllPackge(hostList.Host)
+	packageList, err := models.ListAllPackge(packageJson.Host)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to get installed package").Error())
 		return

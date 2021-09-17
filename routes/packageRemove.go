@@ -26,69 +26,43 @@ func PackageRemove(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve Json Format
-	var packages models.PackageInfo
-	returnJson := simplejson.New()
+	var packages models.PackageJson
+
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to retrieve json format")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to parse json").Error())
 		return
 	}
 	json.Unmarshal(reqBody, &packages)
 
 	// Call function Load in yaml.go
-	hostStr, err := models.ConvertListIdToHostname(packages.Host)
+	hostStr, err := models.ConvertListIdToHostnameVer2(packages.Host)
 	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to processing list host")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id to hostname").Error())
 		return
 	}
 	extraValue := map[string]string{"host": hostStr, "package": packages.Package}
 	output, err := models.LoadYAML("./yamls/"+packages.File, extraValue)
-
-	// Processing Output From Ansible
-	fatalList, recapList := models.RetrieveFatalRecap(output)
-	recapStructList, errRecap := models.ParseRecap(recapList)
-	if errRecap != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to process output from ansible")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to load yaml")
 		return
 	}
 
-	// Remove package from DB
-	_, errPackge := models.RemovePackage(recapStructList, packages.Package)
-	if errPackge != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to remove package to db ")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+	// Processing Output From Ansible
+	status, fatalList, err := models.ProcessingAnsibleOutput(output)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
 		return
 	}
 
 	// Return Json
-	var eventStatus string
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatalList)
-	returnJson.Set("Recap", recapList)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", err.Error())
-		eventStatus = "failed"
-	} else {
-		returnJson.Set("Status", true)
-		returnJson.Set("Error", nil)
-		eventStatus = "successfully"
-	}
 	utils.JSON(w, http.StatusOK, returnJson)
 
 	// Write Event Web
-	var description string
-	if eventStatus == "failed" {
-		description = "Package \"" + packages.Package + "\" removed from some host in list " + hostStr + " " + eventStatus
-	} else {
-		description = "Package \"" + packages.Package + "\" removed from " + hostStr + " " + eventStatus
-	}
+	description := "Package \"" + packages.Package + "\" removed from " + hostStr + " successfully"
 	_, err = models.WriteWebEvent(r, "Package", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())

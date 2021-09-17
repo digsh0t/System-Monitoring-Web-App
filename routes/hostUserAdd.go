@@ -27,34 +27,26 @@ func HostUserAdd(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve Json Format
 	reqBody, err := ioutil.ReadAll(r.Body)
-	returnJson := simplejson.New()
 	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Fail to retrieve Json format")
-		utils.JSON(w, http.StatusBadRequest, returnJson)
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to parse json").Error())
 		return
 	}
 	var hostUser models.HostUserInfo
 	json.Unmarshal(reqBody, &hostUser)
 
-	ouput, err := hostUser.HostUserAdd()
+	output, err := hostUser.HostUserAdd()
 
-	// Retrieve Fatal and Recap
-	fatalList, recapList := models.RetrieveFatalRecap(ouput)
+	// Processing Output From Ansible
+	status, fatalList, err := models.ProcessingAnsibleOutput(output)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+		return
+	}
 
 	// Return Json
-	var eventStatus string
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatalList)
-	returnJson.Set("Recap", recapList)
-	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", "Some client fail")
-		eventStatus = "failed"
-	} else {
-		returnJson.Set("Status", true)
-		returnJson.Set("Error", nil)
-		eventStatus = "successfully"
-	}
 	utils.JSON(w, http.StatusBadRequest, returnJson)
 
 	// Write Event Web
@@ -63,12 +55,8 @@ func HostUserAdd(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to convert id to hostname").Error())
 		return
 	}
-	var description string
-	if eventStatus == "failed" {
-		description = "User \"" + hostUser.HostUserName + "\" added to some host in list " + host + " " + eventStatus
-	} else {
-		description = "User \"" + hostUser.HostUserName + "\" added to " + host + " " + eventStatus
-	}
+
+	description := "User \"" + hostUser.HostUserName + "\" added to " + host + " successfully"
 	_, err = models.WriteWebEvent(r, "HostUser", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())

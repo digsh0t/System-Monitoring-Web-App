@@ -26,3 +26,13 @@ func ExtractSubString(str string, start string, end string) (result string) {
 	}
 	return str[s:e]
 }
+
+func ExtractSubStringByStartIndex(str string, start string) (result string) {
+	s := strings.Index(str, start)
+	if s == -1 {
+		return
+	}
+	s += len(start)
+
+	return str[s:]
+}
