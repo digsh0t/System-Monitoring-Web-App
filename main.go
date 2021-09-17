@@ -120,5 +120,8 @@ func main() {
 	router.HandleFunc("/programs", routes.InstallWindowsProgram).Methods("POST")
 	router.HandleFunc("/programs", routes.RemoveWindowsProgram).Methods("DELETE")
 
+	//Add new ssh connection
+	router.HandleFunc("/newsshconnection", routes.AddNewSSHConnection).Methods("POST")
+
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

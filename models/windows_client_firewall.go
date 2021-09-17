@@ -142,7 +142,3 @@ func ParsePortFirewallRuleFromPowershell(result string) ([]PortFirewallRule, err
 	}
 	return ruleList, nil
 }
-
-func GetWindowsFirewallRule(direction string) {
-
-}

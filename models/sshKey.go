@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	"golang.org/x/crypto/ssh"
@@ -181,6 +182,50 @@ func SSHKeyDelete(id int) (bool, error) {
 	if rows == 0 {
 		return false, errors.New("no SSH Connections with this ID exists")
 	}
-	
+
 	return true, err
+}
+
+func GetAllSSHKeyWithPrvKeyFromDB() ([]SSHKey, error) {
+	var sshKey SSHKey
+	var sshKeyList []SSHKey
+
+	db := database.ConnectDB()
+	defer db.Close()
+	rows, err := db.Query("SELECT sk_key_id, sk_key_name, sk_private_key, creator_id FROM ssh_keys")
+	if err != nil {
+		return sshKeyList, err
+	}
+	for rows.Next() {
+		err = rows.Scan(&sshKey.SSHKeyId, &sshKey.KeyName, &sshKey.PrivateKey, &sshKey.CreatorId)
+		if err != nil {
+			return sshKeyList, err
+		}
+		sshKeyList = append(sshKeyList, sshKey)
+	}
+	return sshKeyList, err
+}
+
+func GetKeyIdFromPublicKey(pubKey string) (int, error) {
+	keyList, err := GetAllSSHKeyWithPrvKeyFromDB()
+	var privKey string
+	if err != nil {
+		return -1, err
+	}
+	for _, key := range keyList {
+		privKey, err = AESDecryptKey(key.PrivateKey)
+		if err != nil {
+			return -1, err
+		}
+		currentPub, err := GeneratePublicKey([]byte(privKey))
+		log.Println(string(currentPub))
+		log.Println(pubKey)
+		if err != nil {
+			return -1, err
+		}
+		if pubKey+"\n" == string(currentPub) {
+			return key.SSHKeyId, err
+		}
+	}
+	return -1, err
 }
