@@ -3,7 +3,19 @@
   tasks:
   - name: Add the user 'james' with a bash shell, appending the group 'admins' and 'developers' to the user's groups
     ansible.builtin.user:
-      name: james
-      shell: /bin/bash
-      groups: admins,developers
+      name: "{{ username }}"
+      shell: "{{ shell }}"
+      groups: "{{ groups }}"    
       append: yes
+      when: generate_ssh_key == "no"
+
+  - name: Add the user 'james' with a bash shell, appending the group 'admins' and 'developers' to the user's groups
+    ansible.builtin.user:
+      name: "{{ username }}"
+      shell: "{{ shell }}"
+      groups: "{{ groups }}"
+      generate_ssh_key: "{{ generetate_ssh_keys }}"
+      ssh_key_bits: "{{ ssh_key_bit }}"
+      ssh_key_file: "{{ ssh_key_file }}"
+      append: yes
+      when: generate_ssh_key == "yes" and ssh_key_bits is defined and ssh_key_file is defined

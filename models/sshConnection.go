@@ -112,7 +112,7 @@ func GetAllSSHConnection() ([]SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos 
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_isnetwork, sc_networkos 
 			  FROM ssh_connections`
 	selDB, err := db.Query(query)
 	if err != nil {
@@ -123,7 +123,7 @@ func GetAllSSHConnection() ([]SshConnectionInfo, error) {
 	var connectionInfos []SshConnectionInfo
 	for selDB.Next() {
 		var networkOS sql.NullString
-		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId, &connectionInfo.IsNetwork, &networkOS)
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId, &connectionInfo.OsType, &connectionInfo.IsNetwork, &networkOS)
 		if err != nil {
 			return nil, err
 		}

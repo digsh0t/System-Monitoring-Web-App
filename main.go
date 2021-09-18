@@ -24,15 +24,15 @@ func main() {
 
 	// firewallSetting := `{"host":"vmware-windows", "name":"add firewall test-in"}`
 	// models.DeleteFirewallRule(firewallSetting)
-	sshConnection, err := models.GetSSHConnectionFromId(33)
-	if err != nil {
-		log.Println(err)
-	}
-	userList, err := sshConnection.GetLocalUsers()
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println(userList)
+	// sshConnection, err := models.GetSSHConnectionFromId(33)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// userList, err := sshConnection.GetLocalUsers()
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// log.Println(userList)
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
