@@ -28,3 +28,23 @@ func GetWindowsLocalUser(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.JSON(w, http.StatusOK, userList)
 }
+
+func GetWindowsLocalUserGroup(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	groupList, err := sshConnection.GetLocalUserGroup()
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.JSON(w, http.StatusOK, groupList)
+}

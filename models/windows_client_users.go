@@ -15,6 +15,14 @@ type ClientUser struct {
 	UUID        string `json:"uuid"`
 }
 
+type LocalUserGroup struct {
+	Comment   string `json:"comment"`
+	Gid       string `json:"gid"`
+	GidSigned string `json:"gid_signed"`
+	GroupSid  string `json:"group_sid"`
+	Groupname string `json:"groupname"`
+}
+
 //Both Linux and Windows can use this
 func (sshConnection *SshConnectionInfo) GetLocalUsers() ([]ClientUser, error) {
 	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM users"`)
@@ -25,4 +33,15 @@ func (sshConnection *SshConnectionInfo) GetLocalUsers() ([]ClientUser, error) {
 
 	err = json.Unmarshal([]byte(result), &userList)
 	return userList, err
+}
+
+func (sshConnection *SshConnectionInfo) GetLocalUserGroup() ([]LocalUserGroup, error) {
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM groups"`)
+	if err != nil {
+		return nil, err
+	}
+	var groupList []LocalUserGroup
+
+	err = json.Unmarshal([]byte(result), &groupList)
+	return groupList, err
 }
