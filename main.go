@@ -134,7 +134,8 @@ func main() {
 	//Add new ssh connection
 	router.HandleFunc("/newsshconnection", routes.AddNewSSHConnection).Methods("POST")
 
-	//
+	//Get Windows Local Users
+	router.HandleFunc("/{id}/localuser", routes.GetWindowsLocalUser).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
