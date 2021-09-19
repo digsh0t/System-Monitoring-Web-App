@@ -123,7 +123,7 @@ func main() {
 
 	//Windows Firewall Settings
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("GET")
-	router.HandleFunc("/firewall", routes.AddWindowsFirewall).Methods("POST")
+	router.HandleFunc("/firewall", routes.AddWindowsFirewall).Methods("OPTIONS", "POST")
 	router.HandleFunc("/firewall", routes.RemoveWindowsFirewallRule).Methods("DELETE")
 
 	//Windows Programs Management

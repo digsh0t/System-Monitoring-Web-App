@@ -3,13 +3,13 @@
   tasks:
   - name: New Firewall rule
     win_firewall_rule:
-      name: "{{ name }}"
+      name: "{{ rule_name }}"
       group: "{{ group }}"
       localip: "{{ local_ip }}"
       localport: "{{ local_port }}"
       remoteip: "{{ remote_ip }}"
       remoteport: "{{ remote_port }}"
-      action: "{{ action }}"
+      action: "{{ rule_action }}"
       direction: "{{ direction }}"
       protocol: "{{ protocol }}"
       enabled: "{{ enabled }}"
@@ -17,4 +17,4 @@
       state: "present"
 
 #Usage: 
-#ansible-playbook --extra-vars '{"host":"vmware-windows", "name":"add firewall test-in","group":"","local_ip":"Any","local_port":"Any","remote_ip":"Any","remote_port":"Any","action":"allow","direction":"in","protocol":"tcp","enabled":"no","profiles":"private"}'
+#ansible-playbook --extra-vars '{"host":"vmware-windows", "rule_name":"add firewall test-in","group":"","local_ip":"Any","local_port":"Any","remote_ip":"Any","remote_port":"Any","rule_action":"allow","direction":"in","protocol":"tcp","enabled":"no","profiles":"private"}'
