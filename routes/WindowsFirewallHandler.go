@@ -125,7 +125,60 @@ func RemoveWindowsFirewallRule(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read windows firewall rules from client windows machine").Error())
 		return
 	}
-	err = models.DeleteFirewallRule(string(body))
+
+	//Firewall type for unmarshalling
+	type rule struct {
+		SSHConnectionId int    `json:"ssh_connection_id"`
+		RuleName        string `json:"name"`
+		Enabled         string `json:"enabled"`
+		Direction       string `json:"direction"`
+		Profiles        string `json:"profiles"`
+		Grouping        string `json:"grouping"`
+		LocalIP         string `json:"local_ip"`
+		RemoteIP        string `json:"remote_ip"`
+		Protocol        string `json:"protocol"`
+		LocalPort       string `json:"local_port"`
+		RemotePort      string `json:"remote_port"`
+		Action          string `json:"action"`
+	}
+
+	var ru rule
+	err = json.Unmarshal(body, &ru)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	//Translate ssh connection id list to hostname list
+
+	sshConnection, err := models.GetSSHConnectionFromId(ru.SSHConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to get machine info from provided id").Error())
+		return
+	}
+
+	//Copy unmarshalled rule to rule with right format
+	var newRule models.DeletedFirewallRule
+	newRule.Host = sshConnection.HostNameSSH
+	newRule.Action = ru.Action
+	newRule.Direction = ru.Direction
+	newRule.Enabled = ru.Enabled
+	newRule.Grouping = ru.Grouping
+	newRule.Profiles = ru.Profiles
+	newRule.Protocol = ru.Protocol
+	newRule.RuleName = ru.RuleName
+	newRule.LocalIP = ru.LocalIP
+	newRule.LocalPort = ru.LocalPort
+	newRule.RemoteIP = ru.RemoteIP
+	newRule.RemotePort = ru.RemotePort
+
+	marshalRule, err := json.Marshal(newRule)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to parse delete windows firewall rule").Error())
+		return
+	}
+
+	err = models.DeleteFirewallRule(string(marshalRule))
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to delete firewall rule from client windows machine").Error())
 		return

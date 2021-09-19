@@ -122,7 +122,7 @@ func main() {
 	router.HandleFunc("/vyos/config/ip", routes.ConfigIPVyos).Methods("POST")
 
 	//Windows Firewall Settings
-	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("GET")
+	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")
 	router.HandleFunc("/firewall", routes.AddWindowsFirewall).Methods("OPTIONS", "POST")
 	router.HandleFunc("/firewall", routes.RemoveWindowsFirewallRule).Methods("DELETE")
 
