@@ -285,6 +285,7 @@ func GenerateInventory() error {
 	var inventory string
 	for _, sshConnection := range sshConnectionList {
 		var line string
+
 		if sshConnection.IsNetwork {
 			line = sshConnection.HostNameSSH + " ansible_host=" + sshConnection.HostSSH + " ansible_port=" + fmt.Sprint(sshConnection.PortSSH) + " ansible_user=" + sshConnection.UserSSH + " ansible_network_os=" + sshConnection.NetworkOS + "\n"
 		} else if strings.Contains(sshConnection.OsType, "Windows") {
@@ -360,26 +361,48 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithSSHKey(cmd string) (strin
 }
 
 // Get OS Type of PC
-func (sshConnection *SshConnectionInfo) GetOsType() string {
-	var osType string
+func (sshConnection *SshConnectionInfo) GetOsType() (string, error) {
 
-	// Initialize extra value and run yaml file
-	var extraValue map[string]string = map[string]string{"host": sshConnection.HostNameSSH}
-	output, err := LoadYAML("./yamls/checkOsType.yml", extraValue)
+	/*
+		// Initialize extra value and run yaml file
+		var extraValue map[string]string = map[string]string{"host": sshConnection.HostNameSSH}
+		output, err := LoadYAML("./yamls/checkOsType.yml", extraValue)
+		if err != nil {
+			osType = "Unknown"
+			return osType
+		}
+
+		// Retrieving value from Json format
+		value := ExtractJsonValue(output, []string{"msg"})
+		osType = value[0]
+		if osType == "" {
+			osType = "Unknown"
+			return osType
+		}
+
+		// Convert friendly name for windows type
+		if strings.Contains(osType, "Windows") {
+			osType = "Windows"
+		}
+		return osType
+	*/
+	var osType string
+	type OsJson struct {
+		Name string `json:"name"`
+	}
+
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT name FROM os_version"`)
+	var osJson []OsJson
 	if err != nil {
 		osType = "Unknown"
-		return osType
+	} else {
+		err = json.Unmarshal([]byte(output), &osJson)
+		if err != nil {
+			return osType, errors.New("fail to get os type")
+		}
+		osType = osJson[0].Name
 	}
-
-	// Retrieving value from Json format
-	value := ExtractJsonValue(output, []string{"msg"})
-	osType = value[0]
-
-	// Convert friendly name for windows type
-	if strings.Contains(osType, "Windows") {
-		osType = "Windows"
-	}
-	return osType
+	return osType, err
 }
 
 // Update Os Type to DB

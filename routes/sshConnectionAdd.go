@@ -67,6 +67,14 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 				utils.JSON(w, http.StatusBadRequest, returnJson)
 				return
 			}
+			// Get Os Type of PC and update to DB
+			sshConnectionInfo.OsType, err = sshConnectionInfo.GetOsType()
+			if err != nil {
+				returnJson.Set("Status", false)
+				returnJson.Set("Error", err.Error())
+				utils.JSON(w, http.StatusBadRequest, returnJson)
+				return
+			}
 
 			success, err = sshConnectionInfo.AddSSHConnectionToDB()
 			if err != nil {
@@ -84,18 +92,16 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			// Get Os Type of PC and update to DB
-			sshConnectionInfo.OsType = sshConnectionInfo.GetOsType()
-
-			// Update Os Type to DB
-			err := sshConnectionInfo.UpdateOsType()
-			if err != nil {
-				returnJson.Set("Status", false)
-				returnJson.Set("Error", errors.New("error while updating os type to database"))
-				utils.JSON(w, http.StatusBadRequest, returnJson)
-				return
-			}
-
+			/*
+				// Update Os Type to DB
+				err := sshConnectionInfo.UpdateOsType()
+				if err != nil {
+					returnJson.Set("Status", false)
+					returnJson.Set("Error", errors.New("error while updating os type to database"))
+					utils.JSON(w, http.StatusBadRequest, returnJson)
+					return
+				}
+			*/
 			// Return Json
 			utils.ReturnInsertJSON(w, success, err)
 			eventStatus = "successfully"
