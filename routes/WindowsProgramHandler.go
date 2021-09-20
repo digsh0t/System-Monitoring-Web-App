@@ -3,7 +3,6 @@ package routes
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -40,9 +39,25 @@ func InstallWindowsProgram(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read install info").Error())
 		return
 	}
-	var bodyMap map[string]interface{}
-	json.Unmarshal(body, &bodyMap)
-	err = models.InstallWindowsProgram(bodyMap["host"], fmt.Sprintf("%v", bodyMap["url"]), fmt.Sprintf("%v", bodyMap["dest"]))
+
+	type unmarshalledProgram struct {
+		SSHConnectionId []int  `json:"ssh_connection_id"`
+		URL             string `json:"url"`
+		Dest            string `json:"dest"`
+	}
+	var uP unmarshalledProgram
+
+	json.Unmarshal(body, &uP)
+	var hosts []string
+	for _, id := range uP.SSHConnectionId {
+		sshConnection, err := models.GetSSHConnectionFromId(id)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		hosts = append(hosts, sshConnection.HostNameSSH)
+	}
+	err = models.InstallWindowsProgram(hosts, uP.URL, uP.Dest)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to install program to client machine").Error())
 		return
@@ -56,11 +71,22 @@ func RemoveWindowsProgram(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var bodyMap map[string]interface{}
-	json.Unmarshal(body, &bodyMap)
+	type deletedProgram struct {
+		SSHConnectionId int    `json:"ssh_connection_id"`
+		UninstallString string `json:"uninstall_string"`
+	}
+	var dP deletedProgram
+	json.Unmarshal(body, &dP)
+
+	sshConnection, err := models.GetSSHConnectionFromId(dP.SSHConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to get machine info from provided id").Error())
+		return
+	}
+
 	regex, _ := regexp.Compile(`\{.*?\}`)
-	programId := regex.FindString(fmt.Sprintf("%v", bodyMap["uninstall_string"]))
-	err = models.DeleteWindowsProgram(bodyMap["host"], programId)
+	programId := regex.FindString(dP.UninstallString)
+	err = models.DeleteWindowsProgram(sshConnection.HostNameSSH, programId)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to remove program from client machine").Error())
 		return
