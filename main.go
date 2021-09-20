@@ -60,9 +60,9 @@ func main() {
 	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")
 
 	// Package
-	router.HandleFunc("/package/install", routes.PackageInstall).Methods("POST")
-	router.HandleFunc("/package/remove", routes.PackageRemove).Methods("POST")
-	router.HandleFunc("/package/list", routes.PackageListAll).Methods("POST")
+	router.HandleFunc("linux/package/install", routes.PackageInstall).Methods("POST")
+	router.HandleFunc("linux/package/remove", routes.PackageRemove).Methods("POST")
+	router.HandleFunc("linux/package/list", routes.PackageListAll).Methods("POST")
 
 	// Host User
 	router.HandleFunc("/hostuser/add", routes.HostUserAdd).Methods("POST")
