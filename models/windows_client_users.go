@@ -23,6 +23,22 @@ type LocalUserGroup struct {
 	Groupname string `json:"groupname"`
 }
 
+type NewLocalUser struct {
+	Host                     []string `json:"host"`
+	AccountDisabled          string   `json:"account_disabled"`
+	Description              string   `json:"description"`
+	Fullname                 string   `json:"fullname"`
+	Group                    []string `json:"group"`
+	HomeDirectory            string   `json:"home_directory"`
+	LoginScript              string   `json:"login_script"`
+	Username                 string   `json:"username"`
+	Password                 string   `json:"password"`
+	PasswordExpired          string   `json:"password_expired"`
+	PasswordNeverExpires     string   `json:"password_never_expires"`
+	Profile                  string   `json:"profile"`
+	UserCannotChangePassword string   `json:"user_cannot_change_password"`
+}
+
 //Both Linux and Windows can use this
 func (sshConnection *SshConnectionInfo) GetLocalUsers() ([]ClientUser, error) {
 	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM users"`)
@@ -44,4 +60,9 @@ func (sshConnection *SshConnectionInfo) GetLocalUserGroup() ([]LocalUserGroup, e
 
 	err = json.Unmarshal([]byte(result), &groupList)
 	return groupList, err
+}
+
+func AddNewWindowsUser(firewallJson string) error {
+	err := RunAnsiblePlaybookWithjson(firewallJson, "./yamls/windows_client/add_local_user.yml")
+	return err
 }
