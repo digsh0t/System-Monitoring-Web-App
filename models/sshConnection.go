@@ -361,7 +361,7 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithSSHKey(cmd string) (strin
 }
 
 // Get OS Type of PC
-func (sshConnection *SshConnectionInfo) GetOsType() (string, error) {
+func (sshConnection *SshConnectionInfo) GetOsType() string {
 
 	/*
 		// Initialize extra value and run yaml file
@@ -398,11 +398,11 @@ func (sshConnection *SshConnectionInfo) GetOsType() (string, error) {
 	} else {
 		err = json.Unmarshal([]byte(output), &osJson)
 		if err != nil {
-			return osType, errors.New("fail to get os type")
+			osType = "Unknown"
 		}
 		osType = osJson[0].Name
 	}
-	return osType, err
+	return osType
 }
 
 // Update Os Type to DB
