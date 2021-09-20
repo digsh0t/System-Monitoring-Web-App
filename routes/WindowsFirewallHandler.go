@@ -129,17 +129,17 @@ func RemoveWindowsFirewallRule(w http.ResponseWriter, r *http.Request) {
 	//Firewall type for unmarshalling
 	type rule struct {
 		SSHConnectionId int    `json:"ssh_connection_id"`
-		RuleName        string `json:"name"`
-		Enabled         string `json:"enabled"`
-		Direction       string `json:"direction"`
-		Profiles        string `json:"profiles"`
-		Grouping        string `json:"grouping"`
-		LocalIP         string `json:"local_ip"`
-		RemoteIP        string `json:"remote_ip"`
-		Protocol        string `json:"protocol"`
-		LocalPort       string `json:"local_port"`
-		RemotePort      string `json:"remote_port"`
-		Action          string `json:"action"`
+		RuleName        string `json:"RuleName"`
+		Enabled         string `json:"Enabled"`
+		Direction       string `json:"Direction"`
+		Profiles        string `json:"Profiles"`
+		Grouping        string `json:"Grouping"`
+		LocalIP         string `json:"LocalIP"`
+		RemoteIP        string `json:"RemoteIP"`
+		Protocol        string `json:"Protocol"`
+		LocalPort       string `json:"LocalPort"`
+		RemotePort      string `json:"RemotePort"`
+		Action          string `json:"Action"`
 	}
 
 	var ru rule
