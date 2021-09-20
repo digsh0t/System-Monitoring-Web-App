@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
@@ -32,7 +33,19 @@ func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sshConnectionList, err := models.GetAllSSHConnection()
+	vars := mux.Vars(r)
+	osType := vars["ostype"]
+	if osType == "" {
+		sshConnectionList, err := models.GetAllSSHConnection()
+		if err != nil {
+			utils.JSON(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		utils.JSON(w, http.StatusOK, sshConnectionList)
+		return
+	}
+
+	sshConnectionList, err := models.GetAllOSSSHConnection(osType)
 	if err != nil {
 		utils.JSON(w, http.StatusBadRequest, err.Error())
 		return

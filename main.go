@@ -12,9 +12,6 @@ import (
 
 func main() {
 	//go goroutines.CheckClientOnlineStatusGour()
-	//sshConnection, _ := models.GetSSHConnectionFromId(33)
-	//firewall, _ := sshConnection.GetWindowsFirewall("in")
-	//log.Println(firewall)
 	// firewallRule, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM iptables"`)
 	// if err != nil {
 	// 	log.Println(err)
@@ -27,6 +24,16 @@ func main() {
 
 	// firewallSetting := `{"host":"vmware-windows", "name":"add firewall test-in"}`
 	// models.DeleteFirewallRule(firewallSetting)
+	// sshConnection, err := models.GetSSHConnectionFromId(33)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// userList, err := sshConnection.GetLocalUsers()
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// log.Println(userList)
+
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
@@ -38,6 +45,7 @@ func main() {
 	// SSH Connection
 	router.HandleFunc("/sshconnection", routes.SSHCopyKey).Methods("POST", "OPTIONS")
 	router.HandleFunc("/sshconnection/{id}/test", routes.TestSSHConnection).Methods("GET", "OPTIONS")
+	router.HandleFunc("/sshconnections/{ostype}", routes.GetAllSSHConnection).Methods("GET", "OPTIONS")
 	router.HandleFunc("/sshconnections", routes.GetAllSSHConnection).Methods("GET", "OPTIONS")
 	router.HandleFunc("/sshconnection/{id}", routes.SSHConnectionDeleteRoute).Methods("DELETE", "OPTIONS")
 
@@ -113,6 +121,23 @@ func main() {
 	router.HandleFunc("/vyos/list/{id}", routes.GetInfoVyos).Methods("GET")
 	router.HandleFunc("/vyos/config/ip", routes.ConfigIPVyos).Methods("POST")
 	router.HandleFunc("/vyos/list", routes.ListAllVyOS).Methods("GET")
+
+	//Windows Firewall Settings
+	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")
+	router.HandleFunc("/firewall", routes.AddWindowsFirewall).Methods("OPTIONS", "POST")
+	router.HandleFunc("/firewall", routes.RemoveWindowsFirewallRule).Methods("DELETE")
+
+	//Windows Programs Management
+	router.HandleFunc("/{id}/programs", routes.GetWindowsInstalledProgram).Methods("GET")
+	router.HandleFunc("/programs", routes.InstallWindowsProgram).Methods("POST")
+	router.HandleFunc("/programs", routes.RemoveWindowsProgram).Methods("DELETE")
+
+	//Add new ssh connection
+	router.HandleFunc("/newsshconnection", routes.AddNewSSHConnection).Methods("POST")
+
+	//Windows Local Users Management
+	router.HandleFunc("/{id}/localuser", routes.GetWindowsLocalUser).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/localusergroup", routes.GetWindowsLocalUserGroup).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

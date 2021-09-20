@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -91,14 +92,14 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos) VALUES (?,?,?,?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_isnetwork, sc_networkos) VALUES (?,?,?,?,?,?,?,?,?)")
 	if err != nil {
 
 		return false, err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId, sshConnection.IsNetwork, sshConnection.NetworkOS)
+	_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkOS)
 	if err != nil {
 
 		return false, err
@@ -111,8 +112,36 @@ func GetAllSSHConnection() ([]SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos 
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_isnetwork, sc_networkos 
 			  FROM ssh_connections`
+	selDB, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var connectionInfo SshConnectionInfo
+	var connectionInfos []SshConnectionInfo
+	for selDB.Next() {
+		var networkOS sql.NullString
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId, &connectionInfo.OsType, &connectionInfo.IsNetwork, &networkOS)
+		if err != nil {
+			return nil, err
+		}
+		connectionInfo.NetworkOS = networkOS.String
+		connectionInfos = append(connectionInfos, connectionInfo)
+	}
+	return connectionInfos, err
+}
+
+func GetAllOSSSHConnection(osType string) ([]SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+	var query string
+	if osType == "Linux" {
+		query = `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos FROM ssh_connections WHERE sc_ostype='Ubuntu' or sc_ostype='CentOS'`
+	} else {
+		query = `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos FROM ssh_connections WHERE sc_ostype LIKE '%Windows%'`
+	}
 	selDB, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -258,6 +287,8 @@ func GenerateInventory() error {
 		var line string
 		if sshConnection.IsNetwork {
 			line = sshConnection.HostNameSSH + " ansible_host=" + sshConnection.HostSSH + " ansible_port=" + fmt.Sprint(sshConnection.PortSSH) + " ansible_user=" + sshConnection.UserSSH + " ansible_network_os=" + sshConnection.NetworkOS + "\n"
+		} else if strings.Contains(sshConnection.OsType, "Windows") {
+			line = sshConnection.HostNameSSH + " ansible_host=" + sshConnection.HostSSH + " ansible_port=" + fmt.Sprint(sshConnection.PortSSH) + " ansible_user=" + sshConnection.UserSSH + " ansible_connection=ssh ansible_shell_type=cmd" + "\n"
 		} else {
 			line = sshConnection.HostNameSSH + " ansible_host=" + sshConnection.HostSSH + " ansible_port=" + fmt.Sprint(sshConnection.PortSSH) + " ansible_user=" + sshConnection.UserSSH + "\n"
 		}
@@ -413,4 +444,14 @@ func ListAllVyOS() ([]SshConnectionInfo, error) {
 		connectionInfos = append(connectionInfos, connectionInfo)
 	}
 	return connectionInfos, err
+}
+func (sshConnection *SshConnectionInfo) GetInstalledProgram() ([]Programs, error) {
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM programs"`)
+	if err != nil {
+		return nil, err
+	}
+	var installedPrograms []Programs
+
+	err = json.Unmarshal([]byte(result), &installedPrograms)
+	return installedPrograms, err
 }

@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"path/filepath"
 )
 
 type Programs struct {
@@ -16,13 +17,35 @@ type Programs struct {
 	IdentifyingNumber string `json:"identifying_number"`
 }
 
-func GetInstalledProgram(sshConnection SshConnectionInfo) ([]Programs, error) {
-	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM programs"`)
-	if err != nil {
-		return nil, err
-	}
-	var installedPrograms []Programs
+func InstallWindowsProgram(host interface{}, url string, dest string) error {
 
-	err = json.Unmarshal([]byte(result), &installedPrograms)
-	return installedPrograms, err
+	type installInfo struct {
+		Host     interface{} `json:"host"`
+		Url      string      `json:"url"`
+		Dest     string      `json:"dest"`
+		Filename string      `json:"filename"`
+	}
+
+	filename := filepath.Base(url)
+	jsonArgs, err := json.Marshal(installInfo{Host: host, Url: url, Dest: dest, Filename: filename})
+	if err != nil {
+		return err
+	}
+	err = RunAnsiblePlaybookWithjson(string(jsonArgs), "yamls/windows_client/add_windows_program.yml")
+	return err
+}
+
+func DeleteWindowsProgram(host interface{}, productId string) error {
+
+	type deleteInfo struct {
+		Host      interface{} `json:"host"`
+		ProductId string      `json:"product_id"`
+	}
+
+	jsonArgs, err := json.Marshal(deleteInfo{Host: host, ProductId: productId})
+	if err != nil {
+		return err
+	}
+	err = RunAnsiblePlaybookWithjson(string(jsonArgs), "yamls/windows_client/delete_windows_program.yml")
+	return err
 }

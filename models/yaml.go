@@ -1,7 +1,8 @@
 package models
 
 import (
-	"log"
+	"bytes"
+	"fmt"
 	"os/exec"
 
 	ansibler "github.com/febrianrendak/go-ansible"
@@ -30,10 +31,20 @@ func RunAnsiblePlaybookWithjson(extraVars string, filepath string) error {
 
 	var args []string
 	if extraVars != "" {
-		args = append(args, "--extra-vars="+extraVars)
+		args = append(args, "--extra-vars", extraVars, filepath)
+	} else {
+		args = append(args, filepath)
 	}
-	args = append(args, filepath)
-	log.Println(args)
+
 	cmd := exec.Command("ansible-playbook", args...)
-	return cmd.Run()
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return err
+	}
+	return err
 }
