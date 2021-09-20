@@ -124,3 +124,50 @@ func AddNewWindowsLocalUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func DeleteWindowsUser(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusOK, err.Error())
+		return
+	}
+
+	//User type for unmarshalling
+	type unmarshalledUser struct {
+		SSHConnectionId int    `json:"ssh_connection_id"`
+		Name            string `json:"username"`
+	}
+
+	type deletedUser struct {
+		Host string `json:"host"`
+		Name string `json:"username"`
+	}
+
+	var uu unmarshalledUser
+	err = json.Unmarshal(body, &uu)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	//Translate ssh connection id list to hostname list
+	sshConnection, err := models.GetSSHConnectionFromId(uu.SSHConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var dU deletedUser
+	dU.Host = sshConnection.HostNameSSH
+	dU.Name = uu.Name
+	marshalled, err := json.Marshal(dU)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = models.DeleteWindowsUser(string(marshalled))
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+}

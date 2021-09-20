@@ -1,0 +1,7 @@
+- name: Windows User management
+  hosts: "{{ host }}"
+  tasks:
+  - name: Add new Windows User
+    win_user:
+      name: "{{ username }}"
+      state: "absent"

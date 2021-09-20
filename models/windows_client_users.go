@@ -62,7 +62,12 @@ func (sshConnection *SshConnectionInfo) GetLocalUserGroup() ([]LocalUserGroup, e
 	return groupList, err
 }
 
-func AddNewWindowsUser(firewallJson string) error {
-	err := RunAnsiblePlaybookWithjson(firewallJson, "./yamls/windows_client/add_local_user.yml")
+func AddNewWindowsUser(userJson string) error {
+	err := RunAnsiblePlaybookWithjson(userJson, "./yamls/windows_client/add_local_user.yml")
+	return err
+}
+
+func DeleteWindowsUser(userJson string) error {
+	err := RunAnsiblePlaybookWithjson(userJson, "./yamls/windows_client/delete_local_user.yml")
 	return err
 }
