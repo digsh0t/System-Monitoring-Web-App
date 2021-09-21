@@ -1,0 +1,7 @@
+- name: Add Client Group 
+  hosts: "{{ host }}"
+  tasks:
+  - name: Add Group
+    group:
+     name: "{{ groupname }}"
+     state: absent

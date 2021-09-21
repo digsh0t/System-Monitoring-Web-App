@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
@@ -12,7 +11,7 @@ import (
 	"github.com/wintltr/login-api/utils"
 )
 
-func HostUserListAll(w http.ResponseWriter, r *http.Request) {
+func LinuxClientUserListAll(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
@@ -29,22 +28,20 @@ func HostUserListAll(w http.ResponseWriter, r *http.Request) {
 	stringId := vars["id"]
 	intId, err := strconv.Atoi(stringId)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to convert id string to int").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to convert id string to int").Error())
 		return
 	}
-	hostUserList, err := models.HostUserListAll(intId)
+	clientUserList, err := models.LinuxClientUserListAll(intId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	// Return Json
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to get user from host").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to get user from host").Error())
 	} else {
-		utils.JSON(w, http.StatusOK, hostUserList)
+		utils.JSON(w, http.StatusOK, clientUserList)
 	}
 
-}
-
-func TrimStringOfIP(s string) string {
-	s = strings.TrimLeft(s, "[\"")
-	s = strings.TrimRight(s, "]\"m[b10u\\'")
-	return s
 }

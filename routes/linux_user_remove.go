@@ -12,9 +12,9 @@ import (
 	"github.com/wintltr/login-api/utils"
 )
 
-func HostUserAdd(w http.ResponseWriter, r *http.Request) {
+func LinuxClientUserRemove(w http.ResponseWriter, r *http.Request) {
 
-	// Authorization
+	//Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
@@ -27,14 +27,24 @@ func HostUserAdd(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve Json Format
 	reqBody, err := ioutil.ReadAll(r.Body)
+
 	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to parse json").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to retrieve json format").Error())
 		return
 	}
-	var hostUser models.HostUserInfo
-	json.Unmarshal(reqBody, &hostUser)
+	var userJson models.LinuxClientUserJson
+	err = json.Unmarshal(reqBody, &userJson)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to process json")
+		return
+	}
 
-	output, err := hostUser.HostUserAdd()
+	// Remove Host User
+	output, err := models.LinuxClientUserRemove(userJson)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	// Processing Output From Ansible
 	status, fatalList, err := models.ProcessingAnsibleOutput(output)
@@ -50,14 +60,8 @@ func HostUserAdd(w http.ResponseWriter, r *http.Request) {
 	utils.JSON(w, http.StatusBadRequest, returnJson)
 
 	// Write Event Web
-	host, err := models.ConvertListIdToHostname(hostUser.SshConnectionIdList)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to convert id to hostname").Error())
-		return
-	}
-
-	description := "User \"" + hostUser.HostUserName + "\" added to " + host + " successfully"
-	_, err = models.WriteWebEvent(r, "HostUser", description)
+	description := "User \"" + userJson.Username + "\" removed from successfully"
+	_, err = models.WriteWebEvent(r, "LinuxUser", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
 		return

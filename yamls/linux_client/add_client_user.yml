@@ -1,0 +1,10 @@
+- name: Add User Yaml
+  hosts: "{{ host }}"
+  tasks:
+  - name: Add User
+    user:
+     name: "{{ username }}"
+     uid: "{{ uid }}"
+     groups: "{{ group }}"
+     comment: "{{ comment }}"
+     shell: "{{ shell }}"
