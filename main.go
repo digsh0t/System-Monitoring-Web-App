@@ -137,9 +137,13 @@ func main() {
 
 	//Windows Local Users Management
 	router.HandleFunc("/{id}/localuser", routes.GetWindowsLocalUser).Methods("OPTIONS", "GET")
-	router.HandleFunc("/{id}/localusergroup", routes.GetWindowsLocalUserGroup).Methods("OPTIONS", "GET")
 	router.HandleFunc("/localuser", routes.AddNewWindowsLocalUser).Methods("OPTIONS", "POST")
 	router.HandleFunc("/localuser", routes.DeleteWindowsUser).Methods("OPTIONS", "DELETE")
+
+	//Windows Local Group Management
+	router.HandleFunc("/{id}/localusergroup", routes.GetWindowsLocalUserGroup).Methods("OPTIONS", "GET")
+	router.HandleFunc("/localusergroup", routes.AddNewWindowsGroup).Methods("OPTIONS", "POST")
+	router.HandleFunc("/localusergroup", routes.RemoveWindowsGroup).Methods("OPTIONS", "DELETE")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

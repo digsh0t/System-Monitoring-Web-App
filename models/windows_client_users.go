@@ -51,17 +51,6 @@ func (sshConnection *SshConnectionInfo) GetLocalUsers() ([]ClientUser, error) {
 	return userList, err
 }
 
-func (sshConnection *SshConnectionInfo) GetLocalUserGroup() ([]LocalUserGroup, error) {
-	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM groups"`)
-	if err != nil {
-		return nil, err
-	}
-	var groupList []LocalUserGroup
-
-	err = json.Unmarshal([]byte(result), &groupList)
-	return groupList, err
-}
-
 func AddNewWindowsUser(userJson string) error {
 	err := RunAnsiblePlaybookWithjson(userJson, "./yamls/windows_client/add_local_user.yml")
 	return err
