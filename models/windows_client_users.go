@@ -1,6 +1,9 @@
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"regexp"
+)
 
 type ClientUser struct {
 	Description string `json:"description"`
@@ -59,4 +62,25 @@ func AddNewWindowsUser(userJson string) error {
 func DeleteWindowsUser(userJson string) error {
 	err := RunAnsiblePlaybookWithjson(userJson, "./yamls/windows_client/delete_local_user.yml")
 	return err
+}
+
+func (sshConnection *SshConnectionInfo) GetWindowsGroupUserBelongTo(username string) ([]string, error) {
+	isValid, err := regexp.MatchString("^[a-zA-Z0-9]+$", username)
+	if !isValid || err != nil {
+		return nil, err
+	}
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT G.groupname FROM user_groups UG INNER JOIN users U ON U.uid=UG.uid INNER JOIN groups G ON G.gid=UG.GID WHERE U.username='` + username + `'`)
+	if err != nil {
+		return nil, err
+	}
+	type groupName struct {
+		Groupname string `json:"groupname"`
+	}
+	var gNL []groupName
+	var strGroupNameList []string
+	err = json.Unmarshal([]byte(result), &gNL)
+	for _, groupName := range gNL {
+		strGroupNameList = append(strGroupNameList, groupName.Groupname)
+	}
+	return strGroupNameList, err
 }

@@ -151,3 +151,30 @@ func DeleteWindowsUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func GetWindowsGroupListOfUser(w http.ResponseWriter, r *http.Request) {
+
+	type groupList struct {
+		List []string `json:"groupname"`
+	}
+
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	username := vars["username"]
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	groupNameList, err := sshConnection.GetWindowsGroupUserBelongTo(username)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.JSON(w, http.StatusOK, groupList{groupNameList})
+}
