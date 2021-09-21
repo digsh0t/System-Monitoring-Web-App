@@ -55,6 +55,35 @@ func LoadYAML(filepath string, extraValue map[string]string) (string, error) {
 	return output, err
 }
 
+func LoadYAMLWithJson(filepath string, extraVars string) (string, error) {
+	var (
+		out    bytes.Buffer
+		err    error
+		output string
+	)
+
+	var args []string
+	if extraVars != "" {
+		args = append(args, "--extra-vars", extraVars, filepath)
+	} else {
+		args = append(args, filepath)
+	}
+
+	cmd := exec.Command("ansible-playbook", args...)
+	cmd.Stdout = &out
+	err = cmd.Run()
+	if err != nil {
+		// "Exit status 2" means Ansible displays fatal error but our funtion still works correctly
+		if err.Error() == "exit status 2" || err.Error() == "exit status 4" {
+			err = nil
+		} else {
+			return output, err
+		}
+	}
+	output = out.String()
+	return output, err
+}
+
 // RegExp Fatal And Recap from Ansible Output
 func ProcessingAnsibleOutput(ansible_output string) (map[string]bool, []string, error) {
 	var (
@@ -104,12 +133,14 @@ func ParseFatal(line string) (string, error) {
 		msg string
 		err error
 	)
+	host := utils.ExtractSubString(line, "[", "]")
+	msg += host + " => "
 	data := utils.ExtractSubStringByStartIndex(line, " => ")
 	jsonParsed, err := gabs.ParseJSON([]byte(data))
 	if err != nil {
 		return msg, err
 	}
-	msg = jsonParsed.Search("msg").String()
+	msg += jsonParsed.Search("msg").String()
 	return msg, err
 }
 

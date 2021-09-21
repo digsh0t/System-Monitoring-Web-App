@@ -68,14 +68,19 @@ func main() {
 	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")
 
 	// Package
-	router.HandleFunc("linux/package/install", routes.PackageInstall).Methods("POST")
-	router.HandleFunc("linux/package/remove", routes.PackageRemove).Methods("POST")
-	router.HandleFunc("linux/package/list", routes.PackageListAll).Methods("POST")
+	router.HandleFunc("/linux/package/install", routes.PackageInstall).Methods("POST")
+	router.HandleFunc("/linux/package/remove", routes.PackageRemove).Methods("POST")
+	router.HandleFunc("/linux/package/list", routes.PackageListAll).Methods("POST")
 
-	// Host User
-	router.HandleFunc("/hostuser/add", routes.HostUserAdd).Methods("POST")
-	router.HandleFunc("/hostuser/remove", routes.HostUserRemove).Methods("POST")
-	router.HandleFunc("/hostuser/list/{id}", routes.HostUserListAll).Methods("GET")
+	// Linux Client User
+	router.HandleFunc("/linux/user/add", routes.LinuxClientUserAdd).Methods("POST")
+	router.HandleFunc("/linux/user/remove", routes.LinuxClientUserRemove).Methods("POST")
+	router.HandleFunc("/linux/user/list/{id}", routes.LinuxClientUserListAll).Methods("GET")
+
+	// Linux Client Group
+	router.HandleFunc("/linux/group/add", routes.LinuxClientGroupAdd).Methods("POST")
+	router.HandleFunc("/linux/group/remove", routes.LinuxClientGroupRemove).Methods("POST")
+	router.HandleFunc("/linux/group/list/{id}", routes.LinuxClientGroupListAll).Methods("GET")
 
 	// User command history
 	// Not finished
