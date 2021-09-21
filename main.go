@@ -48,21 +48,20 @@ func main() {
 	router.HandleFunc("/sshconnections/{ostype}", routes.GetAllSSHConnection).Methods("GET", "OPTIONS")
 	router.HandleFunc("/sshconnections", routes.GetAllSSHConnection).Methods("GET", "OPTIONS")
 	router.HandleFunc("/sshconnection/{id}", routes.SSHConnectionDeleteRoute).Methods("DELETE", "OPTIONS")
+	router.HandleFunc("/sshconnections", routes.GetAllSSHConnectionNoGroup).Methods("GET", "OPTIONS")
 
 	// SSH Key
 	router.HandleFunc("/sshkey", routes.AddSSHKey).Methods("POST", "OPTIONS")
 	router.HandleFunc("/sshkey/{id}", routes.SSHKeyDeleteRoute).Methods("DELETE", "OPTIONS")
 	router.HandleFunc("/sshkeys", routes.GetAllSSHKey).Methods("GET", "OPTIONS")
 
+	// Inventory Group
+	router.HandleFunc("/inventory/group/add", routes.InventoryGroupAdd).Methods("POST")
+
 	// Get PC info
 	router.HandleFunc("/systeminfo/{id}", routes.GetSystemInfoRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/systeminfos", routes.SystemInfoGetAllRoute).Methods("GET", "OPTIONS")
 	router.HandleFunc("/receivelog", routes.Receivelog).Methods("POST", "OPTIONS")
-	router.HandleFunc("/getufwsettings/{id}", routes.UfwRulesGet).Methods("GET", "OPTIONS")
-
-	//Config client settings
-	router.HandleFunc("/addufwrule", routes.AddUfwRule).Methods("POST", "OPTIONS")
-	router.HandleFunc("/delufwrule", routes.DeleteUfwRule).Methods("POST", "OPTIONS")
 
 	// Network Function
 	router.HandleFunc("/network/defaultip", routes.GetAllDefaultIP).Methods("GET")

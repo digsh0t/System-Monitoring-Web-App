@@ -4,15 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
-func UfwRulesGet(w http.ResponseWriter, r *http.Request) {
+// Get SSh connection from DB
+func GetAllSSHConnectionNoGroup(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -33,14 +32,12 @@ func UfwRulesGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	sshConnectionId, _ := strconv.Atoi(vars["id"])
-	ufwList, err := models.GetUfwRulesFromDB(sshConnectionId)
-
+	sshConnectionList, err := models.GetAllSSHConnection()
 	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, err.Error())
+		utils.JSON(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	utils.JSON(w, http.StatusOK, ufwList)
+	utils.JSON(w, http.StatusOK, sshConnectionList)
+
 }

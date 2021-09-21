@@ -133,6 +133,31 @@ func GetAllSSHConnection() ([]SshConnectionInfo, error) {
 	return connectionInfos, err
 }
 
+func GetAllSSHConnectionNoGroup() ([]SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_isnetwork, sc_networkos 
+			  FROM ssh_connections WHERE group_id like null`
+	selDB, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var connectionInfo SshConnectionInfo
+	var connectionInfos []SshConnectionInfo
+	for selDB.Next() {
+		var networkOS sql.NullString
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId, &connectionInfo.OsType, &connectionInfo.IsNetwork, &networkOS)
+		if err != nil {
+			return nil, err
+		}
+		connectionInfo.NetworkOS = networkOS.String
+		connectionInfos = append(connectionInfos, connectionInfo)
+	}
+	return connectionInfos, err
+}
+
 func GetAllOSSSHConnection(osType string) ([]SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
