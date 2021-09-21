@@ -1,0 +1,10 @@
+- name: Add new Windows User Group
+  hosts: "{{ host }}"
+  tasks:
+  - name: Create a new group
+    win_group:
+      name: "{{ group_name }}"
+      description: "{{ description }}"
+      state: present
+
+#Usage: ansible-playbook --extra-vars '{"host":"DESKTOP-AUKB810","group_name":"test123","description":"this is a test group"}' yamls/windows_client/add_local_group.yml
