@@ -178,3 +178,37 @@ func GetWindowsGroupListOfUser(w http.ResponseWriter, r *http.Request) {
 
 	utils.JSON(w, http.StatusOK, groupList{groupNameList})
 }
+
+func ReplaceWindowsGroupOfUser(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusOK, err.Error())
+		return
+	}
+
+	//User type for unmarshalling
+	type replacedGroupList struct {
+		SSHConnectionId int      `json:"ssh_connection_id"`
+		Name            string   `json:"username"`
+		Group           []string `json:"groupname"`
+	}
+
+	var rGL replacedGroupList
+	err = json.Unmarshal(body, &rGL)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	//Translate ssh connection id list to hostname list
+	sshConnection, err := models.GetSSHConnectionFromId(rGL.SSHConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = sshConnection.ReplaceWindowsGroupForUser(rGL.Name, rGL.Group)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+}

@@ -84,3 +84,18 @@ func (sshConnection *SshConnectionInfo) GetWindowsGroupUserBelongTo(username str
 	}
 	return strGroupNameList, err
 }
+
+func (sshConnectionInfo *SshConnectionInfo) ReplaceWindowsGroupForUser(username string, group []string) error {
+	type replacedGroup struct {
+		Host     string   `json:"host"`
+		Username string   `json:"username"`
+		Group    []string `json:"group"`
+	}
+
+	groupListJson, err := json.Marshal(replacedGroup{Host: sshConnectionInfo.HostNameSSH, Username: username, Group: group})
+	if err != nil {
+		return err
+	}
+	err = RunAnsiblePlaybookWithjson(string(groupListJson), "./yamls/windows_client/change_user_group_membership.yml")
+	return err
+}

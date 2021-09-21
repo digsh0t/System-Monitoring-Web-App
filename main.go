@@ -138,6 +138,7 @@ func main() {
 	//Windows Local Users Management
 	router.HandleFunc("/{id}/localuser", routes.GetWindowsLocalUser).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/localuser/{username}/groups", routes.GetWindowsGroupListOfUser).Methods("OPTIONS", "GET")
+	router.HandleFunc("/localuser/groups", routes.ReplaceWindowsGroupOfUser).Methods("OPTIONS", "POST")
 	router.HandleFunc("/localuser", routes.AddNewWindowsLocalUser).Methods("OPTIONS", "POST")
 	router.HandleFunc("/localuser", routes.DeleteWindowsUser).Methods("OPTIONS", "DELETE")
 
