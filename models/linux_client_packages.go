@@ -16,11 +16,12 @@ type Package struct {
 }
 
 type PackageJson struct {
-	Host    []int  `json:"host"`
-	File    string `json:"file"`
-	Mode    string `json:"mode"`
-	Package string `json:"package"`
-	Link    string `json:"link"`
+	Host       []int    `json:"host"`
+	HostString []string `json:"host_var"`
+	File       string   `json:"file"`
+	Mode       string   `json:"mode"`
+	Package    string   `json:"package"`
+	Link       string   `json:"link"`
 }
 
 func ListAllPackge(hostList []int) ([]Package, error) {
