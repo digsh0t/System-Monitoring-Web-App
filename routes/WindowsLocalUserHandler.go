@@ -162,3 +162,64 @@ func DeleteWindowsUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func GetWindowsGroupListOfUser(w http.ResponseWriter, r *http.Request) {
+
+	type groupList struct {
+		List []string `json:"groupname"`
+	}
+
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	username := vars["username"]
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	groupNameList, err := sshConnection.GetWindowsGroupUserBelongTo(username)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.JSON(w, http.StatusOK, groupList{groupNameList})
+}
+
+func ReplaceWindowsGroupOfUser(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusOK, err.Error())
+		return
+	}
+
+	//User type for unmarshalling
+	type replacedGroupList struct {
+		SSHConnectionId int      `json:"ssh_connection_id"`
+		Name            string   `json:"username"`
+		Group           []string `json:"groupname"`
+	}
+
+	var rGL replacedGroupList
+	err = json.Unmarshal(body, &rGL)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	//Translate ssh connection id list to hostname list
+	sshConnection, err := models.GetSSHConnectionFromId(rGL.SSHConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = sshConnection.ReplaceWindowsGroupForUser(rGL.Name, rGL.Group)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+}

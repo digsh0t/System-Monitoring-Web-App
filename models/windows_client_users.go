@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 )
 
 type ClientUser struct {
@@ -62,6 +63,43 @@ func AddNewWindowsUser(userJson string) (string, error) {
 
 func DeleteWindowsUser(userJson string) error {
 	output, err := RunAnsiblePlaybookWithjson("./yamls/windows_client/delete_local_user.yml", userJson)
+	fmt.Println(output)
+	return err
+}
+
+func (sshConnection *SshConnectionInfo) GetWindowsGroupUserBelongTo(username string) ([]string, error) {
+	isValid, err := regexp.MatchString("^[a-zA-Z0-9]+$", username)
+	if !isValid || err != nil {
+		return nil, err
+	}
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT G.groupname FROM user_groups UG INNER JOIN users U ON U.uid=UG.uid INNER JOIN groups G ON G.gid=UG.GID WHERE U.username='` + username + `'`)
+	if err != nil {
+		return nil, err
+	}
+	type groupName struct {
+		Groupname string `json:"groupname"`
+	}
+	var gNL []groupName
+	var strGroupNameList []string
+	err = json.Unmarshal([]byte(result), &gNL)
+	for _, groupName := range gNL {
+		strGroupNameList = append(strGroupNameList, groupName.Groupname)
+	}
+	return strGroupNameList, err
+}
+
+func (sshConnectionInfo *SshConnectionInfo) ReplaceWindowsGroupForUser(username string, group []string) error {
+	type replacedGroup struct {
+		Host     string   `json:"host"`
+		Username string   `json:"username"`
+		Group    []string `json:"group"`
+	}
+
+	groupListJson, err := json.Marshal(replacedGroup{Host: sshConnectionInfo.HostNameSSH, Username: username, Group: group})
+	if err != nil {
+		return err
+	}
+	output, err := RunAnsiblePlaybookWithjson("./yamls/windows_client/change_user_group_membership.yml", string(groupListJson))
 	fmt.Println(output)
 	return err
 }

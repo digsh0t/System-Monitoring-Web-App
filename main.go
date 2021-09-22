@@ -24,15 +24,15 @@ func main() {
 
 	// firewallSetting := `{"host":"vmware-windows", "name":"add firewall test-in"}`
 	// models.DeleteFirewallRule(firewallSetting)
-	// sshConnection, err := models.GetSSHConnectionFromId(33)
+	// sshConnection, err := models.GetSSHConnectionFromId(45)
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// userList, err := sshConnection.GetLocalUsers()
+	// groupNameList, err := sshConnection.GetWindowsGroupUserBelongTo("trilx")
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// log.Println(userList)
+	// log.Println(groupNameList)
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
@@ -141,6 +141,8 @@ func main() {
 
 	//Windows Local Users Management
 	router.HandleFunc("/{id}/localuser", routes.GetWindowsLocalUser).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/localuser/{username}/groups", routes.GetWindowsGroupListOfUser).Methods("OPTIONS", "GET")
+	router.HandleFunc("/localuser/groups", routes.ReplaceWindowsGroupOfUser).Methods("OPTIONS", "POST")
 	router.HandleFunc("/localuser", routes.AddNewWindowsLocalUser).Methods("OPTIONS", "POST")
 	router.HandleFunc("/localuser", routes.DeleteWindowsUser).Methods("OPTIONS", "DELETE")
 

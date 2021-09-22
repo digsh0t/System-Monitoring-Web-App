@@ -379,8 +379,13 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithSSHKey(cmd string) (strin
 		}
 		defer session.Close()
 		var b bytes.Buffer //import "bytes"
+		var stderr bytes.Buffer
 		session.Stdout = &b
+		session.Stderr = &stderr
 		err = session.Run(cmd)
+		if err != nil {
+			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		}
 		return b.String(), err
 	}
 }
