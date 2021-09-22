@@ -15,7 +15,6 @@ type LinuxClientUser struct {
 	Directory   string `json:"directory"`
 	Shell       string `json:"shell"`
 	UUID        string `json:"uuid"`
-	Type        string `json:"type"`
 }
 
 type LinuxClientUserJson struct {
