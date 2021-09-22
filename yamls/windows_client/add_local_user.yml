@@ -1,5 +1,6 @@
 - name: Windows User management
   hosts: "{{ host }}"
+  gather_facts: no
   tasks:
   - name: Add new Windows User
     win_user:
