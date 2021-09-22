@@ -298,7 +298,7 @@ func GetAllSSHConnectionNoGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sshConnectionList, err := models.GetAllSSHConnection()
+	sshConnectionList, err := models.GetAllSSHConnectionNoGroup()
 	if err != nil {
 		utils.JSON(w, http.StatusBadRequest, err.Error())
 		return
