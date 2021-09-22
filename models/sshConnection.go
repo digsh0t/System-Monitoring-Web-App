@@ -138,7 +138,7 @@ func GetAllSSHConnectionNoGroup() ([]SshConnectionInfo, error) {
 	defer db.Close()
 
 	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_isnetwork, sc_networkos 
-			  FROM ssh_connections WHERE group_id like null`
+			  FROM ssh_connections WHERE group_id is null`
 	selDB, err := db.Query(query)
 	if err != nil {
 		return nil, err

@@ -48,7 +48,6 @@ func main() {
 	router.HandleFunc("/sshconnections/{ostype}", routes.GetAllSSHConnection).Methods("GET", "OPTIONS")
 	router.HandleFunc("/sshconnections", routes.GetAllSSHConnection).Methods("GET", "OPTIONS")
 	router.HandleFunc("/sshconnection/{id}", routes.SSHConnectionDeleteRoute).Methods("DELETE", "OPTIONS")
-	router.HandleFunc("/sshconnections", routes.GetAllSSHConnectionNoGroup).Methods("GET", "OPTIONS")
 
 	// SSH Key
 	router.HandleFunc("/sshkey", routes.AddSSHKey).Methods("POST", "OPTIONS")
@@ -57,6 +56,10 @@ func main() {
 
 	// Inventory Group
 	router.HandleFunc("/inventory/group/add", routes.InventoryGroupAdd).Methods("POST")
+	router.HandleFunc("/inventory/group/list", routes.InventoryGroupList).Methods("GET")
+	router.HandleFunc("/inventory/group/delete/{id}", routes.InventoryGroupDelete).Methods("DELETE")
+	router.HandleFunc("/sshconnections/list/nogroup", routes.GetAllSSHConnectionNoGroup).Methods("GET", "OPTIONS")
+	router.HandleFunc("/inventory/group/addclient", routes.InventoryGroupAddClient).Methods("POST")
 
 	// Get PC info
 	router.HandleFunc("/systeminfo/{id}", routes.GetSystemInfoRoute).Methods("GET", "OPTIONS")
@@ -79,7 +82,7 @@ func main() {
 	// Linux Client Group
 	router.HandleFunc("/linux/group/add", routes.LinuxClientGroupAdd).Methods("POST")
 	router.HandleFunc("/linux/group/remove", routes.LinuxClientGroupRemove).Methods("DELETE")
-	router.HandleFunc("/linux/group/list/{id}", routes.LinuxClientGroupListAll).Methods("GET")
+	router.HandleFunc("/linux/group/list", routes.LinuxClientGroupListAll).Methods("POST")
 
 	// User command history
 	// Not finished

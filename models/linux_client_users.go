@@ -21,7 +21,6 @@ type LinuxClientUserJson struct {
 	SshConnectionIdList []int    `json:"sshConnectionId"`
 	Host                []string `json:"host"`
 	Username            string   `json:"username"`
-	UID                 int      `json:"uid"`
 	Groups              []string `json:"group"`
 	Comment             string   `json:"comment"`
 	Shell               string   `json:"shell"`

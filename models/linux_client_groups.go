@@ -17,7 +17,58 @@ type LinuxClientGroupJson struct {
 	Groupname           string   `json:"groupname"`
 }
 
-func LinuxClientGroupListAll(sshConnectionId int) ([]LinuxClientGroup, error) {
+func LinuxClientGroupListAll(hostList []int) ([]LinuxClientGroup, error) {
+	var (
+		clientGroupList []LinuxClientGroup
+		err             error
+	)
+
+	// Display installed package on one host
+	if len(hostList) == 1 {
+		clientGroupList, err = LinuxClientGroupListOfOneHost(hostList[0])
+		if err != nil {
+			return clientGroupList, err
+		}
+
+	} else if len(hostList) > 1 {
+		// Display common group on many hosts
+		for index, _ := range hostList {
+			m := make(map[string]bool)
+			var groupList1 []LinuxClientGroup
+			var groupList2 []LinuxClientGroup
+			if index == 0 {
+				groupList1, err = LinuxClientGroupListOfOneHost(hostList[index])
+				if err != nil {
+					return clientGroupList, err
+				}
+			} else {
+				groupList1 = clientGroupList
+				clientGroupList = []LinuxClientGroup{}
+			}
+			groupList2, err = LinuxClientGroupListOfOneHost(hostList[index+1])
+			if err != nil {
+				return clientGroupList, err
+			}
+
+			for _, groups := range groupList1 {
+				m[groups.Groupname] = true
+			}
+
+			for _, groups := range groupList2 {
+				if _, ok := m[groups.Groupname]; ok {
+					clientGroupList = append(clientGroupList, LinuxClientGroup{Groupname: groups.Groupname})
+				}
+			}
+			if len(hostList) == index+2 {
+				break
+			}
+
+		}
+	}
+	return clientGroupList, err
+}
+
+func LinuxClientGroupListOfOneHost(sshConnectionId int) ([]LinuxClientGroup, error) {
 	var (
 		clientGroupList []LinuxClientGroup
 		result          string

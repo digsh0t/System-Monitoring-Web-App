@@ -4,7 +4,6 @@
   - name: Add User
     user:
      name: "{{ username }}"
-     uid: "{{ uid }}"
      groups: "{{ group }}"
      comment: "{{ comment }}"
      shell: "{{ shell }}"
