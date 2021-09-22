@@ -1,5 +1,5 @@
 - name: Remove package
-  hosts: "{{ host }}"
+  hosts: "{{ host_var }}"
   tasks:
   - name: Remove package if OS is CentOS
     yum:

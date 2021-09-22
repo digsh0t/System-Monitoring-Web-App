@@ -1,5 +1,5 @@
 - name: Install package file
-  hosts: "{{ host }}"
+  hosts: "{{ host_var }}"
   tasks:
   - name: Install package if OS is CentOS
     yum:

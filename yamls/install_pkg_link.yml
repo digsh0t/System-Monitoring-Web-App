@@ -1,5 +1,5 @@
 - name: Install Package through link
-  hosts: "{{ host }}"
+  hosts: "{{ host_var }}"
   tasks:
 
   - name: Install package if OS is CentOS
