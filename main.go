@@ -73,12 +73,12 @@ func main() {
 
 	// Linux Client User
 	router.HandleFunc("/linux/user/add", routes.LinuxClientUserAdd).Methods("POST")
-	router.HandleFunc("/linux/user/remove", routes.LinuxClientUserRemove).Methods("POST")
+	router.HandleFunc("/linux/user/remove", routes.LinuxClientUserRemove).Methods("DELETE")
 	router.HandleFunc("/linux/user/list/{id}", routes.LinuxClientUserListAll).Methods("GET")
 
 	// Linux Client Group
 	router.HandleFunc("/linux/group/add", routes.LinuxClientGroupAdd).Methods("POST")
-	router.HandleFunc("/linux/group/remove", routes.LinuxClientGroupRemove).Methods("POST")
+	router.HandleFunc("/linux/group/remove", routes.LinuxClientGroupRemove).Methods("DELETE")
 	router.HandleFunc("/linux/group/list/{id}", routes.LinuxClientGroupListAll).Methods("GET")
 
 	// User command history

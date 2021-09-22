@@ -18,7 +18,7 @@ type LinuxClientUser struct {
 }
 
 type LinuxClientUserJson struct {
-	SshConnectionIdList []int    `json:"sshConnectionIdList"`
+	SshConnectionIdList []int    `json:"sshConnectionId"`
 	Host                []string `json:"host"`
 	Username            string   `json:"username"`
 	UID                 int      `json:"uid"`

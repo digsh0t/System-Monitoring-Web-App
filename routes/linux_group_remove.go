@@ -57,7 +57,7 @@ func LinuxClientGroupRemove(w http.ResponseWriter, r *http.Request) {
 	returnJson := simplejson.New()
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatalList)
-	utils.JSON(w, http.StatusBadRequest, returnJson)
+	utils.JSON(w, http.StatusOK, returnJson)
 
 	// Write Event Web
 	description := "User \"" + groupJson.Groupname + "\" removed from successfully"
