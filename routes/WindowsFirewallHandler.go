@@ -9,11 +9,24 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
+	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
 func GetWindowsFirewall(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+
 	vars := mux.Vars(r)
 	direction := vars["direction"]
 	id, err := strconv.Atoi(vars["id"])
@@ -35,6 +48,18 @@ func GetWindowsFirewall(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddWindowsFirewall(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read windows firewall rules from client windows machine").Error())
@@ -133,6 +158,18 @@ func AddWindowsFirewall(w http.ResponseWriter, r *http.Request) {
 }
 
 func RemoveWindowsFirewallRule(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read windows firewall rules from client windows machine").Error())

@@ -10,11 +10,24 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
+	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
 func GetWindowsInstalledProgram(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+
 	vars := mux.Vars(r)
 	sshConnectionId, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -35,6 +48,18 @@ func GetWindowsInstalledProgram(w http.ResponseWriter, r *http.Request) {
 }
 
 func InstallWindowsProgram(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read install info").Error())
@@ -77,6 +102,18 @@ func InstallWindowsProgram(w http.ResponseWriter, r *http.Request) {
 }
 
 func RemoveWindowsProgram(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read program info").Error())
