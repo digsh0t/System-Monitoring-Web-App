@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 )
 
@@ -31,7 +32,8 @@ func InstallWindowsProgram(host interface{}, url string, dest string) error {
 	if err != nil {
 		return err
 	}
-	err = RunAnsiblePlaybookWithjson(string(jsonArgs), "yamls/windows_client/add_windows_program.yml")
+	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/add_windows_program.yml", string(jsonArgs))
+	fmt.Println(output)
 	return err
 }
 
@@ -46,6 +48,7 @@ func DeleteWindowsProgram(host interface{}, productId string) error {
 	if err != nil {
 		return err
 	}
-	err = RunAnsiblePlaybookWithjson(string(jsonArgs), "yamls/windows_client/delete_windows_program.yml")
+	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/delete_windows_program.yml", string(jsonArgs))
+	fmt.Println(output)
 	return err
 }

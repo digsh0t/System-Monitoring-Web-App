@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -124,12 +125,14 @@ type DeletedFirewallRule struct {
 }
 
 func AddFirewallRule(firewallJson string) error {
-	err := RunAnsiblePlaybookWithjson(firewallJson, "./yamls/windows_client/add_firewall_rule.yml")
+	output, err := RunAnsiblePlaybookWithjson("./yamls/windows_client/add_firewall_rule.yml", firewallJson)
+	fmt.Println(output)
 	return err
 }
 
 func DeleteFirewallRule(ruleNameJson string) error {
-	err := RunAnsiblePlaybookWithjson(ruleNameJson, "./yamls/windows_client/delete_firewall_rule.yml")
+	output, err := RunAnsiblePlaybookWithjson("./yamls/windows_client/delete_firewall_rule.yml", ruleNameJson)
+	fmt.Println(output)
 	return err
 }
 

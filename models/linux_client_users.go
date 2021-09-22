@@ -70,7 +70,7 @@ func LinuxClientUserAdd(userJson LinuxClientUserJson) (string, error) {
 	if err != nil {
 		return output, errors.New("fail to marshal json")
 	}
-	output, err = LoadYAMLWithJson("./yamls/linux_client/add_client_user.yml", string(userJsonMarshal))
+	output, err = RunAnsiblePlaybookWithjson("./yamls/linux_client/add_client_user.yml", string(userJsonMarshal))
 	if err != nil {
 		return output, err
 	}
@@ -97,7 +97,7 @@ func LinuxClientUserRemove(userJson LinuxClientUserJson) (string, error) {
 	if err != nil {
 		return output, errors.New("fail to marshal json")
 	}
-	output, err = LoadYAMLWithJson("./yamls/linux_client/remove_client_user.yml", string(userJsonMarshal))
+	output, err = RunAnsiblePlaybookWithjson("./yamls/linux_client/remove_client_user.yml", string(userJsonMarshal))
 	if err != nil {
 		return output, err
 	}

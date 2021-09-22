@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
@@ -98,11 +99,21 @@ func AddNewWindowsLocalUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Username = lu.Username
 	marshalledUser, _ := json.Marshal(user)
-	err = models.AddNewWindowsUser(string(marshalledUser))
+	output, err := models.AddNewWindowsUser(string(marshalledUser))
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	status, fatal, err := models.ProcessingAnsibleOutput(output)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
+	returnJson.Set("Fatal", fatal)
+	utils.JSON(w, http.StatusOK, returnJson)
+
 }
 
 func DeleteWindowsUser(w http.ResponseWriter, r *http.Request) {

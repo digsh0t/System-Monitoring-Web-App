@@ -1,6 +1,9 @@
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type ClientUser struct {
 	Description string `json:"description"`
@@ -51,12 +54,14 @@ func (sshConnection *SshConnectionInfo) GetLocalUsers() ([]ClientUser, error) {
 	return userList, err
 }
 
-func AddNewWindowsUser(userJson string) error {
-	err := RunAnsiblePlaybookWithjson(userJson, "./yamls/windows_client/add_local_user.yml")
-	return err
+func AddNewWindowsUser(userJson string) (string, error) {
+	output, err := RunAnsiblePlaybookWithjson("./yamls/windows_client/add_local_user.yml", userJson)
+
+	return output, err
 }
 
 func DeleteWindowsUser(userJson string) error {
-	err := RunAnsiblePlaybookWithjson(userJson, "./yamls/windows_client/delete_local_user.yml")
+	output, err := RunAnsiblePlaybookWithjson("./yamls/windows_client/delete_local_user.yml", userJson)
+	fmt.Println(output)
 	return err
 }

@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type localGroup struct {
@@ -27,7 +28,8 @@ func AddNewWindowsGroup(host interface{}, name string, description string) error
 	if err != nil {
 		return err
 	}
-	err = RunAnsiblePlaybookWithjson(string(jsonArgs), "yamls/windows_client/add_local_group.yml")
+	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/add_local_group.yml", string(jsonArgs))
+	fmt.Println(output)
 	return err
 }
 
@@ -42,6 +44,7 @@ func RemoveWindowsGroup(host interface{}, name string) error {
 	if err != nil {
 		return err
 	}
-	err = RunAnsiblePlaybookWithjson(string(jsonArgs), "yamls/windows_client/delete_local_group.yml")
+	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/delete_local_group.yml", string(jsonArgs))
+	fmt.Println(output)
 	return err
 }

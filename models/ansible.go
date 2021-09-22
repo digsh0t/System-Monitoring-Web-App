@@ -55,7 +55,7 @@ func LoadYAML(filepath string, extraValue map[string]string) (string, error) {
 	return output, err
 }
 
-func LoadYAMLWithJson(filepath string, extraVars string) (string, error) {
+func RunAnsiblePlaybookWithjson(filepath string, extraVars string) (string, error) {
 	var (
 		out    bytes.Buffer
 		err    error

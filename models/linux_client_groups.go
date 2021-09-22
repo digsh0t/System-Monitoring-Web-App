@@ -12,7 +12,7 @@ type LinuxClientGroup struct {
 }
 
 type LinuxClientGroupJson struct {
-	SshConnectionIdList []int    `json:"sshConnectionIdList"`
+	SshConnectionIdList []int    `json:"sshConnectionId"`
 	Host                []string `json:"host"`
 	Groupname           string   `json:"groupname"`
 }
@@ -60,7 +60,7 @@ func LinuxClientGroupAdd(groupJson LinuxClientGroupJson) (string, error) {
 	if err != nil {
 		return output, errors.New("fail to marshal json")
 	}
-	output, err = LoadYAMLWithJson("./yamls/linux_client/add_client_group.yml", string(groupJsonMarshal))
+	output, err = RunAnsiblePlaybookWithjson("./yamls/linux_client/add_client_group.yml", string(groupJsonMarshal))
 	if err != nil {
 		return output, err
 	}
@@ -87,7 +87,7 @@ func LinuxClientGroupRemove(groupJson LinuxClientGroupJson) (string, error) {
 	if err != nil {
 		return output, errors.New("fail to marshal json")
 	}
-	output, err = LoadYAMLWithJson("./yamls/linux_client/remove_client_group.yml", string(groupJsonMarshal))
+	output, err = RunAnsiblePlaybookWithjson("./yamls/linux_client/remove_client_group.yml", string(groupJsonMarshal))
 	if err != nil {
 		return output, err
 	}
