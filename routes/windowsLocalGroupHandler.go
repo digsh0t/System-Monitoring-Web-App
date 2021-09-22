@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
@@ -55,11 +56,22 @@ func AddNewWindowsGroup(w http.ResponseWriter, r *http.Request) {
 		}
 		hosts = append(hosts, sshConnection.HostNameSSH)
 	}
-	err = models.AddNewWindowsGroup(hosts, uG.Name, uG.Description)
+	output, err := models.AddNewWindowsGroup(hosts, uG.Name, uG.Description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	// Process Ansible Output
+	status, fatal, err := models.ProcessingAnsibleOutput(output)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
+	returnJson.Set("Fatal", fatal)
+	utils.JSON(w, http.StatusOK, returnJson)
 }
 
 func RemoveWindowsGroup(w http.ResponseWriter, r *http.Request) {
@@ -83,10 +95,20 @@ func RemoveWindowsGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.RemoveWindowsGroup(sshConnection.HostNameSSH, dG.Name)
+	output, err := models.RemoveWindowsGroup(sshConnection.HostNameSSH, dG.Name)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	// Process Ansible Output
+	status, fatal, err := models.ProcessingAnsibleOutput(output)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
+	returnJson.Set("Fatal", fatal)
+	utils.JSON(w, http.StatusOK, returnJson)
 
 }

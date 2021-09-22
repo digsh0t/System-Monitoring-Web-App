@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	"path/filepath"
 )
 
@@ -18,7 +17,7 @@ type Programs struct {
 	IdentifyingNumber string `json:"identifying_number"`
 }
 
-func InstallWindowsProgram(host interface{}, url string, dest string) error {
+func InstallWindowsProgram(host interface{}, url string, dest string) (string, error) {
 
 	type installInfo struct {
 		Host     interface{} `json:"host"`
@@ -30,14 +29,13 @@ func InstallWindowsProgram(host interface{}, url string, dest string) error {
 	filename := filepath.Base(url)
 	jsonArgs, err := json.Marshal(installInfo{Host: host, Url: url, Dest: dest, Filename: filename})
 	if err != nil {
-		return err
+		return "", err
 	}
 	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/add_windows_program.yml", string(jsonArgs))
-	fmt.Println(output)
-	return err
+	return output, err
 }
 
-func DeleteWindowsProgram(host interface{}, productId string) error {
+func DeleteWindowsProgram(host interface{}, productId string) (string, error) {
 
 	type deleteInfo struct {
 		Host      interface{} `json:"host"`
@@ -46,9 +44,8 @@ func DeleteWindowsProgram(host interface{}, productId string) error {
 
 	jsonArgs, err := json.Marshal(deleteInfo{Host: host, ProductId: productId})
 	if err != nil {
-		return err
+		return "", err
 	}
 	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/delete_windows_program.yml", string(jsonArgs))
-	fmt.Println(output)
-	return err
+	return output, err
 }

@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	"regexp"
 )
 
@@ -61,10 +60,9 @@ func AddNewWindowsUser(userJson string) (string, error) {
 	return output, err
 }
 
-func DeleteWindowsUser(userJson string) error {
+func DeleteWindowsUser(userJson string) (string, error) {
 	output, err := RunAnsiblePlaybookWithjson("./yamls/windows_client/delete_local_user.yml", userJson)
-	fmt.Println(output)
-	return err
+	return output, err
 }
 
 func (sshConnection *SshConnectionInfo) GetWindowsGroupUserBelongTo(username string) ([]string, error) {
@@ -88,7 +86,7 @@ func (sshConnection *SshConnectionInfo) GetWindowsGroupUserBelongTo(username str
 	return strGroupNameList, err
 }
 
-func (sshConnectionInfo *SshConnectionInfo) ReplaceWindowsGroupForUser(username string, group []string) error {
+func (sshConnectionInfo *SshConnectionInfo) ReplaceWindowsGroupForUser(username string, group []string) (string, error) {
 	type replacedGroup struct {
 		Host     string   `json:"host"`
 		Username string   `json:"username"`
@@ -97,9 +95,8 @@ func (sshConnectionInfo *SshConnectionInfo) ReplaceWindowsGroupForUser(username 
 
 	groupListJson, err := json.Marshal(replacedGroup{Host: sshConnectionInfo.HostNameSSH, Username: username, Group: group})
 	if err != nil {
-		return err
+		return "", err
 	}
 	output, err := RunAnsiblePlaybookWithjson("./yamls/windows_client/change_user_group_membership.yml", string(groupListJson))
-	fmt.Println(output)
-	return err
+	return output, err
 }

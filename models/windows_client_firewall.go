@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -124,16 +123,14 @@ type DeletedFirewallRule struct {
 	Action     string `json:"rule_action"`
 }
 
-func AddFirewallRule(firewallJson string) error {
+func AddFirewallRule(firewallJson string) (string, error) {
 	output, err := RunAnsiblePlaybookWithjson("./yamls/windows_client/add_firewall_rule.yml", firewallJson)
-	fmt.Println(output)
-	return err
+	return output, err
 }
 
-func DeleteFirewallRule(ruleNameJson string) error {
+func DeleteFirewallRule(ruleNameJson string) (string, error) {
 	output, err := RunAnsiblePlaybookWithjson("./yamls/windows_client/delete_firewall_rule.yml", ruleNameJson)
-	fmt.Println(output)
-	return err
+	return output, err
 }
 
 func ParsePortFirewallRuleFromPowershell(result string) ([]PortFirewallRule, error) {
