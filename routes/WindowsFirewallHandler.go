@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
@@ -112,11 +113,23 @@ func AddWindowsFirewall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.AddFirewallRule(string(marshalRule))
+	output, err := models.AddFirewallRule(string(marshalRule))
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	// Process Ansible Output
+	status, fatal, err := models.ProcessingAnsibleOutput(output)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
+	returnJson.Set("Fatal", fatal)
+	utils.JSON(w, http.StatusOK, returnJson)
+
 }
 
 func RemoveWindowsFirewallRule(w http.ResponseWriter, r *http.Request) {
@@ -178,9 +191,20 @@ func RemoveWindowsFirewallRule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.DeleteFirewallRule(string(marshalRule))
+	output, err := models.DeleteFirewallRule(string(marshalRule))
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to delete firewall rule from client windows machine").Error())
 		return
 	}
+
+	// Process Ansible Output
+	status, fatal, err := models.ProcessingAnsibleOutput(output)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
+	returnJson.Set("Fatal", fatal)
+	utils.JSON(w, http.StatusOK, returnJson)
 }

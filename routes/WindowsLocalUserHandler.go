@@ -156,11 +156,22 @@ func DeleteWindowsUser(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	err = models.DeleteWindowsUser(string(marshalled))
+	output, err := models.DeleteWindowsUser(string(marshalled))
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	// Process Ansible Output
+	status, fatal, err := models.ProcessingAnsibleOutput(output)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
+	returnJson.Set("Fatal", fatal)
+	utils.JSON(w, http.StatusOK, returnJson)
 }
 
 func GetWindowsGroupListOfUser(w http.ResponseWriter, r *http.Request) {
@@ -217,9 +228,20 @@ func ReplaceWindowsGroupOfUser(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	err = sshConnection.ReplaceWindowsGroupForUser(rGL.Name, rGL.Group)
+	output, err := sshConnection.ReplaceWindowsGroupForUser(rGL.Name, rGL.Group)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	// Process Ansible Output
+	status, fatal, err := models.ProcessingAnsibleOutput(output)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
+	returnJson.Set("Fatal", fatal)
+	utils.JSON(w, http.StatusOK, returnJson)
 }

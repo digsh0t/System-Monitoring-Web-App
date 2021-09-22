@@ -26,35 +26,6 @@ type RecapInfo struct {
 	Ignored     int
 }
 
-// Load Yaml File
-func LoadYAML(filepath string, extraValue map[string]string) (string, error) {
-	var (
-		out    bytes.Buffer
-		err    error
-		output string
-	)
-
-	// Establish command for load package
-	command := "ansible-playbook " + filepath + " -e \""
-	for k, v := range extraValue {
-		command += k + "=" + v + " "
-	}
-	command += "\""
-	cmd := exec.Command("/bin/bash", "-c", command)
-	cmd.Stdout = &out
-	err = cmd.Run()
-	if err != nil {
-		// "Exit status 2" means Ansible displays fatal error but our funtion still works correctly
-		if err.Error() == "exit status 2" || err.Error() == "exit status 4" {
-			err = nil
-		} else {
-			return output, err
-		}
-	}
-	output = out.String()
-	return output, err
-}
-
 func RunAnsiblePlaybookWithjson(filepath string, extraVars string) (string, error) {
 	var (
 		out    bytes.Buffer

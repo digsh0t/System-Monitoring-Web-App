@@ -1,7 +1,7 @@
 - name: Network module
   connection: network_cli
   gather_facts: false
-  hosts: "{{ host }}"
+  hosts: "{{ host_var }}"
   tasks:
   - name: Remove eth0 IPv4 address
     vyos_l3_interface:

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"errors"
 	"strconv"
 	"strings"
@@ -34,10 +35,11 @@ type VyosInfo struct {
 }
 
 type VyOsJson struct {
-	Host      []int        `json:"host"`
-	Interface string       `json:"interface"`
-	IPv4      IPv4VyosInfo `json:"ipv4"`
-	IPv6      IPv6VyosInfo `json:"ipv6"`
+	Host       []int    `json:"host"`
+	HosrString []string `json:"host_var"`
+	Interface  string   `json:"interface"`
+	Address4   string   `json:"address4"`
+	Address6   string   `json:"address6"`
 }
 
 func GetInfoVyos(sshConnectionId int) (VyosInfo, error) {
@@ -64,9 +66,17 @@ func GetInterfacesVyos(hostname string) (VyosInfo, error) {
 		err      error
 	)
 
+	vyosJson := VyOsJson{
+		HosrString: []string{hostname},
+	}
+
+	vyosJsonMarshal, err := json.Marshal(vyosJson)
+	if err != nil {
+		return vyOSInfo, err
+	}
+
 	// Load YAML file
-	var extraValue map[string]string = map[string]string{"host": hostname}
-	ouput, err := LoadYAML("./yamls/vyos_getinfo.yml", extraValue)
+	ouput, err := RunAnsiblePlaybookWithjson("./yamls/vyos_getinfo.yml", string(vyosJsonMarshal))
 	if err != nil {
 		return vyOSInfo, errors.New("fail to load yamls")
 	}
@@ -147,12 +157,22 @@ func ConfigIPVyos(vyosJson VyOsJson) (string, error) {
 		err    error
 	)
 	// Get Hostname from Id
-	hostname, err := ConvertListIdToHostnameVer2(vyosJson.Host)
-	if err != nil {
-		return output, errors.New("fail to get hostname")
+	var host []string
+	for _, id := range vyosJson.Host {
+		hostname, err := GetSSHConnectionFromId(id)
+		if err != nil {
+			return output, errors.New("fail to parse id")
+		}
+		host = append(host, hostname.HostNameSSH)
 	}
-	var extraValue map[string]string = map[string]string{"host": hostname, "interface": vyosJson.Interface, "address4": vyosJson.IPv4.Address, "address6": vyosJson.IPv6.Address}
-	output, err = LoadYAML("./yamls/vyos_config_ip.yml", extraValue)
+	vyosJson.HosrString = host
+
+	vyosJsonMarshal, err := json.Marshal(vyosJson)
+	if err != nil {
+		return output, err
+	}
+
+	output, err = RunAnsiblePlaybookWithjson("./yamls/vyos_config_ip.yml", string(vyosJsonMarshal))
 	if err != nil {
 		return output, errors.New("fail to load yaml file")
 	}

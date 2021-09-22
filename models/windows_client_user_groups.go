@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 type localGroup struct {
@@ -22,18 +21,16 @@ func (sshConnection *SshConnectionInfo) GetLocalUserGroup() ([]LocalUserGroup, e
 	return groupList, err
 }
 
-func AddNewWindowsGroup(host interface{}, name string, description string) error {
-
+func AddNewWindowsGroup(host interface{}, name string, description string) (string, error) {
 	jsonArgs, err := json.Marshal(localGroup{Host: host, Name: name, Description: description})
 	if err != nil {
-		return err
+		return "", err
 	}
 	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/add_local_group.yml", string(jsonArgs))
-	fmt.Println(output)
-	return err
+	return output, err
 }
 
-func RemoveWindowsGroup(host interface{}, name string) error {
+func RemoveWindowsGroup(host interface{}, name string) (string, error) {
 
 	type deleteGroup struct {
 		Host interface{} `json:"host"`
@@ -42,9 +39,8 @@ func RemoveWindowsGroup(host interface{}, name string) error {
 
 	jsonArgs, err := json.Marshal(deleteGroup{Host: host, Name: name})
 	if err != nil {
-		return err
+		return "", err
 	}
 	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/delete_local_group.yml", string(jsonArgs))
-	fmt.Println(output)
-	return err
+	return output, err
 }
