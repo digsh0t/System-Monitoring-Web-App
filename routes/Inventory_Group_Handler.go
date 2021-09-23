@@ -3,6 +3,7 @@ package routes
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -177,10 +178,92 @@ func InventoryGroupAddClient(w http.ResponseWriter, r *http.Request) {
 	utils.JSON(w, statusCode, returnJson)
 
 	// Write Event Web
-	description := "Inventory \"" + inventoryGroup.GroupName + "\" added successfully"
+	description := "Machine \"" + fmt.Sprint(inventoryGroup.SShConnectionId) + "\" added to group " + strconv.Itoa(inventoryGroup.GroupId) + "successfully"
 	_, err = models.WriteWebEvent(r, "InventoryGroup", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 		return
 	}
+}
+
+// Delete client from inventory Group
+func InventoryGroupDeleteClient(w http.ResponseWriter, r *http.Request) {
+
+	// Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+
+	// Retrieve Json Format
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to parse json").Error())
+		return
+	}
+
+	var inventoryGroup models.InventoryGroup
+	json.Unmarshal(reqBody, &inventoryGroup)
+
+	status, err := models.InventoryGroupDeleteClient(inventoryGroup)
+
+	// Return Json
+	var statusCode int
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
+	if err != nil {
+		returnJson.Set("Error", err.Error())
+		statusCode = http.StatusBadRequest
+	} else {
+		returnJson.Set("Error", err)
+		statusCode = http.StatusOK
+	}
+	utils.JSON(w, statusCode, returnJson)
+
+	// Write Event Web
+	description := "Machine \"" + fmt.Sprint(inventoryGroup.SShConnectionId) + "\" deleted from group " + strconv.Itoa(inventoryGroup.GroupId) + "successfully"
+	_, err = models.WriteWebEvent(r, "InventoryGroup", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
+}
+
+// Get Inventory_group from DB
+func InventoryGroupListClient(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	if r.Method == "OPTIONS" {
+		//CORS
+		// return "OKOK"
+		json.NewEncoder(w).Encode("OKOK")
+		return
+	}
+
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+
+	vars := mux.Vars(r)
+	groupId, _ := strconv.Atoi(vars["groupid"])
+
+	groupListClient, err := models.GetAllSSHConnectionFromGroupId(groupId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to get client").Error())
+	} else {
+		utils.JSON(w, http.StatusOK, groupListClient)
+	}
+
 }

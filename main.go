@@ -60,6 +60,8 @@ func main() {
 	router.HandleFunc("/inventory/group/delete/{id}", routes.InventoryGroupDelete).Methods("DELETE")
 	router.HandleFunc("/sshconnections/list/nogroup", routes.GetAllSSHConnectionNoGroup).Methods("GET", "OPTIONS")
 	router.HandleFunc("/inventory/group/addclient", routes.InventoryGroupAddClient).Methods("POST")
+	router.HandleFunc("/inventory/group/deleteclient", routes.InventoryGroupDeleteClient).Methods("POST")
+	router.HandleFunc("/inventory/group/listclient/{groupid}", routes.InventoryGroupListClient).Methods("GET")
 
 	// Get PC info
 	router.HandleFunc("/systeminfo/{id}", routes.GetSystemInfoRoute).Methods("GET", "OPTIONS")
