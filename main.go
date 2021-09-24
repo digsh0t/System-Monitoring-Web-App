@@ -86,6 +86,11 @@ func main() {
 	router.HandleFunc("/linux/group/remove", routes.LinuxClientGroupRemove).Methods("DELETE")
 	router.HandleFunc("/linux/group/list", routes.LinuxClientGroupListAll).Methods("POST")
 
+	// Linux Client Iptables
+	router.HandleFunc("/linux/iptables/list/{id}", routes.LinuxClientIptablesListAll).Methods("GET")
+	router.HandleFunc("/linux/iptables/add", routes.LinuxClientIptablesAdd).Methods("POST")
+	router.HandleFunc("/linux/iptables/remove", routes.LinuxClientIptablesRemove).Methods("POST")
+
 	// User command history
 	// Not finished
 	//router.HandleFunc("/history/list/{id}", routes.HistoryListAll).Methods("GET")

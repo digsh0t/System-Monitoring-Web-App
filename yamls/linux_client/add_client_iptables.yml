@@ -1,0 +1,41 @@
+- name: Add Iptables Yaml
+  hosts: "{{ host }}"
+  tasks:
+  - name: Install iptables-services for CentOS
+    yum:
+     name: iptables-services
+     state: latest
+    when: ansible_facts['distribution'] == "CentOS"
+
+  - name: Install iptables-persistent for Ubuntu or Kali
+    apt:
+     name: iptables-persistent
+     state: latest
+    when: (ansible_facts['distribution'] == "Ubuntu") or
+          (ansible_facts['distribution'] == "Kali GNU/Linux")
+
+  - name: Add Iptables
+    iptables:
+     chain: "{{ chain }}"
+     source: "{{ sourceIP }}"
+     destination: "{{ destinationIP }}"
+     protocol: "{{ protocol }}"
+     jump: "{{ jump }}"
+    become: yes
+
+  - name: Save config for CentOS
+    shell: "{{ item }}"
+    loop:
+    - /sbin/iptables-save > /etc/sysconfig/iptables
+    - /sbin/ip6tables-save > /etc/sysconfig/ip6tables
+    when: ansible_facts['distribution'] == "CentOS"
+
+  - name: Save config for Ubuntu of kali
+    shell: "{{ item }}"
+    loop:
+    - /sbin/iptables-save > /etc/iptables/rules.v4
+    - /sbin/ip6tables-save > /etc/iptables/rules.v6
+    when: (ansible_facts['distribution'] == "Ubuntu") or
+          (ansible_facts['distribution'] == "Kali GNU/Linux")
+
+  

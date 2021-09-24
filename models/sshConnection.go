@@ -478,16 +478,6 @@ func (sshconnection *SshConnectionInfo) UpdateOsType() error {
 	return err
 }
 
-func (sshConnection *SshConnectionInfo) GetIptables() ([]IptableRule, error) {
-	var iptables []IptableRule
-	firewallRule, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM iptables"`)
-	if err != nil {
-		return iptables, err
-	}
-	iptables, err = ParseIptables(firewallRule)
-	return iptables, err
-}
-
 func (sshConnection *SshConnectionInfo) GetWindowsFirewall(direction string) ([]PortNetshFirewallRule, error) {
 	var firewallRules []PortNetshFirewallRule
 	firewallRule, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`netsh advfirewall firewall show rule name=all dir="` + direction)
