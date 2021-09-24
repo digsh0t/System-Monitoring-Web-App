@@ -22,6 +22,13 @@ type PackageJson struct {
 	Mode       string   `json:"mode"`
 	Package    string   `json:"package"`
 	Link       string   `json:"link"`
+	Page       int      `json:"page"`
+}
+
+type PackageReturn struct {
+	Data         []Package `json:"data"`
+	Current_page int       `json:"current_page"`
+	Total_page   int       `json:"total_page"`
 }
 
 func ListAllPackge(hostList []int) ([]Package, error) {
@@ -118,4 +125,38 @@ func GetInstalledPackagesOfOneHost(id int) ([]Package, error) {
 		}
 	}
 	return packageList, err
+}
+
+func PaginatePackageList(packageList []Package) map[int][]Package {
+	offset := 0
+	mapPaginate := make(map[int][]Package)
+	index := 0
+	for {
+		data, currentoffset := Paginate(packageList, offset, len(packageList))
+		mapPaginate[index] = data
+		offset = currentoffset
+		index += 1
+		if currentoffset == len(packageList) {
+			break
+		}
+	}
+	return mapPaginate
+}
+
+func Paginate(x []Package, offset int, size int) ([]Package, int) {
+	currentoffset := offset + 20
+	if currentoffset > size {
+		currentoffset = size
+	}
+	result := x[offset:currentoffset]
+
+	return result, currentoffset
+}
+
+func ReturnPackgeList(mapPaginate map[int][]Package, page int) PackageReturn {
+	var returnPackgeList PackageReturn
+	returnPackgeList.Data = mapPaginate[page]
+	returnPackgeList.Current_page = page
+	returnPackgeList.Total_page = len(mapPaginate) - 1
+	return returnPackgeList
 }
