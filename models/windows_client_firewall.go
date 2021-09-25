@@ -59,7 +59,7 @@ func ParsePortNetshFirewallRuleFromPowershell(result string) ([]PortNetshFirewal
 	for i := 0; i < len(lines); i++ {
 		line = lines[i]
 		if line != "" && line != "\t" && line != "\r" && !strings.Contains(line, "-----------") && line != "Ok.\r" {
-			if strings.Contains(line, "ICMPv6-In") || strings.Contains(line, "ICMPv6-Out") || strings.Contains(line, "ICMPv4-In") || strings.Contains(line, "ICMPv4-Out") {
+			if strings.Contains(line, "ICMPv6-In") || strings.Contains(line, "ICMPv6-Out") || strings.Contains(line, "ICMPv4-In") || strings.Contains(line, "ICMPv4-Out") || strings.Contains(line, "ICMPv4\r") || strings.Contains(line, "ICMPv6\r") {
 				i += 12
 				counter = 0
 				continue

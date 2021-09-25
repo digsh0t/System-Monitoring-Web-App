@@ -78,6 +78,12 @@ func InventoryGroupDelete(groupId int) (bool, error) {
 	if err != nil {
 		return false, errors.New("fail to delete group")
 	}
+
+	// Update Inventory
+	err = GenerateInventory()
+	if err != nil {
+		return false, errors.New("fail to update inventory")
+	}
 	return result, err
 }
 
@@ -122,6 +128,12 @@ func InventoryGroupAddClient(inventGroup InventoryGroup) (bool, error) {
 	if err != nil {
 		return false, errors.New("fail to update group id")
 	}
+
+	// Update Inventory
+	err = GenerateInventory()
+	if err != nil {
+		return false, errors.New("fail to update inventory")
+	}
 	return result, err
 }
 
@@ -142,4 +154,52 @@ func UpdateGroupId(groupId int, listId string) (bool, error) {
 		return false, err
 	}
 	return true, err
+}
+
+func InventoryGroupDeleteClient(inventGroup InventoryGroup) (bool, error) {
+	var (
+		result bool
+		err    error
+	)
+
+	listId := "("
+	for index, id := range inventGroup.SShConnectionId {
+		if index != 0 {
+			listId += ","
+		}
+		listId += strconv.Itoa(id)
+	}
+	listId += ")"
+
+	result, err = DeleteGroupId(listId)
+	if err != nil {
+		return false, errors.New("fail to delete group id")
+	}
+
+	// Update Inventory
+	err = GenerateInventory()
+	if err != nil {
+		return false, errors.New("fail to update inventory")
+	}
+	return result, err
+
+}
+
+func DeleteGroupId(listId string) (bool, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := "UPDATE ssh_connections SET group_id = null WHERE sc_connection_id in " + listId
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return false, err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec()
+	if err != nil {
+		return false, err
+	}
+	return true, err
+
 }

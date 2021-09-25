@@ -60,6 +60,8 @@ func main() {
 	router.HandleFunc("/inventory/group/delete/{id}", routes.InventoryGroupDelete).Methods("DELETE")
 	router.HandleFunc("/sshconnections/list/nogroup", routes.GetAllSSHConnectionNoGroup).Methods("GET", "OPTIONS")
 	router.HandleFunc("/inventory/group/addclient", routes.InventoryGroupAddClient).Methods("POST")
+	router.HandleFunc("/inventory/group/deleteclient", routes.InventoryGroupDeleteClient).Methods("POST")
+	router.HandleFunc("/inventory/group/listclient/{groupid}", routes.InventoryGroupListClient).Methods("GET")
 
 	// Get PC info
 	router.HandleFunc("/systeminfo/{id}", routes.GetSystemInfoRoute).Methods("GET", "OPTIONS")
@@ -83,6 +85,11 @@ func main() {
 	router.HandleFunc("/linux/group/add", routes.LinuxClientGroupAdd).Methods("POST")
 	router.HandleFunc("/linux/group/remove", routes.LinuxClientGroupRemove).Methods("DELETE")
 	router.HandleFunc("/linux/group/list", routes.LinuxClientGroupListAll).Methods("POST")
+
+	// Linux Client Iptables
+	router.HandleFunc("/linux/iptables/list/{id}", routes.LinuxClientIptablesListAll).Methods("GET")
+	router.HandleFunc("/linux/iptables/add", routes.LinuxClientIptablesAdd).Methods("POST")
+	router.HandleFunc("/linux/iptables/remove", routes.LinuxClientIptablesRemove).Methods("DELETE")
 
 	// User command history
 	// Not finished

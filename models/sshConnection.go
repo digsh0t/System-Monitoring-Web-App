@@ -158,6 +158,31 @@ func GetAllSSHConnectionNoGroup() ([]SshConnectionInfo, error) {
 	return connectionInfos, err
 }
 
+func GetAllSSHConnectionFromGroupId(groupId int) ([]SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_isnetwork, sc_networkos 
+			  FROM ssh_connections WHERE group_id = ?`
+	selDB, err := db.Query(query, groupId)
+	if err != nil {
+		return nil, err
+	}
+
+	var connectionInfo SshConnectionInfo
+	var connectionInfos []SshConnectionInfo
+	for selDB.Next() {
+		var networkOS sql.NullString
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId, &connectionInfo.OsType, &connectionInfo.IsNetwork, &networkOS)
+		if err != nil {
+			return nil, err
+		}
+		connectionInfo.NetworkOS = networkOS.String
+		connectionInfos = append(connectionInfos, connectionInfo)
+	}
+	return connectionInfos, err
+}
+
 func GetAllOSSSHConnection(osType string) ([]SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
@@ -303,10 +328,34 @@ func DeleteSSHConnection(id int) (bool, error) {
 }
 
 func GenerateInventory() error {
-	sshConnectionList, err := GetAllSSHConnection()
+	var inventory string
+	// Get sshConnection No Group
+	sshConnectionList, err := GetAllSSHConnectionNoGroup()
 	if err != nil {
 		return err
 	}
+	line := GenerateInventoryLine(sshConnectionList)
+	inventory += line + "\n"
+
+	groupList, err := GetAllInventoryGroup()
+	if err != nil {
+		return err
+	}
+	for _, group := range groupList {
+		inventory += "[" + group.GroupName + "]" + "\n"
+		sshConnectionList, err = GetAllSSHConnectionFromGroupId(group.GroupId)
+		if err != nil {
+			return err
+		}
+		line := GenerateInventoryLine(sshConnectionList)
+		inventory += line + "\n"
+	}
+
+	err = ioutil.WriteFile("/etc/ansible/hosts", []byte(inventory), 0644)
+	return err
+}
+
+func GenerateInventoryLine(sshConnectionList []SshConnectionInfo) string {
 	var inventory string
 	for _, sshConnection := range sshConnectionList {
 		var line string
@@ -320,9 +369,7 @@ func GenerateInventory() error {
 		}
 		inventory += line
 	}
-
-	err = ioutil.WriteFile("/etc/ansible/hosts", []byte(inventory), 0644)
-	return err
+	return inventory
 }
 
 //Run command through SSH using SSH keys
@@ -393,29 +440,6 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithSSHKey(cmd string) (strin
 // Get OS Type of PC
 func (sshConnection *SshConnectionInfo) GetOsType() string {
 
-	/*
-		// Initialize extra value and run yaml file
-		var extraValue map[string]string = map[string]string{"host": sshConnection.HostNameSSH}
-		output, err := LoadYAML("./yamls/checkOsType.yml", extraValue)
-		if err != nil {
-			osType = "Unknown"
-			return osType
-		}
-
-		// Retrieving value from Json format
-		value := ExtractJsonValue(output, []string{"msg"})
-		osType = value[0]
-		if osType == "" {
-			osType = "Unknown"
-			return osType
-		}
-
-		// Convert friendly name for windows type
-		if strings.Contains(osType, "Windows") {
-			osType = "Windows"
-		}
-		return osType
-	*/
 	var osType string
 	type OsJson struct {
 		Name string `json:"name"`
@@ -452,16 +476,6 @@ func (sshconnection *SshConnectionInfo) UpdateOsType() error {
 		return err
 	}
 	return err
-}
-
-func (sshConnection *SshConnectionInfo) GetIptables() ([]IptableRule, error) {
-	var iptables []IptableRule
-	firewallRule, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM iptables"`)
-	if err != nil {
-		return iptables, err
-	}
-	iptables, err = ParseIptables(firewallRule)
-	return iptables, err
 }
 
 func (sshConnection *SshConnectionInfo) GetWindowsFirewall(direction string) ([]PortNetshFirewallRule, error) {

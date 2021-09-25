@@ -168,7 +168,7 @@ func PackageListAll(w http.ResponseWriter, r *http.Request) {
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to retrieve Json format").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to retrieve Json format").Error())
 		return
 	}
 	// Parse Json
@@ -178,11 +178,13 @@ func PackageListAll(w http.ResponseWriter, r *http.Request) {
 	// Called List All Package
 	packageList, err := models.ListAllPackge(packageJson.Host)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to get installed package").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to get installed package").Error())
 		return
 	}
+	mapPaginate := models.PaginatePackageList(packageList)
+	returnPackageList := models.ReturnPackgeList(mapPaginate, packageJson.Page)
 
 	// Return json
-	utils.JSON(w, http.StatusOK, packageList)
+	utils.JSON(w, http.StatusOK, returnPackageList)
 
 }
