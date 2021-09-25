@@ -23,6 +23,58 @@ type osVersion struct {
 	Version      string `json:"version"`
 }
 
+type interfaceInfo struct {
+	Collisions                 string `json:"collisions"`
+	ConnectionID               string `json:"connection_id"`
+	ConnectionStatus           string `json:"connection_status"`
+	Description                string `json:"description"`
+	DhcpEnabled                string `json:"dhcp_enabled"`
+	DhcpLeaseExpires           string `json:"dhcp_lease_expires"`
+	DhcpLeaseObtained          string `json:"dhcp_lease_obtained"`
+	DhcpServer                 string `json:"dhcp_server"`
+	DNSDomain                  string `json:"dns_domain"`
+	DNSDomainSuffixSearchOrder string `json:"dns_domain_suffix_search_order"`
+	DNSHostName                string `json:"dns_host_name"`
+	DNSServerSearchOrder       string `json:"dns_server_search_order"`
+	Enabled                    string `json:"enabled"`
+	Flags                      string `json:"flags"`
+	FriendlyName               string `json:"friendly_name"`
+	Ibytes                     string `json:"ibytes"`
+	Idrops                     string `json:"idrops"`
+	Ierrors                    string `json:"ierrors"`
+	Interface                  string `json:"interface"`
+	Ipackets                   string `json:"ipackets"`
+	LastChange                 string `json:"last_change"`
+	Mac                        string `json:"mac"`
+	Manufacturer               string `json:"manufacturer"`
+	Metric                     string `json:"metric"`
+	Mtu                        string `json:"mtu"`
+	Obytes                     string `json:"obytes"`
+	Odrops                     string `json:"odrops"`
+	Oerrors                    string `json:"oerrors"`
+	Opackets                   string `json:"opackets"`
+	PhysicalAdapter            string `json:"physical_adapter"`
+	Service                    string `json:"service"`
+	Speed                      string `json:"speed"`
+	Type                       string `json:"type"`
+}
+
+func parseInterfacesInfo(output string) ([]interfaceInfo, error) {
+	var interfaceList []interfaceInfo
+	err := json.Unmarshal([]byte(output), &interfaceList)
+	return interfaceList, err
+}
+
+func (sshConnection SshConnectionInfo) GetIntefaceList() ([]interfaceInfo, error) {
+	var interfaceList []interfaceInfo
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM interface_details"`)
+	if err != nil {
+		return interfaceList, err
+	}
+	interfaceList, err = parseInterfacesInfo(result)
+	return interfaceList, err
+}
+
 func parseOSVersion(output string) (osVersion, error) {
 	var osVersionList []osVersion
 	err := json.Unmarshal([]byte(output), &osVersionList)
