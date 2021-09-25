@@ -24,15 +24,15 @@ func main() {
 
 	// firewallSetting := `{"host":"vmware-windows", "name":"add firewall test-in"}`
 	// models.DeleteFirewallRule(firewallSetting)
-	// sshConnection, err := models.GetSSHConnectionFromId(45)
+	// sshConnection, err := models.GetSSHConnectionFromId(51)
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// groupNameList, err := sshConnection.GetWindowsGroupUserBelongTo("trilx")
+	// os, err := sshConnection.GetOSVersion()
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// log.Println(groupNameList)
+	// log.Println(os)
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
@@ -167,6 +167,9 @@ func main() {
 	//Get Windows Processes
 	router.HandleFunc("/{id}/processes", routes.GetWindowsProcesses).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/processes/{pid}", routes.KillWindowsProcess).Methods("OPTIONS", "DELETE")
+
+	//Get Windows Sys Info
+	router.HandleFunc("/{id}/osversion", routes.GetOSVersion).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
