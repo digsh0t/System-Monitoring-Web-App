@@ -154,5 +154,11 @@ func main() {
 	router.HandleFunc("/localusergroup", routes.AddNewWindowsGroup).Methods("OPTIONS", "POST")
 	router.HandleFunc("/localusergroup", routes.RemoveWindowsGroup).Methods("OPTIONS", "DELETE")
 
+	//Install guide
+	router.HandleFunc("/manual", routes.GetInstallManual).Methods("OPTIONS", "GET")
+
+	//Get Windows Processes
+	router.HandleFunc("/{id}/processes", routes.GetWindowsProcesses).Methods("OPTIONS", "GET")
+
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
