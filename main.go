@@ -89,7 +89,7 @@ func main() {
 	// Linux Client Iptables
 	router.HandleFunc("/linux/iptables/list/{id}", routes.LinuxClientIptablesListAll).Methods("GET")
 	router.HandleFunc("/linux/iptables/add", routes.LinuxClientIptablesAdd).Methods("POST")
-	router.HandleFunc("/linux/iptables/remove", routes.LinuxClientIptablesRemove).Methods("POST")
+	router.HandleFunc("/linux/iptables/remove", routes.LinuxClientIptablesRemove).Methods("DELETE")
 
 	// User command history
 	// Not finished
