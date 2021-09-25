@@ -159,6 +159,7 @@ func main() {
 
 	//Get Windows Processes
 	router.HandleFunc("/{id}/processes", routes.GetWindowsProcesses).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/processes/{pid}", routes.KillWindowsProcess).Methods("OPTIONS", "DELETE")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

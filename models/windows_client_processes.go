@@ -1,6 +1,9 @@
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strconv"
+)
 
 type process struct {
 	Cmdline              string `json:"cmdline"`
@@ -51,4 +54,10 @@ func parseProcessFromCmd(input string) ([]process, error) {
 	var processList []process
 	err := json.Unmarshal([]byte(input), &processList)
 	return processList, err
+}
+
+func (sshConnection SshConnectionInfo) KillProcess(pid int) (string, error) {
+	command := "taskkill /f /t /pid " + strconv.Itoa(pid)
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	return result, err
 }
