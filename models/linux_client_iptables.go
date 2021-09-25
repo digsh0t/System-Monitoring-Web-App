@@ -19,10 +19,10 @@ type IptablesJson struct {
 	SshConnectionId []int    `json:"sshConnectionId"`
 	Host            []string `json:"host"`
 	Chain           string   `json:"chain"`
-	SourceIP        string   `json:"sourceIP"`
-	Destination     string   `json:"destinationIP"`
+	SourceIP        string   `json:"src_ip"`
+	Destination     string   `json:"dst_ip"`
 	Protocol        string   `json:"protocol"`
-	Jump            string   `json:"jump"`
+	Jump            string   `json:"target"`
 }
 
 func ParseIptables(cmdResult string) ([]IptablesRule, error) {

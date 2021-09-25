@@ -17,10 +17,10 @@
   - name: Add Iptables
     iptables:
      chain: "{{ chain }}"
-     source: "{{ sourceIP }}"
-     destination: "{{ destinationIP }}"
+     source: "{{ src_ip }}"
+     destination: "{{ dst_ip }}"
      protocol: "{{ protocol }}"
-     jump: "{{ jump }}"
+     jump: "{{ target }}"
     become: yes
 
   - name: Save config for CentOS
