@@ -217,6 +217,7 @@ func parseLoggedInUser(output string) ([]loggedInUser, error) {
 			user.LogonTime = vars[4]
 		}
 		loggedInUserList = append(loggedInUserList, user)
+		user = loggedInUser{}
 	}
 
 	return loggedInUserList, nil
