@@ -1,9 +1,23 @@
 package models
 
 import (
+	"encoding/json"
 	"strings"
 )
 
+type openConnection struct {
+	Family        string `json:"family"`
+	Fd            string `json:"fd"`
+	LocalAddress  string `json:"local_address"`
+	LocalPort     string `json:"local_port"`
+	Path          string `json:"path"`
+	Pid           string `json:"pid"`
+	Protocol      string `json:"protocol"`
+	RemoteAddress string `json:"remote_address"`
+	RemotePort    string `json:"remote_port"`
+	Socket        string `json:"socket"`
+	State         string `json:"state"`
+}
 type AppFirewallRule struct {
 	Name                  string
 	DisplayName           string
@@ -156,4 +170,20 @@ func ParsePortFirewallRuleFromPowershell(result string) ([]PortFirewallRule, err
 		}
 	}
 	return ruleList, nil
+}
+
+func parseOpenConnection(output string) ([]openConnection, error) {
+	var connectionList []openConnection
+	err := json.Unmarshal([]byte(output), &connectionList)
+	return connectionList, err
+}
+
+func (sshConnection SshConnectionInfo) GeteOpenConnection() ([]openConnection, error) {
+	var connectionList []openConnection
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM process_open_sockets WHERE state != ''"`)
+	if err != nil {
+		return connectionList, err
+	}
+	connectionList, err = parseOpenConnection(result)
+	return connectionList, err
 }

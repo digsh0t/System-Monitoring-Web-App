@@ -140,6 +140,7 @@ func main() {
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")
 	router.HandleFunc("/firewall", routes.AddWindowsFirewall).Methods("OPTIONS", "POST")
 	router.HandleFunc("/firewall", routes.RemoveWindowsFirewallRule).Methods("OPTIONS", "DELETE")
+	router.HandleFunc("/{id}/openconnection", routes.GetWindowsOpenConnection).Methods("OPTIONS", "GET")
 
 	//Windows Programs Management
 	router.HandleFunc("/{id}/programs", routes.GetWindowsInstalledProgram).Methods("GET")
