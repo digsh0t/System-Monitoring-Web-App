@@ -155,6 +155,8 @@ func main() {
 	router.HandleFunc("/localuser/groups", routes.ReplaceWindowsGroupOfUser).Methods("OPTIONS", "POST")
 	router.HandleFunc("/localuser", routes.AddNewWindowsLocalUser).Methods("OPTIONS", "POST")
 	router.HandleFunc("/localuser", routes.DeleteWindowsUser).Methods("OPTIONS", "DELETE")
+	router.HandleFunc("/{id}/loggedinusers", routes.GetLoggedInUsers).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/loggedinusers/{session_id}", routes.KillWindowsLogonSession).Methods("OPTIONS", "DELETE")
 
 	//Windows Local Group Management
 	router.HandleFunc("/{id}/localusergroup", routes.GetWindowsLocalUserGroup).Methods("OPTIONS", "GET")
@@ -173,7 +175,6 @@ func main() {
 	router.HandleFunc("/{id}/cpuinfo", routes.GetCPUInfo).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/intefaces", routes.GetInterfaceList).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/connectivity", routes.GetConnectivityInfo).Methods("OPTIONS", "GET")
-	router.HandleFunc("/{id}/loggedinusers", routes.GetLoggedInUsers).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

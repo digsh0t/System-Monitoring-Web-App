@@ -3,6 +3,8 @@ package models
 import (
 	"encoding/json"
 	"regexp"
+	"strconv"
+	"strings"
 )
 
 type ClientUser struct {
@@ -99,4 +101,60 @@ func (sshConnectionInfo *SshConnectionInfo) ReplaceWindowsGroupForUser(username 
 	}
 	output, err := RunAnsiblePlaybookWithjson("./yamls/windows_client/change_user_group_membership.yml", string(groupListJson))
 	return output, err
+}
+
+func parseLoggedInUser(output string) ([]loggedInUser, error) {
+	var loggedInUserList []loggedInUser
+
+	var user loggedInUser
+	re := regexp.MustCompile(`\s{2,}`)
+	for i, line := range strings.Split(strings.Trim(output, "\n\r "), "\n") {
+		if i == 0 {
+			continue
+		}
+		line = strings.Trim(line, "\n\r ")
+		vars := re.Split(line, -1)
+		if len(vars) == 6 {
+			user.Username = vars[0]
+			user.SessionName = vars[1]
+			user.SessionId = vars[2]
+			user.State = vars[3]
+			if vars[3] == "Disc" {
+				user.State = "Disconnected"
+			}
+			user.IdleTime = vars[4]
+			user.LogonTime = vars[5]
+		} else if len(vars) == 5 {
+			user.Username = vars[0]
+			user.SessionId = vars[1]
+			user.State = vars[2]
+			if vars[2] == "Disc" {
+				user.State = "Disconnected"
+			}
+			user.IdleTime = vars[3]
+			user.LogonTime = vars[4]
+		}
+		loggedInUserList = append(loggedInUserList, user)
+		user = loggedInUser{}
+	}
+
+	return loggedInUserList, nil
+}
+
+func (sshConnection SshConnectionInfo) GetLoggedInUsers() ([]loggedInUser, error) {
+	var loggedInUserList []loggedInUser
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`quser`)
+	if err != nil {
+		return loggedInUserList, err
+	}
+	loggedInUserList, err = parseLoggedInUser(result)
+	return loggedInUserList, err
+}
+
+func (sshConnection SshConnectionInfo) KillWindowsLoginSession(sessionId int) error {
+	_, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`logoff ` + strconv.Itoa(sessionId))
+	if err != nil {
+		return err
+	}
+	return err
 }

@@ -306,3 +306,27 @@ func ReplaceWindowsGroupOfUser(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("Fatal", fatal)
 	utils.JSON(w, http.StatusOK, returnJson)
 }
+
+func KillWindowsLogonSession(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sessionId, err := strconv.Atoi(vars["session_id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = sshConnection.KillWindowsLoginSession(sessionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+}
