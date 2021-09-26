@@ -58,6 +58,36 @@ type interfaceInfo struct {
 	Speed                      string `json:"speed"`
 	Type                       string `json:"type"`
 }
+type cpuInfo struct {
+	AddressWidth      string `json:"address_width"`
+	Availability      string `json:"availability"`
+	CPUStatus         string `json:"cpu_status"`
+	CurrentClockSpeed string `json:"current_clock_speed"`
+	DeviceID          string `json:"device_id"`
+	LogicalProcessors string `json:"logical_processors"`
+	Manufacturer      string `json:"manufacturer"`
+	MaxClockSpeed     string `json:"max_clock_speed"`
+	Model             string `json:"model"`
+	NumberOfCores     string `json:"number_of_cores"`
+	ProcessorType     string `json:"processor_type"`
+	SocketDesignation string `json:"socket_designation"`
+}
+
+func parseCPUInfo(output string) (cpuInfo, error) {
+	var cpuInfoList []cpuInfo
+	err := json.Unmarshal([]byte(output), &cpuInfoList)
+	return cpuInfoList[0], err
+}
+
+func (sshConnection SshConnectionInfo) GetCPUInfo() (cpuInfo, error) {
+	var cpu cpuInfo
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM cpu_info"`)
+	if err != nil {
+		return cpu, err
+	}
+	cpu, err = parseCPUInfo(result)
+	return cpu, err
+}
 
 func parseInterfacesInfo(output string) ([]interfaceInfo, error) {
 	var interfaceList []interfaceInfo

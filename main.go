@@ -28,7 +28,7 @@ func main() {
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// os, err := sshConnection.GetOSVersion()
+	// os, err := sshConnection.GetCPUInfo()
 	// if err != nil {
 	// 	log.Println(err)
 	// }
@@ -170,6 +170,7 @@ func main() {
 
 	//Get Windows Sys Info
 	router.HandleFunc("/{id}/osversion", routes.GetOSVersion).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/cpuinfo", routes.GetCPUInfo).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/intefaces", routes.GetInterfaceList).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
