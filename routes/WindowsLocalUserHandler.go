@@ -330,3 +330,28 @@ func KillWindowsLogonSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func GetWindowsLogonAppExecutionHistory(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	username := vars["username"]
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	appHistory, err := sshConnection.GetWindowsLoginAppExecutionHistory(username)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.JSON(w, http.StatusOK, appHistory)
+}
