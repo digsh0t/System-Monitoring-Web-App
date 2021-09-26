@@ -88,3 +88,23 @@ func GetInterfaceList(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.JSON(w, http.StatusOK, intefaceList)
 }
+
+func GetLoggedInUsers(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	loggedInUserList, err := sshConnection.GetLoggedInUsers()
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.JSON(w, http.StatusOK, loggedInUserList)
+}

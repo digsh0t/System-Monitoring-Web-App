@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/Jeffail/gabs"
@@ -82,6 +83,15 @@ type connectivity struct {
 	Ipv6LocalNetwork string `json:"ipv6_local_network"`
 	Ipv6NoTraffic    string `json:"ipv6_no_traffic"`
 	Ipv6Subnet       string `json:"ipv6_subnet"`
+}
+
+type loggedInUser struct {
+	Username    string `json:"username"`
+	SessionName string `json:"session_name"`
+	SessionId   string `json:"session_id"`
+	State       string `json:"state"`
+	IdleTime    string `json:"idle_time"`
+	LogonTime   string `json:"logon_time"`
 }
 
 func parseConnectivity(output string) (connectivity, error) {
@@ -173,4 +183,51 @@ func ParseAnsibleFactsOutput(output string) error {
 	fmt.Println(jsonParsed.Path("ansible_facts.bios_date").Data())
 	fmt.Println(jsonParsed.Path("ansible_facts.bios_version").Data())
 	return nil
+}
+
+func parseLoggedInUser(output string) ([]loggedInUser, error) {
+	var loggedInUserList []loggedInUser
+
+	var user loggedInUser
+	re := regexp.MustCompile(`\s{2,}`)
+	for i, line := range strings.Split(strings.Trim(output, "\n\r "), "\n") {
+		if i == 0 {
+			continue
+		}
+		line = strings.Trim(line, "\n\r ")
+		vars := re.Split(line, -1)
+		if len(vars) == 6 {
+			user.Username = vars[0]
+			user.SessionName = vars[1]
+			user.SessionId = vars[2]
+			user.State = vars[3]
+			if vars[3] == "Disc" {
+				user.State = "Disconnected"
+			}
+			user.IdleTime = vars[4]
+			user.LogonTime = vars[5]
+		} else if len(vars) == 5 {
+			user.Username = vars[0]
+			user.SessionId = vars[1]
+			user.State = vars[2]
+			if vars[2] == "Disc" {
+				user.State = "Disconnected"
+			}
+			user.IdleTime = vars[3]
+			user.LogonTime = vars[4]
+		}
+		loggedInUserList = append(loggedInUserList, user)
+	}
+
+	return loggedInUserList, nil
+}
+
+func (sshConnection SshConnectionInfo) GetLoggedInUsers() ([]loggedInUser, error) {
+	var loggedInUserList []loggedInUser
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`quser`)
+	if err != nil {
+		return loggedInUserList, err
+	}
+	loggedInUserList, err = parseLoggedInUser(result)
+	return loggedInUserList, err
 }
