@@ -72,6 +72,33 @@ type cpuInfo struct {
 	ProcessorType     string `json:"processor_type"`
 	SocketDesignation string `json:"socket_designation"`
 }
+type connectivity struct {
+	Disconnected     string `json:"disconnected"`
+	Ipv4Internet     string `json:"ipv4_internet"`
+	Ipv4LocalNetwork string `json:"ipv4_local_network"`
+	Ipv4NoTraffic    string `json:"ipv4_no_traffic"`
+	Ipv4Subnet       string `json:"ipv4_subnet"`
+	Ipv6Internet     string `json:"ipv6_internet"`
+	Ipv6LocalNetwork string `json:"ipv6_local_network"`
+	Ipv6NoTraffic    string `json:"ipv6_no_traffic"`
+	Ipv6Subnet       string `json:"ipv6_subnet"`
+}
+
+func parseConnectivity(output string) (connectivity, error) {
+	var connectInfoList []connectivity
+	err := json.Unmarshal([]byte(output), &connectInfoList)
+	return connectInfoList[0], err
+}
+
+func (sshConnection SshConnectionInfo) GetConnectivity() (connectivity, error) {
+	var connectInfo connectivity
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM connectivity"`)
+	if err != nil {
+		return connectInfo, err
+	}
+	connectInfo, err = parseConnectivity(result)
+	return connectInfo, err
+}
 
 func parseCPUInfo(output string) (cpuInfo, error) {
 	var cpuInfoList []cpuInfo
