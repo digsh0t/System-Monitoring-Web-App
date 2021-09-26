@@ -44,6 +44,13 @@ type NewLocalUser struct {
 	UserCannotChangePassword string   `json:"user_cannot_change_password"`
 }
 
+type appExecutionHistory struct {
+	LastExecutionTime string `json:"last_execution_time"`
+	Path              string `json:"path"`
+	Sid               string `json:"sid"`
+	User              string `json:"user"`
+}
+
 //Both Linux and Windows can use this
 func (sshConnection *SshConnectionInfo) GetLocalUsers() ([]ClientUser, error) {
 	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM users"`)
@@ -157,4 +164,20 @@ func (sshConnection SshConnectionInfo) KillWindowsLoginSession(sessionId int) er
 		return err
 	}
 	return err
+}
+
+func parseWindowsAppExecution(output string) ([]appExecutionHistory, error) {
+	var appHistory []appExecutionHistory
+	err := json.Unmarshal([]byte(output), &appHistory)
+	return appHistory, err
+}
+
+func (sshConnection SshConnectionInfo) GetWindowsLoginAppExecutionHistory() ([]appExecutionHistory, error) {
+	var appHistory []appExecutionHistory
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT B.*,L.user FROM background_activities_moderator AS B LEFT JOIN logged_in_users AS L WHERE B.sid=L.sid"`)
+	if err != nil {
+		return appHistory, err
+	}
+	appHistory, err = parseWindowsAppExecution(result)
+	return appHistory, err
 }

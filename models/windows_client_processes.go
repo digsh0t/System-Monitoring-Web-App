@@ -37,12 +37,13 @@ type process struct {
 	TotalSize            string `json:"total_size"`
 	UID                  string `json:"uid"`
 	UserTime             string `json:"user_time"`
+	Username             string `json:"username"`
 	VirtualProcess       string `json:"virtual_process"`
 	WiredSize            string `json:"wired_size"`
 }
 
 func (sshConnection SshConnectionInfo) GetProcessListFromWindows() ([]process, error) {
-	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM processes"`)
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT P.*,U.username FROM processes AS P LEFT JOIN users AS U WHERE P.uid=U.uid"`)
 	if err != nil {
 		return nil, err
 	}
