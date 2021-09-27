@@ -177,7 +177,10 @@ func main() {
 	router.HandleFunc("/{id}/cpuinfo", routes.GetCPUInfo).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/interfaces", routes.GetInterfaceList).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/connectivity", routes.GetConnectivityInfo).Methods("OPTIONS", "GET")
+
+	//Windows Service
 	router.HandleFunc("/{id}/services", routes.GetWindowsServiceList).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/services/{service_name}/{service_state}", routes.ChangeWindowsServiceState).Methods("OPTIONS", "PUT")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
