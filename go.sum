@@ -1,5 +1,7 @@
 github.com/Jeffail/gabs v1.4.0 h1://5fYRRTq1edjfIrQGvdkcd22pkYUrHZ5YC/H2GJVAo=
 github.com/Jeffail/gabs v1.4.0/go.mod h1:6xMvQMK4k33lb7GUUpaAPh6nKMmemQeg5d4gn7/bOXc=
+github.com/albrow/forms v0.3.3 h1:+40fCsDyS2lU97IEeed7bnUGENvlVzppQGBGy6kd77E=
+github.com/albrow/forms v0.3.3/go.mod h1:jvrM3b0gPuIRiY1E/KmKfPk2XXDEKj7yFB+g9g0BItQ=
 github.com/apenella/go-common-utils v0.1.1 h1:dJA2tY22z6mYB5a+EogfiS7NxZsR/Ld3TWnZcS3JPa0=
 github.com/apenella/go-common-utils v0.1.1/go.mod h1:E7RUbl9B1vdLkTIapoTE2W6pIgW7dTSJOxL3pf4gV6g=
 github.com/bitly/go-simplejson v0.5.0 h1:6IH+V8/tVMab511d5bn4M7EwGXZf9Hj6i2xSwkNEM+Y=

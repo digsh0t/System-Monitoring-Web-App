@@ -1,22 +1,21 @@
 package models
 
 import (
-	"errors"
-	"time"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/wintltr/login-api/database"
 )
 
 type SysInfo struct {
-	ConnectionId int       `json:"id"`
-	HostnameSSH  string    `json:"hostnameSSH"`
-	AvgCPU       string    `json:"avgcpu"`
-	AvgMem       string    `json:"avgmem"`
-	Timestamp    string    `json:"timestamp"`
-	UfwStatus    bool      `json:"ufwstatus"`
-	UfwRules     []UfwRule `json:"ufwrulelist"`
-	State        string    `json:"state"`
-	OsType       string    `json:"osType"`
+	ConnectionId int    `json:"id"`
+	HostnameSSH  string `json:"hostnameSSH"`
+	AvgCPU       string `json:"avgcpu"`
+	AvgMem       string `json:"avgmem"`
+	Timestamp    string `json:"timestamp"`
+	State        string `json:"state"`
+	OsType       string `json:"osType"`
 }
 
 type OnlineStatus struct {
@@ -41,29 +40,63 @@ func InsertSysInfoToDB(sysInfo SysInfo, ip string, hostname string, connectionId
 	return err
 }
 
-func GetLatestSysInfo(sshConnectionId int, interval int) (SysInfo, error) {
-	db := database.ConnectDB()
-	defer db.Close()
+func GetLatestSysInfo(sshConnection SshConnectionInfo) (SysInfo, error) {
+	var (
+		sysInfo SysInfo
+		err     error
+	)
+	sysInfo.ConnectionId = sshConnection.SSHConnectionId
+	sysInfo.HostnameSSH = sshConnection.HostNameSSH
 
-	var sysInfo SysInfo
-	row := db.QueryRow("SELECT syl_hostname, syl_avg_cpu, syl_avg_mem, syl_timestamp, syl_connection_id FROM sys_info_logs WHERE syl_connection_id = ? ORDER BY syl_id DESC LIMIT 1", sshConnectionId)
-	err := row.Scan(&sysInfo.HostnameSSH, &sysInfo.AvgCPU, &sysInfo.AvgMem, &sysInfo.Timestamp, &sysInfo.ConnectionId)
-	if err != nil && err.Error() != "sql: no rows in result set" {
-		return sysInfo, errors.New("fail to retrieve ssh connection info")
-	}
-	layout := "01-02-2006 15:04:05"
-	t, _ := time.Parse(layout, sysInfo.Timestamp)
+	// Linux CPU and Memory
+	if strings.Contains(sshConnection.OsType, "CentOS") || strings.Contains(sshConnection.OsType, "Ubuntu") {
+		sysInfo.AvgMem = CalcAvgMemUseForLinux(sshConnection)
+		sysInfo.AvgCPU = CalcAvgCPUFromTopForLinux(sshConnection)
 
-	current, _ := time.Parse(layout, time.Now().Format("01-02-2006 15:04:05"))
-	diff := current.Sub(t)
-	sshConnection, _ := GetSSHConnectionFromId(sshConnectionId)
-	if diff.Seconds() > float64(interval) {
-		sysInfo = SysInfo{}
-		sysInfo.ConnectionId = sshConnectionId
-		sysInfo.HostnameSSH = sshConnection.HostNameSSH
 	}
-	err = nil
+
 	return sysInfo, err
+}
+
+func CalcAvgMemUseForLinux(sshConnection SshConnectionInfo) string {
+	var (
+		result string
+		err    error
+	)
+	command := "free | grep Mem | awk '{print $3/$2 * 100.0}'"
+	result, err = sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	if err != nil {
+		fmt.Println(err.Error())
+		return result
+	}
+	return strings.Trim(string(result), "\n")
+}
+
+func CalcAvgCPUFromTopForLinux(sshConnection SshConnectionInfo) string {
+	var (
+		cpuUse float32
+		result string
+		err    error
+	)
+
+	command := "top -b -n 1"
+	result, err = sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	if err != nil {
+		return result
+	}
+
+	lines := strings.Split(string(result), "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "%Cpu(s):") {
+			atributes := strings.Split(line, ",")
+			idle, err := strconv.ParseFloat(strings.Trim((atributes[3][:5]), " "), 32)
+			if err != nil {
+				return ""
+			}
+			cpuUse = 100 - float32(idle)
+		}
+	}
+	return fmt.Sprintf("%.1f", cpuUse)
 }
 
 func GetAllSysInfo(sshConnectionList []SshConnectionInfo) ([]SysInfo, error) {
@@ -72,7 +105,7 @@ func GetAllSysInfo(sshConnectionList []SshConnectionInfo) ([]SysInfo, error) {
 	var err error
 
 	for _, sshConnection := range sshConnectionList {
-		sysInfo, err = GetLatestSysInfo(sshConnection.SSHConnectionId, 10)
+		sysInfo, err = GetLatestSysInfo(sshConnection)
 		if err != nil {
 			return sysInfoList, err
 		}
@@ -92,7 +125,7 @@ func GetAllSysInfo(sshConnectionList []SshConnectionInfo) ([]SysInfo, error) {
 func CheckOnlineStatus(sshConnectionlist []SshConnectionInfo) []OnlineStatus {
 	var statuses []OnlineStatus
 	for _, sshConnection := range sshConnectionlist {
-		sysinfo, _ := GetLatestSysInfo(sshConnection.SSHConnectionId, 100)
+		sysinfo, _ := GetLatestSysInfo(sshConnection)
 		if sysinfo.AvgCPU == "" {
 			statuses = append(statuses, OnlineStatus{sshConnection.SSHConnectionId, false})
 		} else {

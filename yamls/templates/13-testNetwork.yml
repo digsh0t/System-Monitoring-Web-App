@@ -1,0 +1,9 @@
+- name: Network module
+  connection: network_cli
+  gather_facts: false
+  hosts: "{{ host }}"
+  tasks:
+  - name: Get config for VyOS devices
+    vyos_facts:
+     gather_network_resources: all      
+  - debug: msg="{{ ansible_network_resources }}"

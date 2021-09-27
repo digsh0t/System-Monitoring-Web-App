@@ -109,6 +109,7 @@ func main() {
 	//Template & Task management
 	router.HandleFunc("/templates", routes.AddTemplate).Methods("POST", "OPTIONS")
 	router.HandleFunc("/templates", routes.GetAllTemplate).Methods("GET", "OPTIONS")
+	router.HandleFunc("/templates/argument/{id}", routes.GetTemplateArgument).Methods("GET", "OPTIONS")
 	router.HandleFunc("/templates/{id}", routes.DeleteTemplate).Methods("DELETE", "OPTIONS")
 	router.HandleFunc("/templates/{id}/tasks", routes.GetAllTask).Methods("GET", "OPTIONS")
 	router.HandleFunc("/tasks", routes.AddTask).Methods("POST", "OPTIONS")

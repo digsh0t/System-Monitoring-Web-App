@@ -31,7 +31,7 @@ func SystemInfoGetAllRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	systemInfoList, err := models.GetAllSysInfo(sshConnectionList)
-	if err != nil && err.Error() != "sql: no rows in result set" {
+	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to retrieve system info list").Error())
 	} else {
 		utils.JSON(w, http.StatusOK, systemInfoList)
@@ -70,8 +70,13 @@ func GetSystemInfoRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sshConnection, err := models.GetSSHConnectionFromId(sshConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to get sshConnection").Error())
+		return
+	}
 	var systemInfo models.SysInfo
-	systemInfo, err = models.GetLatestSysInfo(sshConnectionId, 10)
+	systemInfo, err = models.GetLatestSysInfo(*sshConnection)
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", errors.New("fail to get system info").Error())
