@@ -61,6 +61,7 @@ type interfaceInfo struct {
 	Service                    string `json:"service"`
 	Speed                      string `json:"speed"`
 	Type                       string `json:"type"`
+	TypeOfAddress              string `json:"type_of_address"`
 }
 type cpuInfo struct {
 	AddressWidth      string `json:"address_width"`
@@ -137,7 +138,7 @@ func parseInterfacesInfo(output string) ([]interfaceInfo, error) {
 
 func (sshConnection SshConnectionInfo) GetIntefaceList() ([]interfaceInfo, error) {
 	var interfaceList []interfaceInfo
-	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT ID.*,IA.address,IA.mask,IA.broadcast,IA.point_to_point,IA.type FROM interface_details AS ID LEFT JOIN interface_addresses AS IA WHERE ID.interface=IA.interface"`)
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT ID.*,IA.address,IA.mask,IA.broadcast,IA.point_to_point,IA.type AS type_of_address FROM interface_details AS ID LEFT JOIN interface_addresses AS IA WHERE ID.interface=IA.interface"`)
 	if err != nil {
 		return interfaceList, err
 	}
