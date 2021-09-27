@@ -24,6 +24,8 @@ type osVersion struct {
 }
 
 type interfaceInfo struct {
+	Address                    string `json:"address"`
+	Broadcast                  string `json:"broadcast"`
 	Collisions                 string `json:"collisions"`
 	ConnectionID               string `json:"connection_id"`
 	ConnectionStatus           string `json:"connection_status"`
@@ -47,6 +49,7 @@ type interfaceInfo struct {
 	LastChange                 string `json:"last_change"`
 	Mac                        string `json:"mac"`
 	Manufacturer               string `json:"manufacturer"`
+	Mask                       string `json:"mask"`
 	Metric                     string `json:"metric"`
 	Mtu                        string `json:"mtu"`
 	Obytes                     string `json:"obytes"`
@@ -54,6 +57,7 @@ type interfaceInfo struct {
 	Oerrors                    string `json:"oerrors"`
 	Opackets                   string `json:"opackets"`
 	PhysicalAdapter            string `json:"physical_adapter"`
+	PointToPoint               string `json:"point_to_point"`
 	Service                    string `json:"service"`
 	Speed                      string `json:"speed"`
 	Type                       string `json:"type"`
@@ -133,7 +137,7 @@ func parseInterfacesInfo(output string) ([]interfaceInfo, error) {
 
 func (sshConnection SshConnectionInfo) GetIntefaceList() ([]interfaceInfo, error) {
 	var interfaceList []interfaceInfo
-	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM interface_details"`)
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT ID.*,IA.address,IA.mask,IA.broadcast,IA.point_to_point,IA.type FROM interface_details AS ID LEFT JOIN interface_addresses AS IA WHERE ID.interface=IA.interface"`)
 	if err != nil {
 		return interfaceList, err
 	}
