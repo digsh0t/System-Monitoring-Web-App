@@ -108,3 +108,23 @@ func GetLoggedInUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.JSON(w, http.StatusOK, loggedInUserList)
 }
+
+func GetWindowsServiceList(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	serviceList, err := sshConnection.GetServiceList()
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.JSON(w, http.StatusOK, serviceList)
+}

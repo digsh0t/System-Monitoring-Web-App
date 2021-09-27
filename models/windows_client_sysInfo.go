@@ -98,6 +98,37 @@ type loggedInUser struct {
 	LogonTime   string `json:"logon_time"`
 }
 
+type services struct {
+	Description     string `json:"description"`
+	DisplayName     string `json:"display_name"`
+	ModulePath      string `json:"module_path"`
+	Name            string `json:"name"`
+	Path            string `json:"path"`
+	Pid             string `json:"pid"`
+	ServiceExitCode string `json:"service_exit_code"`
+	ServiceType     string `json:"service_type"`
+	StartType       string `json:"start_type"`
+	Status          string `json:"status"`
+	UserAccount     string `json:"user_account"`
+	Win32ExitCode   string `json:"win32_exit_code"`
+}
+
+func parseServiceList(output string) ([]services, error) {
+	var serviceList []services
+	err := json.Unmarshal([]byte(output), &serviceList)
+	return serviceList, err
+}
+
+func (sshConnection SshConnectionInfo) GetServiceList() ([]services, error) {
+	var serviceList []services
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM services`)
+	if err != nil {
+		return serviceList, err
+	}
+	serviceList, err = parseServiceList(result)
+	return serviceList, err
+}
+
 func parseConnectivity(output string) (connectivity, error) {
 	var connectInfoList []connectivity
 	err := json.Unmarshal([]byte(output), &connectInfoList)
