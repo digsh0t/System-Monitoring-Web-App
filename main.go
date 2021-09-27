@@ -175,7 +175,7 @@ func main() {
 	//Get Windows Sys Info
 	router.HandleFunc("/{id}/osversion", routes.GetOSVersion).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/cpuinfo", routes.GetCPUInfo).Methods("OPTIONS", "GET")
-	router.HandleFunc("/{id}/intefaces", routes.GetInterfaceList).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/interfaces", routes.GetInterfaceList).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/connectivity", routes.GetConnectivityInfo).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
