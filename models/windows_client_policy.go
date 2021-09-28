@@ -49,18 +49,18 @@ func beautifyUACList(uacList []uacSetting) {
 		"2": "Enable configuring the machine only if DSC is in pending or current state. This is the default value.",
 	}
 
-	uacPath := map[string]string{
-		"FilterAdministratorToken":   "Admin Approval Mode for the built-in Administrator account.",
-		"EnableUIADesktopToggle":     "Allow UIAccess applications to prompt for elevation without using the secure desktop.",
-		"ConsentPromptBehaviorAdmin": "Behavior of the elevation prompt for administrators in Admin Approval Mode.",
-		"ConsentPromptBehaviorUser":  "Behavior of the elevation prompt for standard users.",
-		"EnableInstallerDetection":   "Detect application installations and prompt for elevation.",
-		"ValidateAdminCodeSignatures	": "Only elevate executables that are signed and validated.",
-		"EnableSecureUIAPaths":  "Only elevate UIAccess applications that are installed in secure locations.",
-		"EnableLUA":             "Run all administrators in Admin Approval Mode.",
-		"PromptOnSecureDesktop": "Switch to the secure desktop when prompting for elevation.",
-		"EnableVirtualization":  "Virtualize file and registry write failures to per-user locations.",
-	}
+	// uacPath := map[string]string{
+	// 	"FilterAdministratorToken":   "Admin Approval Mode for the built-in Administrator account.",
+	// 	"EnableUIADesktopToggle":     "Allow UIAccess applications to prompt for elevation without using the secure desktop.",
+	// 	"ConsentPromptBehaviorAdmin": "Behavior of the elevation prompt for administrators in Admin Approval Mode.",
+	// 	"ConsentPromptBehaviorUser":  "Behavior of the elevation prompt for standard users.",
+	// 	"EnableInstallerDetection":   "Detect application installations and prompt for elevation.",
+	// 	"ValidateAdminCodeSignatures	": "Only elevate executables that are signed and validated.",
+	// 	"EnableSecureUIAPaths":  "Only elevate UIAccess applications that are installed in secure locations.",
+	// 	"EnableLUA":             "Run all administrators in Admin Approval Mode.",
+	// 	"PromptOnSecureDesktop": "Switch to the secure desktop when prompting for elevation.",
+	// 	"EnableVirtualization":  "Virtualize file and registry write failures to per-user locations.",
+	// }
 
 	for _, uacSetting := range uacList {
 		if strings.Contains(uacSetting.Path, "ConsentPromptBehaviorUser") {
