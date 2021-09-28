@@ -52,6 +52,7 @@ func GetLatestSysInfo(sshConnection SshConnectionInfo) (SysInfo, error) {
 	if strings.Contains(sshConnection.OsType, "CentOS") || strings.Contains(sshConnection.OsType, "Ubuntu") {
 		sysInfo.AvgMem = CalcAvgMemUseForLinux(sshConnection)
 		sysInfo.AvgCPU = CalcAvgCPUFromTopForLinux(sshConnection)
+	} else {
 
 	}
 
