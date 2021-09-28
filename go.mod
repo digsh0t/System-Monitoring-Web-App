@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/Jeffail/gabs v1.4.0
-	github.com/albrow/forms v0.3.3 // indirect
+	github.com/albrow/forms v0.3.3
 	github.com/bitly/go-simplejson v0.5.0
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
