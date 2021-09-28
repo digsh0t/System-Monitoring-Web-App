@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	"log"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -28,9 +29,9 @@ type RecapInfo struct {
 
 func RunAnsiblePlaybookWithjson(filepath string, extraVars string) (string, error) {
 	var (
-		out    bytes.Buffer
-		err    error
-		output string
+		out, errbuf bytes.Buffer
+		err         error
+		output      string
 	)
 
 	var args []string
@@ -42,11 +43,14 @@ func RunAnsiblePlaybookWithjson(filepath string, extraVars string) (string, erro
 
 	cmd := exec.Command("ansible-playbook", args...)
 	cmd.Stdout = &out
+	cmd.Stderr = &errbuf
 	err = cmd.Run()
+	stderr := errbuf.String()
 	if err != nil {
 		// "Exit status 2" means Ansible displays fatal error but our funtion still works correctly
 		if err.Error() == "exit status 2" || err.Error() == "exit status 4" {
 			err = nil
+			log.Println(stderr)
 		} else {
 			return output, err
 		}
