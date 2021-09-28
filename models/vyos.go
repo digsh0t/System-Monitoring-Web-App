@@ -76,7 +76,7 @@ func GetInterfacesVyos(hostname string) (VyosInfo, error) {
 	}
 
 	// Load YAML file
-	ouput, err := RunAnsiblePlaybookWithjson("./yamls/vyos_getinfo.yml", string(vyosJsonMarshal))
+	ouput, err := RunAnsiblePlaybookWithjson("./yamls/network_client/vyos/vyos_getinfo.yml", string(vyosJsonMarshal))
 	if err != nil {
 		return vyOSInfo, errors.New("fail to load yamls")
 	}
@@ -172,7 +172,7 @@ func ConfigIPVyos(vyosJson VyOsJson) (string, error) {
 		return output, err
 	}
 
-	output, err = RunAnsiblePlaybookWithjson("./yamls/vyos_config_ip.yml", string(vyosJsonMarshal))
+	output, err = RunAnsiblePlaybookWithjson("./yamls/network_client/vyos/vyos_config_ip.yml", string(vyosJsonMarshal))
 	if err != nil {
 		return output, errors.New("fail to load yaml file")
 	}

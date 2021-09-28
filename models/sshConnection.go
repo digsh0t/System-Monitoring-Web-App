@@ -444,6 +444,9 @@ func (sshConnection *SshConnectionInfo) GetOsType() string {
 	type OsJson struct {
 		Name string `json:"name"`
 	}
+	if sshConnection.IsNetwork {
+		return "Unknown"
+	}
 
 	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT name FROM os_version"`)
 	var osJson []OsJson
@@ -512,6 +515,32 @@ func ListAllVyOS() ([]SshConnectionInfo, error) {
 	}
 	return connectionInfos, err
 }
+
+// Network:Cisco
+// List All
+func ListAllCisco() ([]SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := `SELECT sc_connection_id, sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos
+			  FROM ssh_connections WHERE sc_isnetwork=true AND sc_networkos = "ios"`
+	selDB, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var connectionInfo SshConnectionInfo
+	var connectionInfos []SshConnectionInfo
+	for selDB.Next() {
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &connectionInfo.SSHKeyId, &connectionInfo.IsNetwork, &connectionInfo.NetworkOS)
+		if err != nil {
+			return nil, err
+		}
+		connectionInfos = append(connectionInfos, connectionInfo)
+	}
+	return connectionInfos, err
+}
+
 func (sshConnection *SshConnectionInfo) GetInstalledProgram() ([]Programs, error) {
 	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM programs"`)
 	if err != nil {

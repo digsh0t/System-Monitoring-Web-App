@@ -137,6 +137,11 @@ func main() {
 	router.HandleFunc("/vyos/config/ip", routes.ConfigIPVyos).Methods("POST")
 	router.HandleFunc("/vyos/list", routes.ListAllVyOS).Methods("GET")
 
+	// Network Automation: Cisco
+	router.HandleFunc("/cisco/list", routes.ListAllCisco).Methods("GET")
+	router.HandleFunc("/cisco/listconfig/{id}", routes.GetInfoConfigCisco).Methods("GET")
+	router.HandleFunc("/cisco/listinterface/{id}", routes.GetInfoInterfaceCisco).Methods("GET")
+
 	//Windows Firewall Settings
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")
 	router.HandleFunc("/firewall", routes.AddWindowsFirewall).Methods("OPTIONS", "POST")
