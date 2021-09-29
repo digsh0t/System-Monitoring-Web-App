@@ -182,5 +182,8 @@ func main() {
 	router.HandleFunc("/{id}/services", routes.GetWindowsServiceList).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/services/{service_name}/{service_state}", routes.ChangeWindowsServiceState).Methods("OPTIONS", "PUT")
 
+	//Windows Policy
+	router.HandleFunc("/{id}/userpolicies/{sid}", routes.GetWindowsUserPolicy).Methods("OPTIONS", "GET")
+
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

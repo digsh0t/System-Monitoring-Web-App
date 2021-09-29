@@ -151,6 +151,9 @@ func (sshConnection SshConnectionInfo) GetLoggedInUsers() ([]loggedInUser, error
 	var loggedInUserList []loggedInUser
 	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`quser`)
 	if err != nil {
+		if err.Error() == "Process exited with status 1" {
+			return nil, nil
+		}
 		return loggedInUserList, err
 	}
 	loggedInUserList, err = parseLoggedInUser(result)
