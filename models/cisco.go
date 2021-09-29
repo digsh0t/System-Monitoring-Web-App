@@ -14,6 +14,10 @@ type IPv4CiscoInfo struct {
 	Address string `json:"address"`
 	Subnet  string `json:"subnet"`
 }
+type IPv6CiscoInfo struct {
+	Address string `json:"address"`
+	Subnet  string `json:"subnet"`
+}
 
 type L3_CiscoInterfaces struct {
 	Name         string        `json:"name"`
@@ -21,8 +25,9 @@ type L3_CiscoInterfaces struct {
 	Description  string        `json:"description"`
 	Duplex       string        `json:"duplex"`
 	IPv4         IPv4CiscoInfo `json:"ipv4"`
+	IPv6         IPv6CiscoInfo `json:"ipv6"`
 	Lineprotocol string        `json:"lineprotocol"`
-	Macaddress   string        `json:"macadress"`
+	Macaddress   string        `json:"macaddress"`
 	Mtu          int           `json:"mtu"`
 	Operstatus   string        `json:"operstatus"`
 	Type         string        `json:"type"`
@@ -31,6 +36,13 @@ type L3_CiscoInterfaces struct {
 type CiscoJson struct {
 	SshConnectionId []int    `json:"sshConnectionId"`
 	Host            []string `json:"host"`
+	Interface       string   `json:"interface"`
+	Address4        string   `json:"address4"`
+	Address6        string   `json:"address6"`
+	Prefix          string   `json:"prefix"`
+	Mask            string   `json:"mask"`
+	Next_hop        string   `json:"next_hop"`
+	Dest            string   `json:"dest"`
 }
 
 func GetInfoConfigCisco(sshConnectionId int) ([]string, error) {
@@ -156,6 +168,17 @@ func GetInfoInterfaceCisco(sshConnectionId int) ([]L3_CiscoInterfaces, error) {
 			l3_interfaces.IPv4.Subnet = result
 		}
 
+		// Get Ipv6 address and subnet
+		if jsonParsed.Exists("msg", key, "ipv6", "address") {
+			result := jsonParsed.Search("msg", key, "ipv6", "address").String()
+			l3_interfaces.IPv6.Address = result
+		}
+
+		if jsonParsed.Exists("msg", key, "ipv6", "subnet") {
+			result := jsonParsed.Search("msg", key, "ipv6", "subnet").String()
+			l3_interfaces.IPv6.Subnet = result
+		}
+
 		// Get Line Protocol
 		if jsonParsed.Exists("msg", key, "lineprotocol") {
 			result := jsonParsed.Search("msg", key, "lineprotocol").String()
@@ -193,4 +216,91 @@ func GetInfoInterfaceCisco(sshConnectionId int) ([]L3_CiscoInterfaces, error) {
 	}
 
 	return l3_interfacesList, err
+}
+
+// config ipv4 and ipv6
+func ConfigIPCisco(ciscoJson CiscoJson) (string, error) {
+	var (
+		output string
+		err    error
+	)
+	// Get Hostname from Id
+	var host []string
+	for _, id := range ciscoJson.SshConnectionId {
+		hostname, err := GetSSHConnectionFromId(id)
+		if err != nil {
+			return output, errors.New("fail to parse id")
+		}
+		host = append(host, hostname.HostNameSSH)
+	}
+	ciscoJson.Host = host
+
+	ciscoJsonMarshal, err := json.Marshal(ciscoJson)
+	if err != nil {
+		return output, err
+	}
+
+	output, err = RunAnsiblePlaybookWithjson("./yamls/network_client/cisco/cisco_config_ip.yml", string(ciscoJsonMarshal))
+	if err != nil {
+		return output, errors.New("fail to load yaml file")
+	}
+	return output, err
+}
+
+// confic Static route
+func ConfigStaticRouteCisco(ciscoJson CiscoJson) (string, error) {
+	var (
+		output string
+		err    error
+	)
+	// Get Hostname from Id
+	var host []string
+	for _, id := range ciscoJson.SshConnectionId {
+		hostname, err := GetSSHConnectionFromId(id)
+		if err != nil {
+			return output, errors.New("fail to parse id")
+		}
+		host = append(host, hostname.HostNameSSH)
+	}
+	ciscoJson.Host = host
+
+	ciscoJsonMarshal, err := json.Marshal(ciscoJson)
+	if err != nil {
+		return output, err
+	}
+
+	output, err = RunAnsiblePlaybookWithjson("./yamls/network_client/cisco/cisco_config_staticroute.yml", string(ciscoJsonMarshal))
+	if err != nil {
+		return output, errors.New("fail to load yaml file")
+	}
+	return output, err
+}
+
+// Test Ping
+func TestPingCisco(ciscoJson CiscoJson) (string, error) {
+	var (
+		output string
+		err    error
+	)
+	// Get Hostname from Id
+	var host []string
+	for _, id := range ciscoJson.SshConnectionId {
+		hostname, err := GetSSHConnectionFromId(id)
+		if err != nil {
+			return output, errors.New("fail to parse id")
+		}
+		host = append(host, hostname.HostNameSSH)
+	}
+	ciscoJson.Host = host
+
+	ciscoJsonMarshal, err := json.Marshal(ciscoJson)
+	if err != nil {
+		return output, err
+	}
+
+	output, err = RunAnsiblePlaybookWithjson("./yamls/network_client/cisco/cisco_test_ping.yml", string(ciscoJsonMarshal))
+	if err != nil {
+		return output, errors.New("fail to load yaml file")
+	}
+	return output, err
 }

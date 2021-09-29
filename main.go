@@ -141,6 +141,9 @@ func main() {
 	router.HandleFunc("/cisco/list", routes.ListAllCisco).Methods("GET")
 	router.HandleFunc("/cisco/listconfig/{id}", routes.GetInfoConfigCisco).Methods("GET")
 	router.HandleFunc("/cisco/listinterface/{id}", routes.GetInfoInterfaceCisco).Methods("GET")
+	router.HandleFunc("/cisco/config/ip", routes.ConfigIPCisco).Methods("POST")
+	router.HandleFunc("/cisco/config/staticroute", routes.ConfigStaticRouteCisco).Methods("POST")
+	router.HandleFunc("/cisco/testping", routes.TestPingCisco).Methods("POST")
 
 	//Windows Firewall Settings
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")

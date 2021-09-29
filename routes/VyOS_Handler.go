@@ -66,7 +66,7 @@ func ConfigIPVyos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	description := "Config IP to network device " + hostname + " successfully"
-	_, err = models.WriteWebEvent(r, "SSHConnection", description)
+	_, err = models.WriteWebEvent(r, "Network", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 		return
