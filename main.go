@@ -28,7 +28,10 @@ func main() {
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// os, err := sshConnection.GetCPUInfo()
+	// sid := "S-1-5-21-1572063403-3487170947-126735497-1000"
+	// var keyList []models.RegistryKey
+	// keyList = append(keyList, models.RegistryKey{Data: "1", Path: "Disables all Control Panel programs and the PC settings app"})
+	// err = sshConnection.UpdateExplorerPolicySettings(sid, keyList)
 	// if err != nil {
 	// 	log.Println(err)
 	// }
@@ -183,7 +186,8 @@ func main() {
 	router.HandleFunc("/{id}/services/{service_name}/{service_state}", routes.ChangeWindowsServiceState).Methods("OPTIONS", "PUT")
 
 	//Windows Policy
-	router.HandleFunc("/{id}/userpolicies/{sid}", routes.GetWindowsUserPolicy).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/explorerpolicies/{sid}", routes.GetWindowsExplorerPolicy).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/changeexplorerpolicies/{sid}", routes.ChangeWindowsExplorerPolicy).Methods("OPTIONS", "POST")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
