@@ -133,6 +133,7 @@ func main() {
 	router.HandleFunc("/wauser/list/{id}", routes.ListWebAppUser).Methods("GET")
 
 	// Network Automation: Vyos
+	//router.HandleFunc("/vyos/listconfig/{id}", routes.GetInfoConfigVyos).Methods("GET")
 	router.HandleFunc("/vyos/list/{id}", routes.GetInfoVyos).Methods("GET")
 	router.HandleFunc("/vyos/config/ip", routes.ConfigIPVyos).Methods("POST")
 	router.HandleFunc("/vyos/list", routes.ListAllVyOS).Methods("GET")

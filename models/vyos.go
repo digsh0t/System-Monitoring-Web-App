@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -184,4 +185,55 @@ func TrimStringOfIP(s string) string {
 	s = strings.TrimLeft(s, "[\"")
 	s = strings.TrimRight(s, "]\"m[b10u\\'")
 	return s
+}
+
+// Correct format for IP
+func TrimConfig(s string) string {
+	s = strings.TrimRight(s, `,"m[b10u\`)
+	return s
+}
+
+func GetInfoConfigVyos(sshConnectionId int) ([]string, error) {
+	var configVyos []string
+
+	// Get Hostname from Id
+	hostname, err := GetSshHostnameFromId(sshConnectionId)
+	if err != nil {
+		return configVyos, errors.New("fail to get hostname")
+	}
+
+	vyosJson := VyOsJson{
+		HosrString: []string{hostname},
+	}
+
+	// Marshal
+	vyosJsonMarshal, err := json.Marshal(vyosJson)
+	if err != nil {
+		return configVyos, errors.New("fail to marshal json")
+	}
+
+	// Load YAML
+	output, err := RunAnsiblePlaybookWithjson("./yamls/network_client/vyos/vyos_getconfig.yml", string(vyosJsonMarshal))
+	if err != nil {
+		return configVyos, errors.New("fail to run playbook")
+	}
+
+	// Get substring from ansible output
+	data := utils.ExtractSubString(output, " => ", "PLAY RECAP")
+
+	// Parse Json format
+	jsonParsed, err := gabs.ParseJSON([]byte(data))
+	if err != nil {
+		return configVyos, err
+	}
+
+	// Get msg and spilit
+	rawData := jsonParsed.Search("msg").String()
+	fmt.Println(rawData)
+	if err != nil {
+		return configVyos, err
+	}
+	list := strings.Split(rawData, "\n")
+	fmt.Println("len", len(list))
+	return configVyos, err
 }
