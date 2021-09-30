@@ -18,7 +18,7 @@ func parseKeyList(output string) ([]RegistryKey, error) {
 
 func (sshConnection SshConnectionInfo) GetExplorerPoliciesSettings(sid string) ([]RegistryKey, error) {
 	var regKeyList []RegistryKey
-	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT data, path FROM registry WHERE key = 'HKEY_USERS\` + sid + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer'"`)
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT data, path FROM registry WHERE key = 'HKEY_USERS\` + sid + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' AND data != ''"`)
 	if err != nil {
 		return regKeyList, err
 	}
@@ -32,6 +32,7 @@ func beautifyRegistryKeyList(regKeyList []RegistryKey) {
 	pathTranslator := map[string]string{
 		"NoControlPanel":     "Disables all Control Panel programs and the PC settings app.",
 		"NoDriveTypeAutoRun": "Turn off the Autoplay feature.",
+		"DisallowRun":        "Prevent Users From Running Certain Programs",
 	}
 
 	for i, key := range regKeyList {
@@ -41,6 +42,9 @@ func beautifyRegistryKeyList(regKeyList []RegistryKey) {
 		if strings.Contains(key.Path, "NoDriveTypeAutoRun") {
 			regKeyList[i].Path = pathTranslator["NoDriveTypeAutoRun"]
 		}
+		if strings.Contains(key.Path, "DisallowRun") {
+			regKeyList[i].Path = pathTranslator["DisallowRun"]
+		}
 	}
 }
 
@@ -49,6 +53,7 @@ func uglifyRegistryKeyList(regKeyList []RegistryKey) {
 	pathTranslator := map[string]string{
 		"Disables all Control Panel programs and the PC settings app": "NoControlPanel",
 		"Turn off the Autoplay feature":                               "NoDriveTypeAutoRun",
+		"Prevent Users From Running Certain Programs":                 "DisallowRun",
 	}
 
 	for i, key := range regKeyList {
@@ -57,6 +62,9 @@ func uglifyRegistryKeyList(regKeyList []RegistryKey) {
 		}
 		if strings.Contains(key.Path, "Turn off the Autoplay feature") {
 			regKeyList[i].Path = pathTranslator["Turn off the Autoplay feature"]
+		}
+		if strings.Contains(key.Path, "Prevent Users From Running Certain Programs") {
+			regKeyList[i].Path = pathTranslator["Prevent Users From Running Certain Programs"]
 		}
 	}
 }
@@ -78,4 +86,18 @@ func (sshConnection *SshConnectionInfo) UpdateExplorerPolicySettings(sid string,
 	}
 	_, err = RunAnsiblePlaybookWithjson("./yamls/windows_client/add_or_update_registry.yml", string(marshalled))
 	return err
+}
+
+func (sshConnection *SshConnectionInfo) GetProhibitedProgramsPolicy(sid string) ([]string, error) {
+	var regKeyList []RegistryKey
+	var programList []string
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT data, path FROM registry WHERE key = 'HKEY_USERS\` + sid + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun' AND data != ''"`)
+	if err != nil {
+		return nil, err
+	}
+	regKeyList, err = parseKeyList(result)
+	for _, key := range regKeyList {
+		programList = append(programList, key.Data)
+	}
+	return programList, err
 }

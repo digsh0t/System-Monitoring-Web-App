@@ -62,3 +62,24 @@ func ChangeWindowsExplorerPolicy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func GetWindowsUserProhibitedProgramsPolicy(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sid := vars["sid"]
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	result, err := sshConnection.GetProhibitedProgramsPolicy(sid)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.JSON(w, http.StatusOK, result)
+}

@@ -186,8 +186,9 @@ func main() {
 	router.HandleFunc("/{id}/services/{service_name}/{service_state}", routes.ChangeWindowsServiceState).Methods("OPTIONS", "PUT")
 
 	//Windows Policy
-	router.HandleFunc("/{id}/explorerpolicies/{sid}", routes.GetWindowsExplorerPolicy).Methods("OPTIONS", "GET")
-	router.HandleFunc("/{id}/changeexplorerpolicies/{sid}", routes.ChangeWindowsExplorerPolicy).Methods("OPTIONS", "POST")
+	router.HandleFunc("/{id}/policies/{sid}/explorer", routes.GetWindowsExplorerPolicy).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/policies/{sid}/changeexplorer", routes.ChangeWindowsExplorerPolicy).Methods("OPTIONS", "POST")
+	router.HandleFunc("/{id}/policies/{sid}/prohibitedprograms", routes.GetWindowsUserProhibitedProgramsPolicy).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
