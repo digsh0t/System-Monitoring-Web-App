@@ -425,6 +425,7 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithSSHKey(cmd string) (strin
 			return "Failed to open new session", err
 		}
 		defer session.Close()
+
 		var b bytes.Buffer //import "bytes"
 		var stderr bytes.Buffer
 		session.Stdout = &b

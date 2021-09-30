@@ -4,4 +4,8 @@
   gather_facts: yes
   tasks:
   - name: Gather config info of Cisco
-    debug: msg="{{ ansible_net_config }}"
+    ios_facts:
+     gather_subset: all
+    register: output
+
+  - debug: msg="{{ output }}"

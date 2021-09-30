@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -160,6 +161,7 @@ func GetInfoInterfaceCisco(sshConnectionId int) ([]L3_CiscoInterfaces, error) {
 		// Get Ipv4 address and subnet
 		if jsonParsed.Exists("msg", key, "ipv4", "address") {
 			result := jsonParsed.Search("msg", key, "ipv4", "address").String()
+			fmt.Println("result", result)
 			l3_interfaces.IPv4.Address = result
 		}
 

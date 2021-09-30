@@ -160,6 +160,10 @@ func main() {
 	//Add new ssh connection
 	router.HandleFunc("/newsshconnection", routes.AddNewSSHConnection).Methods("POST")
 
+	//Windows Event Log
+	router.HandleFunc("/windows/eventlog/{id}/{logname}", routes.GetWindowsEventLogs).Methods("GET")
+	router.HandleFunc("/windows/eventlog/{id}/{logname}/{index}", routes.GetDetailWindowsEventLog).Methods("GET")
+
 	//Windows Local Users Management
 	router.HandleFunc("/{id}/localuser", routes.GetWindowsLocalUser).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/localuser/{username}/groups", routes.GetWindowsGroupListOfUser).Methods("OPTIONS", "GET")
