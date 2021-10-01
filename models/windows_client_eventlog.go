@@ -7,10 +7,10 @@ import (
 )
 
 type WindowsLogs struct {
-	Index      int    `json:"Index"`
-	Time       string `json:"Time"`
-	EntryType  string `json:"EntryType"`
-	Source     string `json:"Source"`
+	Index      int    `json:"index"`
+	Time       string `json:"time"`
+	EntryType  string `json:"entryType"`
+	Source     string `json:"source"`
 	InstanceId int    `json:"instanceId"`
 	Message    string `json:"message"`
 }
