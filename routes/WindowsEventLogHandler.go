@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
@@ -24,19 +23,23 @@ func GetWindowsEventLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+	// Get Id parameter
+	query := r.URL.Query()
+	id, err := strconv.Atoi(query.Get("id"))
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
 		return
 	}
+	// Get logname parameter
+	logname := query.Get("logname")
 
-	logname := vars["logname"]
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	windowsLogsList, err := models.GetWindowsEventLogs(id, logname)
+	// Get Start Time parameter
+	startTime := query.Get("starttime")
+
+	// Get End Time parameter
+	endTime := query.Get("endtime")
+
+	windowsLogsList, err := models.GetWindowsEventLogs(id, logname, startTime, endTime)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 	} else {
@@ -58,20 +61,18 @@ func GetDetailWindowsEventLog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+	// Get Id parameter
+	query := r.URL.Query()
+	id, err := strconv.Atoi(query.Get("id"))
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
 		return
 	}
+	// Get logname parameter
+	logname := query.Get("logname")
 
-	logname := vars["logname"]
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	index := vars["index"]
+	// Get Index parameter
+	index := query.Get("index")
 
 	windowsLogsList, err := models.GetDetailWindowsEventLog(id, logname, index)
 	if err != nil {

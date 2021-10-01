@@ -31,7 +31,7 @@ type DetailWindowsLog struct {
 }
 
 // Get Windows Event logs
-func GetWindowsEventLogs(sshConnectionId int, logname string) ([]WindowsLogs, error) {
+func GetWindowsEventLogs(sshConnectionId int, logname string, startTime string, endTime string) ([]WindowsLogs, error) {
 	var (
 		windowsLogsList []WindowsLogs
 		err             error
@@ -43,8 +43,15 @@ func GetWindowsEventLogs(sshConnectionId int, logname string) ([]WindowsLogs, er
 		return windowsLogsList, errors.New("fail to get ssh connection")
 	}
 
+	query := "PowerShell -Command Get-EventLog -LogName " + logname + " -Newest 100"
+	if startTime != "" {
+		query += " -After " + "'" + startTime + "'"
+	}
+	if endTime != "" {
+		query += " -Before " + "'" + endTime + "'"
+	}
 	// Run remote command
-	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys("PowerShell -Command Get-EventLog -LogName " + logname + " -Newest 100")
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(query)
 	if err != nil {
 		return windowsLogsList, errors.New("fail to get windows event log")
 	}
@@ -97,7 +104,7 @@ func GetWindowsEventLogs(sshConnectionId int, logname string) ([]WindowsLogs, er
 	return windowsLogsList, err
 }
 
-// Get Windows Event logs
+// Get Detail Windows Event log
 func GetDetailWindowsEventLog(sshConnectionId int, logname string, index string) (DetailWindowsLog, error) {
 	var (
 		detailWindowsLog DetailWindowsLog
@@ -115,61 +122,105 @@ func GetDetailWindowsEventLog(sshConnectionId int, logname string, index string)
 	if err != nil {
 		return detailWindowsLog, errors.New("fail to get detail windows event log")
 	}
-
 	// No record
 	if len(output) == 0 {
 		return detailWindowsLog, nil
 	}
 
+	// Trim Space and spilit lines
 	output = strings.TrimSpace(output)
-
 	lines := strings.Split(output, "\n")
+
+	// Record current key
+	var currentAttribute string
 	for _, line := range lines {
-		attributes := strings.Split(line, ":")
-		value := strings.TrimSpace(attributes[1])
-		switch strings.TrimSpace(attributes[0]) {
-		case "EventID":
-			eventId, err := strconv.Atoi(value)
-			if err != nil {
-				return detailWindowsLog, err
+
+		if line[19] == ':' {
+
+			// Get Key and Value
+			key := strings.TrimSpace(line[0:19])
+			value := strings.TrimSpace(line[20:])
+
+			// Switch each case to get value
+			switch key {
+			case "EventID":
+				eventId, err := strconv.Atoi(value)
+				if err != nil {
+					return detailWindowsLog, err
+				}
+				detailWindowsLog.EventId = eventId
+				currentAttribute = "EventID"
+			case "MachineName":
+				detailWindowsLog.MachineName = value
+				currentAttribute = "MachineName"
+			case "Data":
+				detailWindowsLog.Data = value
+				currentAttribute = "Data"
+			case "Index":
+				index, err := strconv.Atoi(value)
+				if err != nil {
+					return detailWindowsLog, err
+				}
+				detailWindowsLog.Index = index
+				currentAttribute = "Index"
+			case "CategoryNumber":
+				categoryNumber, err := strconv.Atoi(value)
+				if err != nil {
+					return detailWindowsLog, err
+				}
+				detailWindowsLog.CategoryNumber = categoryNumber
+				currentAttribute = "CategoryNumber"
+			case "EntryType":
+				detailWindowsLog.EntryType = value
+				currentAttribute = "EntryType"
+			case "Message":
+				detailWindowsLog.Message = value
+				currentAttribute = "Message"
+			case "Source":
+				detailWindowsLog.Source = value
+				currentAttribute = "Source"
+			case "ReplacementStrings":
+				detailWindowsLog.ReplacementStrings = value
+				currentAttribute = "ReplacementStrings"
+			case "InstanceId":
+				instanceId, err := strconv.Atoi(value)
+				if err != nil {
+					return detailWindowsLog, err
+				}
+				detailWindowsLog.InstanceId = instanceId
+				currentAttribute = "InstanceId"
+			case "TimeGenerated":
+				detailWindowsLog.TimeGenerated = value
+				currentAttribute = "TimeGenerated"
+			case "UserName":
+				detailWindowsLog.UserName = value
+				currentAttribute = "UserName"
 			}
-			detailWindowsLog.EventId = eventId
-		case "MachineName":
-			detailWindowsLog.MachineName = value
-		case "Data":
-			detailWindowsLog.Data = value
-		case "Index":
-			index, err := strconv.Atoi(value)
-			if err != nil {
-				return detailWindowsLog, err
+		} else {
+
+			// Special case needed to append
+			value := line[21:] + "\n"
+			switch currentAttribute {
+			case "MachineName":
+				detailWindowsLog.MachineName += value
+			case "Data":
+				detailWindowsLog.Data += value
+			case "EntryType":
+				detailWindowsLog.EntryType += value
+			case "Message":
+				detailWindowsLog.Message += value
+			case "Source":
+				detailWindowsLog.Source += value
+			case "ReplacementStrings":
+				detailWindowsLog.ReplacementStrings += value
+			case "TimeGenerated":
+				detailWindowsLog.TimeGenerated += value
+			case "UserName":
+				detailWindowsLog.UserName += value
 			}
-			detailWindowsLog.Index = index
-		case "CategoryNumber":
-			categoryNumber, err := strconv.Atoi(value)
-			if err != nil {
-				return detailWindowsLog, err
-			}
-			detailWindowsLog.CategoryNumber = categoryNumber
-		case "EntryType":
-			detailWindowsLog.EntryType = value
-		case "Message":
-			detailWindowsLog.Message = value
-		case "Source":
-			detailWindowsLog.Source = value
-		case "ReplacementStrings":
-			detailWindowsLog.ReplacementStrings = value
-		case "InstanceId":
-			instanceId, err := strconv.Atoi(value)
-			if err != nil {
-				return detailWindowsLog, err
-			}
-			detailWindowsLog.InstanceId = instanceId
-		case "TimeGenerated":
-			detailWindowsLog.TimeGenerated = value
-		case "UserName":
-			detailWindowsLog.UserName = value
 		}
 	}
 
+	// Return
 	return detailWindowsLog, err
 }
