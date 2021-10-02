@@ -67,7 +67,6 @@ func CalcAvgMemUseForLinux(sshConnection SshConnectionInfo) string {
 	command := "free | grep Mem | awk '{print $3/$2 * 100.0}'"
 	result, err = sshConnection.RunCommandFromSSHConnectionUseKeys(command)
 	if err != nil {
-		fmt.Println(err.Error())
 		return result
 	}
 	return strings.Trim(string(result), "\n")

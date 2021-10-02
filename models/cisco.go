@@ -3,7 +3,7 @@ package models
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -129,17 +129,23 @@ func GetInfoInterfaceCisco(sshConnectionId int) ([]L3_CiscoInterfaces, error) {
 		return l3_interfacesList, errors.New("fail to parse json")
 	}
 
-	// Get interface name from ansible output
-	for key, _ := range list {
+	// Sort again name of interfaces
+	var stringSortList []string
+	for nameInterface, _ := range list {
+		stringSortList = append(stringSortList, nameInterface)
+	}
+	sort.Strings(stringSortList)
 
+	// Get interface name from ansible output
+	for _, nameInterface := range stringSortList {
 		var l3_interfaces L3_CiscoInterfaces
 
 		// Get name interface
-		l3_interfaces.Name = key
+		l3_interfaces.Name = nameInterface
 
 		// Get bandwith
-		if jsonParsed.Exists("msg", key, "bandwidth") {
-			result := jsonParsed.Search("msg", key, "bandwidth").String()
+		if jsonParsed.Exists("msg", nameInterface, "bandwidth") {
+			result := jsonParsed.Search("msg", nameInterface, "bandwidth").String()
 			l3_interfaces.BandWidth, err = strconv.Atoi(result)
 			if err != nil {
 				return l3_interfacesList, err
@@ -147,55 +153,54 @@ func GetInfoInterfaceCisco(sshConnectionId int) ([]L3_CiscoInterfaces, error) {
 		}
 
 		// Get Description
-		if jsonParsed.Exists("msg", key, "description") {
-			result := jsonParsed.Search("msg", key, "description").String()
+		if jsonParsed.Exists("msg", nameInterface, "description") {
+			result := jsonParsed.Search("msg", nameInterface, "description").String()
 			l3_interfaces.Description = result
 		}
 
 		// Get Duplex
-		if jsonParsed.Exists("msg", key, "duplex") {
-			result := jsonParsed.Search("msg", key, "duplex").String()
+		if jsonParsed.Exists("msg", nameInterface, "duplex") {
+			result := jsonParsed.Search("msg", nameInterface, "duplex").String()
 			l3_interfaces.Duplex = result
 		}
 
 		// Get Ipv4 address and subnet
-		if jsonParsed.Exists("msg", key, "ipv4", "address") {
-			result := jsonParsed.Search("msg", key, "ipv4", "address").String()
-			fmt.Println("result", result)
+		if jsonParsed.Exists("msg", nameInterface, "ipv4", "address") {
+			result := jsonParsed.Search("msg", nameInterface, "ipv4", "address").String()
 			l3_interfaces.IPv4.Address = result
 		}
 
-		if jsonParsed.Exists("msg", key, "ipv4", "subnet") {
-			result := jsonParsed.Search("msg", key, "ipv4", "subnet").String()
+		if jsonParsed.Exists("msg", nameInterface, "ipv4", "subnet") {
+			result := jsonParsed.Search("msg", nameInterface, "ipv4", "subnet").String()
 			l3_interfaces.IPv4.Subnet = result
 		}
 
 		// Get Ipv6 address and subnet
-		if jsonParsed.Exists("msg", key, "ipv6", "address") {
-			result := jsonParsed.Search("msg", key, "ipv6", "address").String()
+		if jsonParsed.Exists("msg", nameInterface, "ipv6", "address") {
+			result := jsonParsed.Search("msg", nameInterface, "ipv6", "address").String()
 			l3_interfaces.IPv6.Address = result
 		}
 
-		if jsonParsed.Exists("msg", key, "ipv6", "subnet") {
-			result := jsonParsed.Search("msg", key, "ipv6", "subnet").String()
+		if jsonParsed.Exists("msg", nameInterface, "ipv6", "subnet") {
+			result := jsonParsed.Search("msg", nameInterface, "ipv6", "subnet").String()
 			l3_interfaces.IPv6.Subnet = result
 		}
 
 		// Get Line Protocol
-		if jsonParsed.Exists("msg", key, "lineprotocol") {
-			result := jsonParsed.Search("msg", key, "lineprotocol").String()
+		if jsonParsed.Exists("msg", nameInterface, "lineprotocol") {
+			result := jsonParsed.Search("msg", nameInterface, "lineprotocol").String()
 			l3_interfaces.Lineprotocol = result
 		}
 
 		// Get Mac Address
-		if jsonParsed.Exists("msg", key, "macaddress") {
-			result := jsonParsed.Search("msg", key, "macaddress").String()
+		if jsonParsed.Exists("msg", nameInterface, "macaddress") {
+			result := jsonParsed.Search("msg", nameInterface, "macaddress").String()
 			l3_interfaces.Macaddress = result
 		}
 
 		// Get MTU
-		if jsonParsed.Exists("msg", key, "mtu") {
-			result := jsonParsed.Search("msg", key, "mtu").String()
+		if jsonParsed.Exists("msg", nameInterface, "mtu") {
+			result := jsonParsed.Search("msg", nameInterface, "mtu").String()
 			l3_interfaces.Mtu, err = strconv.Atoi(result)
 			if err != nil {
 				return l3_interfacesList, err
@@ -203,14 +208,14 @@ func GetInfoInterfaceCisco(sshConnectionId int) ([]L3_CiscoInterfaces, error) {
 		}
 
 		// Get Operate Status
-		if jsonParsed.Exists("msg", key, "operstatus") {
-			result := jsonParsed.Search("msg", key, "operstatus").String()
+		if jsonParsed.Exists("msg", nameInterface, "operstatus") {
+			result := jsonParsed.Search("msg", nameInterface, "operstatus").String()
 			l3_interfaces.Operstatus = result
 		}
 
 		// Get Type
-		if jsonParsed.Exists("msg", key, "type") {
-			result := jsonParsed.Search("msg", key, "type").String()
+		if jsonParsed.Exists("msg", nameInterface, "type") {
+			result := jsonParsed.Search("msg", nameInterface, "type").String()
 			l3_interfaces.Type = result
 		}
 

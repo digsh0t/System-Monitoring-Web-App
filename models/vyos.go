@@ -233,7 +233,6 @@ func GetInfoConfigVyos(sshConnectionId int) ([]string, error) {
 
 	// Get msg and spilit
 	rawData := jsonParsed.Search("msg").String()
-	fmt.Println(rawData)
 	if err != nil {
 		return configVyos, err
 	}
