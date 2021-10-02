@@ -1,8 +1,12 @@
 package models
 
 import (
+	"bufio"
 	"errors"
+	"os"
+	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/wintltr/login-api/database"
 )
@@ -18,17 +22,25 @@ type Template struct {
 	UserId       int    `json:"user_id"`
 }
 
-func (template *Template) AddTemplateToDB() error {
+func (template *Template) AddTemplateToDB() (int64, error) {
+	var lastIndex int64
 	db := database.ConnectDB()
 	defer db.Close()
 
 	stmt, err := db.Prepare("INSERT INTO templates (template_name, template_description, ssh_key_id, filepath, arguments, alert, user_id) VALUES (?,?,?,?,?,?,?)")
 	if err != nil {
-		return err
+		return lastIndex, err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(template.TemplateName, template.Description, template.SshKeyId, template.FilePath, template.Arguments, template.Alert, template.UserId)
-	return err
+	res, err := stmt.Exec(template.TemplateName, template.Description, template.SshKeyId, template.FilePath, template.Arguments, template.Alert, template.UserId)
+	if err != nil {
+		return lastIndex, err
+	}
+	lastIndex, err = res.LastInsertId()
+	if err != nil {
+		return lastIndex, err
+	}
+	return lastIndex, err
 }
 
 func GetTemplateFromId(temlateId int) (Template, error) {
@@ -87,4 +99,52 @@ func DeleteTemplateFromId(templateId int) error {
 		return errors.New("no template with id: " + strconv.Itoa(templateId) + " exists")
 	}
 	return err
+}
+
+// Update Os Type to DB
+func (template *Template) UpdateFilePath() error {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := "UPDATE templates SET filepath = ? WHERE template_id = ?"
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(template.FilePath, template.TemplateId)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (template *Template) GetTemplateArgument() ([]string, error) {
+	var (
+		arguments []string
+		err       error
+	)
+	file, err := os.Open(template.FilePath)
+	if err != nil {
+		return arguments, errors.New("fail to read file content")
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		regex, _ := regexp.Compile(`\{\{.*?\}\}`)
+		argument := regex.FindString(scanner.Text())
+		if argument != "" {
+			replacer := strings.NewReplacer("{", "", "}", "", " ", "")
+			argument = replacer.Replace(argument)
+			if !strings.Contains(argument, "ansible") && !strings.Contains(argument, "item") {
+				arguments = append(arguments, argument)
+			}
+		}
+
+	}
+	return arguments, err
+
 }

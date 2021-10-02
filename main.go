@@ -112,6 +112,7 @@ func main() {
 	//Template & Task management
 	router.HandleFunc("/templates", routes.AddTemplate).Methods("POST", "OPTIONS")
 	router.HandleFunc("/templates", routes.GetAllTemplate).Methods("GET", "OPTIONS")
+	router.HandleFunc("/templates/argument/{id}", routes.GetTemplateArgument).Methods("GET", "OPTIONS")
 	router.HandleFunc("/templates/{id}", routes.DeleteTemplate).Methods("DELETE", "OPTIONS")
 	router.HandleFunc("/templates/{id}/tasks", routes.GetAllTask).Methods("GET", "OPTIONS")
 	router.HandleFunc("/tasks", routes.AddTask).Methods("POST", "OPTIONS")
@@ -135,9 +136,18 @@ func main() {
 	router.HandleFunc("/wauser/list/{id}", routes.ListWebAppUser).Methods("GET")
 
 	// Network Automation: Vyos
+	//router.HandleFunc("/vyos/listconfig/{id}", routes.GetInfoConfigVyos).Methods("GET")
 	router.HandleFunc("/vyos/list/{id}", routes.GetInfoVyos).Methods("GET")
 	router.HandleFunc("/vyos/config/ip", routes.ConfigIPVyos).Methods("POST")
 	router.HandleFunc("/vyos/list", routes.ListAllVyOS).Methods("GET")
+
+	// Network Automation: Cisco
+	router.HandleFunc("/cisco/list", routes.ListAllCisco).Methods("GET")
+	router.HandleFunc("/cisco/listconfig/{id}", routes.GetInfoConfigCisco).Methods("GET")
+	router.HandleFunc("/cisco/listinterface/{id}", routes.GetInfoInterfaceCisco).Methods("GET")
+	router.HandleFunc("/cisco/config/ip", routes.ConfigIPCisco).Methods("POST")
+	router.HandleFunc("/cisco/config/staticroute", routes.ConfigStaticRouteCisco).Methods("POST")
+	router.HandleFunc("/cisco/testping", routes.TestPingCisco).Methods("POST")
 
 	//Windows Firewall Settings
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")
@@ -152,6 +162,10 @@ func main() {
 
 	//Add new ssh connection
 	router.HandleFunc("/newsshconnection", routes.AddNewSSHConnection).Methods("POST")
+
+	//Windows Event Log
+	router.HandleFunc("/windows/eventlog", routes.GetWindowsEventLogs).Methods("GET")
+	router.HandleFunc("/windows/eventlog/detail", routes.GetDetailWindowsEventLog).Methods("GET")
 
 	//Windows Local Users Management
 	router.HandleFunc("/{id}/localuser", routes.GetWindowsLocalUser).Methods("OPTIONS", "GET")

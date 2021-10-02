@@ -114,8 +114,13 @@ func (sshConnection SshConnectionInfo) GetConnectivity() (connectivity, error) {
 	return connectInfo, err
 }
 
+// Parse information of CPU
 func parseCPUInfo(output string) (cpuInfo, error) {
+
+	// Declare variable
 	var cpuInfoList []cpuInfo
+
+	// Unmarshal Json
 	err := json.Unmarshal([]byte(output), &cpuInfoList)
 	return cpuInfoList[0], err
 }

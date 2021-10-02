@@ -1,0 +1,8 @@
+- name: Network module
+  connection: network_cli
+  gather_facts: no
+  hosts: "{{ host }}"
+  tasks:
+  - name: Test reachability to host provided using default vrf
+    ios_ping:
+     dest: "{{ dest }}"

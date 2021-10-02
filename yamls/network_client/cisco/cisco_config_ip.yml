@@ -1,0 +1,25 @@
+- name: Network module
+  connection: network_cli
+  gather_facts: no
+  hosts: "{{ host }}"
+  tasks:
+  - name: Delete Configuration
+    ios_l3_interfaces:
+      config:
+      - name: "{{ interface }}"
+      state: deleted
+  - name: Replaces cisco device configuration with provided configuration
+    ios_l3_interfaces:
+      config:
+      - name: "{{ interface }}"
+        ipv4:
+        - address: "{{ address4 }}"
+        ipv6:
+        - address: "{{ address6 }}"
+      state: merged
+  - name: Set Status of interface
+    ios_interfaces:
+     config:
+     - name: "{{ interface }}"
+       enabled: "{{ enabled }}"
+     state: replaced

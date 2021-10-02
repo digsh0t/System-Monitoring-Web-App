@@ -1,0 +1,7 @@
+- name: Get Config Cisco
+  connection: network_cli
+  hosts: "{{ host }}"
+  gather_facts: yes
+  tasks:
+  - name: Gather config info of Cisco
+    debug: msg="{{ ansible_net_interfaces }}"
