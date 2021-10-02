@@ -44,6 +44,7 @@ type CiscoJson struct {
 	Mask            string   `json:"mask"`
 	Next_hop        string   `json:"next_hop"`
 	Dest            string   `json:"dest"`
+	Enabled         bool     `json:"enabled"`
 }
 
 func GetInfoConfigCisco(sshConnectionId int) ([]string, error) {

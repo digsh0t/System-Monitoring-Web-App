@@ -17,3 +17,9 @@
         ipv6:
         - address: "{{ address6 }}"
       state: merged
+  - name: Set Status of interface
+    ios_interfaces:
+     config:
+     - name: "{{ interface }}"
+       enabled: "{{ enabled }}"
+     state: replaced
