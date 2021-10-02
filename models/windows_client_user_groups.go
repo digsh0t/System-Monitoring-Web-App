@@ -30,17 +30,22 @@ func AddNewWindowsGroup(host interface{}, name string, description string) (stri
 	return output, err
 }
 
+// Remove Windows Clienr Group
 func RemoveWindowsGroup(host interface{}, name string) (string, error) {
 
+	// Declare variables
 	type deleteGroup struct {
 		Host interface{} `json:"host"`
 		Name string      `json:"group_name"`
 	}
 
+	// Marshal Json
 	jsonArgs, err := json.Marshal(deleteGroup{Host: host, Name: name})
 	if err != nil {
 		return "", err
 	}
+
+	// Call Run Ansible Playbook
 	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/delete_local_group.yml", string(jsonArgs))
 	return output, err
 }

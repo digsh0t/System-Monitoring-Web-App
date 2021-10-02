@@ -30,19 +30,20 @@ type DetailWindowsLog struct {
 	UserName           string `json:"userName"`
 }
 
-// Get Windows Event logs
+// Get Windows Event Logs API
 func GetWindowsEventLogs(sshConnectionId int, logname string, startTime string, endTime string) ([]WindowsLogs, error) {
 	var (
 		windowsLogsList []WindowsLogs
 		err             error
 	)
 
-	// Get Connection
+	// Get Connection By SshConnectionId
 	sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
 	if err != nil {
 		return windowsLogsList, errors.New("fail to get ssh connection")
 	}
 
+	// Prepare Query
 	query := "PowerShell -Command Get-EventLog -LogName " + logname + " -Newest 100"
 	if startTime != "" {
 		query += " -After " + "'" + startTime + "'"

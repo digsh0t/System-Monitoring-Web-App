@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// open Connection of Windows
 type openConnection struct {
 	Family        string `json:"family"`
 	Fd            string `json:"fd"`
@@ -18,6 +19,8 @@ type openConnection struct {
 	Socket        string `json:"socket"`
 	State         string `json:"state"`
 }
+
+// Firewall Rule of Windows
 type AppFirewallRule struct {
 	Name                  string
 	DisplayName           string

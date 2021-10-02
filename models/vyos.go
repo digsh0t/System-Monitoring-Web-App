@@ -60,17 +60,21 @@ func GetInfoVyos(sshConnectionId int) (VyosInfo, error) {
 
 }
 
-// Get Information about IP
+// Get Information About Vyos's IP
 func GetInterfacesVyos(hostname string) (VyosInfo, error) {
+
+	// Declare variables
 	var (
 		vyOSInfo VyosInfo
 		err      error
 	)
 
+	// Append value for json object
 	vyosJson := VyOsJson{
 		HosrString: []string{hostname},
 	}
 
+	// Marshal json for running playbook
 	vyosJsonMarshal, err := json.Marshal(vyosJson)
 	if err != nil {
 		return vyOSInfo, err
