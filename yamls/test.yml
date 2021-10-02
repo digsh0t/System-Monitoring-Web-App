@@ -1,8 +1,5 @@
-- name: Run Test
+- name: Windows User management
   hosts: "{{ host }}"
   tasks:
-  - name: test client
-    command: hostname
-    register: out
-
-  - debug: var=out.stdout_lines
+  - name: Add new Windows User
+    debug: msg=test

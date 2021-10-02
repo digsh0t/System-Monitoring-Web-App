@@ -83,3 +83,34 @@ func GetWindowsUserProhibitedProgramsPolicy(w http.ResponseWriter, r *http.Reque
 	}
 	utils.JSON(w, http.StatusOK, result)
 }
+
+func ChangeWindowsUserProhibitedProgramPolicy(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sid := vars["sid"]
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	var programList []string
+	err = json.Unmarshal(body, &programList)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = sshConnection.UpdateWindowsUserProhibitedProgramsPolicy(sid, programList)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+}

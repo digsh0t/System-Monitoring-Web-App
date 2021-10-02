@@ -187,8 +187,9 @@ func main() {
 
 	//Windows Policy
 	router.HandleFunc("/{id}/policies/{sid}/explorer", routes.GetWindowsExplorerPolicy).Methods("OPTIONS", "GET")
-	router.HandleFunc("/{id}/policies/{sid}/changeexplorer", routes.ChangeWindowsExplorerPolicy).Methods("OPTIONS", "POST")
+	router.HandleFunc("/{id}/policies/{sid}/explorer", routes.ChangeWindowsExplorerPolicy).Methods("OPTIONS", "POST")
 	router.HandleFunc("/{id}/policies/{sid}/prohibitedprograms", routes.GetWindowsUserProhibitedProgramsPolicy).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/policies/{sid}/prohibitedprograms", routes.ChangeWindowsUserProhibitedProgramPolicy).Methods("OPTIONS", "POST")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

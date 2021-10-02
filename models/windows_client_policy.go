@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 )
 
@@ -75,11 +76,15 @@ func (sshConnection *SshConnectionInfo) UpdateExplorerPolicySettings(sid string,
 		Host         string        `json:"host"`
 		RegistryPath string        `json:"registry_path"`
 		Key          []RegistryKey `json:"key"`
+		DataType     string        `json:"data_type"`
 	}
 	var registryKeyList modifyRegistryKeyList
 	registryKeyList.Host = sshConnection.HostNameSSH
-	registryKeyList.RegistryPath = `HKU:\` + sid + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer`
+	path := `HKU:\` + sid + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer`
+	registryKeyList.RegistryPath = path
 	registryKeyList.Key = keyList
+	registryKeyList.DataType = "dword"
+
 	marshalled, err := json.Marshal(registryKeyList)
 	if err != nil {
 		return err
@@ -100,4 +105,29 @@ func (sshConnection *SshConnectionInfo) GetProhibitedProgramsPolicy(sid string) 
 		programList = append(programList, key.Data)
 	}
 	return programList, err
+}
+
+func (sshConnection *SshConnectionInfo) UpdateWindowsUserProhibitedProgramsPolicy(sid string, programList []string) error {
+	type modifyRegistry struct {
+		Host         string        `json:"host"`
+		RegistryPath string        `json:"registry_path"`
+		Key          []RegistryKey `json:"key"`
+		DataType     string        `json:"data_type"`
+	}
+	var registry modifyRegistry
+	var keyList []RegistryKey
+
+	registry.Host = sshConnection.HostNameSSH
+	registry.RegistryPath = `HKU:\` + sid + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun`
+	for i, program := range programList {
+		keyList = append(keyList, RegistryKey{Data: program, Path: strconv.Itoa(i + 1)})
+	}
+	registry.Key = keyList
+	registry.DataType = "string"
+	marshalled, err := json.Marshal(registry)
+	if err != nil {
+		return err
+	}
+	_, err = RunAnsiblePlaybookWithjson("./yamls/windows_client/add_or_update_registry.yml", string(marshalled))
+	return err
 }
