@@ -94,6 +94,10 @@ func (sshConnection *SshConnectionInfo) UpdateExplorerPolicySettings(sid string,
 		return err
 	}
 	_, err = RunAnsiblePlaybookWithjson("./yamls/windows_client/add_or_update_registry.yml", string(marshalled))
+	if err != nil {
+		return err
+	}
+	err = sshConnection.unloadReg()
 	return err
 }
 
@@ -151,5 +155,10 @@ func (sshConnection SshConnectionInfo) regLoadCurrentUser(username string) (stri
 		return "", err
 	}
 
-	return `HKU:\CurrentUser`, err
+	return `HKU:\CurrentUser`, nil
+}
+
+func (sshConnection SshConnectionInfo) unloadReg() error {
+	_, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`reg unload HKU\CurrentUser`)
+	return err
 }
