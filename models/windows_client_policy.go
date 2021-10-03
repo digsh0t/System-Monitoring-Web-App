@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -130,4 +131,18 @@ func (sshConnection *SshConnectionInfo) UpdateWindowsUserProhibitedProgramsPolic
 	}
 	_, err = RunAnsiblePlaybookWithjson("./yamls/windows_client/add_or_update_registry.yml", string(marshalled))
 	return err
+}
+
+func (sshConnection SshConnectionInfo) RegLoadCurrentUser(username string) (string, error) {
+	path := `C:\users\` + username + `\ntuser.dat`
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`reg load HKU\CurrentUser ` + path)
+	if err != nil {
+		if strings.Contains(err.Error(), "The process cannot access the file because it is being used by another process.") {
+			return `HKCU:`, err
+		}
+
+		return "", err
+	}
+	fmt.Println(result)
+	return `HKU:\CurrentUser`, err
 }

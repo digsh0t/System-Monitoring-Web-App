@@ -432,7 +432,7 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithSSHKey(cmd string) (strin
 		session.Stderr = &stderr
 		err = session.Run(cmd)
 		if err != nil {
-			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+			err = errors.New(fmt.Sprint(fmt.Sprint(err) + ": " + stderr.String()))
 		}
 		return b.String(), err
 	}
