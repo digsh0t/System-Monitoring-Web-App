@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -81,7 +80,11 @@ func (sshConnection *SshConnectionInfo) UpdateExplorerPolicySettings(sid string,
 	}
 	var registryKeyList modifyRegistryKeyList
 	registryKeyList.Host = sshConnection.HostNameSSH
-	path := `HKU:\` + sid + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer`
+	userBasePath, err := sshConnection.regLoadCurrentUser(sid)
+	if err != nil {
+		return err
+	}
+	path := userBasePath + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer`
 	registryKeyList.RegistryPath = path
 	registryKeyList.Key = keyList
 	registryKeyList.DataType = "dword"
@@ -119,7 +122,11 @@ func (sshConnection *SshConnectionInfo) UpdateWindowsUserProhibitedProgramsPolic
 	var keyList []RegistryKey
 
 	registry.Host = sshConnection.HostNameSSH
-	registry.RegistryPath = `HKU:\` + sid + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun`
+	userBasePath, err := sshConnection.regLoadCurrentUser("wintltr")
+	if err != nil {
+		return err
+	}
+	registry.RegistryPath = userBasePath + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun`
 	for i, program := range programList {
 		keyList = append(keyList, RegistryKey{Data: program, Path: strconv.Itoa(i + 1)})
 	}
@@ -133,16 +140,16 @@ func (sshConnection *SshConnectionInfo) UpdateWindowsUserProhibitedProgramsPolic
 	return err
 }
 
-func (sshConnection SshConnectionInfo) RegLoadCurrentUser(username string) (string, error) {
+func (sshConnection SshConnectionInfo) regLoadCurrentUser(username string) (string, error) {
 	path := `C:\users\` + username + `\ntuser.dat`
-	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`reg load HKU\CurrentUser ` + path)
+	_, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`reg load HKU\CurrentUser ` + path)
 	if err != nil {
 		if strings.Contains(err.Error(), "The process cannot access the file because it is being used by another process.") {
-			return `HKCU:`, err
+			return `HKCU:`, nil
 		}
 
 		return "", err
 	}
-	fmt.Println(result)
+
 	return `HKU:\CurrentUser`, err
 }

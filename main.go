@@ -24,17 +24,17 @@ func main() {
 
 	// firewallSetting := `{"host":"vmware-windows", "name":"add firewall test-in"}`
 	//models.DeleteFirewallRule(firewallSetting)
-	sshConnection, err := models.GetSSHConnectionFromId(51)
-	if err != nil {
-		log.Println(err)
-	}
+	// sshConnection, err := models.GetSSHConnectionFromId(51)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 	// sid := "S-1-5-21-1572063403-3487170947-126735497-1000"
 	// var keyList []models.RegistryKey
 	// keyList = append(keyList, models.RegistryKey{Data: "1", Path: "Disables all Control Panel programs and the PC settings app"})
-	_, err = sshConnection.RegLoadCurrentUser("wintltr")
-	if err != nil {
-		log.Println(err)
-	}
+	// _, err = sshConnection.RegLoadCurrentUser("wintltr")
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 	// log.Println(os)
 
 	go models.RemoveEntryChannel()
