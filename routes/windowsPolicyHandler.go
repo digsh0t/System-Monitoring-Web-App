@@ -39,7 +39,7 @@ func ChangeWindowsExplorerPolicy(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	sid := vars["sid"]
+	uuid := vars["sid"]
 	sshConnection, err := models.GetSSHConnectionFromId(id)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
@@ -56,7 +56,7 @@ func ChangeWindowsExplorerPolicy(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	err = sshConnection.UpdateExplorerPolicySettings(sid, keyList)
+	err = sshConnection.UpdateExplorerPolicySettings(uuid, keyList)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
