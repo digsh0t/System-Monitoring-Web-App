@@ -184,3 +184,19 @@ func (sshConnection SshConnectionInfo) GetWindowsLoginAppExecutionHistory(userna
 	appHistory, err = parseWindowsAppExecution(result)
 	return appHistory, err
 }
+
+func (sshConnection SshConnectionInfo) CheckIfWindowsUserEnabled(username string) (bool, error) {
+	command := fmt.Sprintf(`powershell -Command "Get-LocalUser -name %s"`, username)
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	if err != nil {
+		return false, err
+	}
+	if strings.Trim(output, "\r\n ") == "" {
+		return false, nil
+	}
+	if strings.Contains(output, "False") {
+		return false, nil
+	} else {
+		return true, nil
+	}
+}
