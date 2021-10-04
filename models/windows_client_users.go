@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -199,4 +200,22 @@ func (sshConnection SshConnectionInfo) CheckIfWindowsUserEnabled(username string
 	} else {
 		return true, nil
 	}
+}
+
+func (sshConnection SshConnectionInfo) ChangeWindowsUserEnableStatus(username string, enabled bool) error {
+	var isEnabled string
+	if enabled {
+		isEnabled = "yes"
+	} else {
+		isEnabled = "no"
+	}
+	command := fmt.Sprintf(`net user %s /active:%s"`, username, isEnabled)
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	if err != nil {
+		return err
+	}
+	if strings.Contains(output, "The command completed successfully.") {
+		return nil
+	}
+	return errors.New(output)
 }

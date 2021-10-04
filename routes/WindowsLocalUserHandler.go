@@ -365,10 +365,6 @@ func GetWindowsUserEnableStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := vars["username"]
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
 	sshConnection, err := models.GetSSHConnectionFromId(id)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
@@ -384,4 +380,29 @@ func GetWindowsUserEnableStatus(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("is_enabled", isEnabled)
 
 	utils.JSON(w, http.StatusOK, returnJson)
+}
+
+func ChangeWindowsEnabledStatus(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	username := vars["username"]
+	isEnabled, err := strconv.ParseBool(vars["is_enabled"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = sshConnection.ChangeWindowsUserEnableStatus(username, isEnabled)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
 }
