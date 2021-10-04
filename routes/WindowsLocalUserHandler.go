@@ -406,3 +406,38 @@ func ChangeWindowsEnabledStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func ChangeWindowsLocalUserPassword(w http.ResponseWriter, r *http.Request) {
+
+	type newPassword struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	var nP newPassword
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = json.Unmarshal(body, &nP)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = sshConnection.ChangeWindowsLocalUserPassword(nP.Username, nP.Password)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+}
