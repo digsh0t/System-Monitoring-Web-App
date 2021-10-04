@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -551,4 +553,49 @@ func (sshConnection *SshConnectionInfo) GetInstalledProgram() ([]Programs, error
 
 	err = json.Unmarshal([]byte(result), &installedPrograms)
 	return installedPrograms, err
+}
+
+func (sshConnection SshConnectionInfo) RunAnsiblePlaybookWithjson(filepath string, extraVars string) (string, error) {
+	var (
+		out, errbuf bytes.Buffer
+		err         error
+		output      string
+	)
+
+	sshKey, err := GetSSHKeyFromId(sshConnection.SSHKeyId)
+	if err != nil {
+		return "", err
+	}
+	err = sshKey.WriteKeyToFile("./tmp/private_key")
+	if err != nil {
+		return "", err
+	}
+
+	var args []string
+	args = append(args, "--private-key", "./tmp/private_key")
+	if extraVars != "" {
+		args = append(args, "--extra-vars", extraVars, filepath)
+	} else {
+		args = append(args, filepath)
+	}
+	defer func() {
+		RemoveFile("./tmp/private_key")
+	}()
+
+	cmd := exec.Command("ansible-playbook", args...)
+	cmd.Stdout = &out
+	cmd.Stderr = &errbuf
+	err = cmd.Run()
+	stderr := errbuf.String()
+	if err != nil {
+		// "Exit status 2" means Ansible displays fatal error but our funtion still works correctly
+		if err.Error() == "exit status 2" || err.Error() == "exit status 4" {
+			err = nil
+			log.Println(stderr)
+		} else {
+			return output, err
+		}
+	}
+	output = out.String()
+	return output, err
 }

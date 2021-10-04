@@ -12,15 +12,15 @@ import (
 
 func main() {
 	//go goroutines.CheckClientOnlineStatusGour()
-	// firewallRule, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM iptables"`)
+	// sshKey, err := models.GetSSHKeyFromId(14)
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// iptables, err := models.ParseIptables(firewallRule)
+	// err = sshKey.WriteKeyToFile("tmp/private_key")
+	//err := models.RemoveFile("tmp/private_key")
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// fmt.Println(iptables)
 
 	// firewallSetting := `{"host":"vmware-windows", "name":"add firewall test-in"}`
 	//models.DeleteFirewallRule(firewallSetting)
@@ -31,11 +31,11 @@ func main() {
 	// sid := "S-1-5-21-1572063403-3487170947-126735497-1000"
 	// var keyList []models.RegistryKey
 	// keyList = append(keyList, models.RegistryKey{Data: "1", Path: "Disables all Control Panel programs and the PC settings app"})
-	// _, err = sshConnection.GetPasswordPolicy()
+	// output, err := sshConnection.RunAnsiblePlaybookWithjson("./yamls/debug.yml", `{"host":"DESKTOP-AUKB810"}`)
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// log.Println(os)
+	// log.Println(output)
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
