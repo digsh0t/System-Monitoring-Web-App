@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -222,4 +223,27 @@ func parsePasswordPolicyResult(output string) (PasswordPolicy, error) {
 	policy.UniquePwd, err = strconv.Atoi(values[4])
 	return policy, err
 
+}
+
+func (sshConnection SshConnectionInfo) ChangeWindowsPasswordPolicy(policy PasswordPolicy) error {
+	var forceLogOff, maxPwdAge, minPwdLen, minPwdAge, uniquePwd string
+	if policy.ForceLogOff == 0 {
+		forceLogOff = "NO"
+	} else {
+		forceLogOff = strconv.Itoa(policy.ForceLogOff)
+	}
+	if policy.MaxPwdAge == 0 {
+		maxPwdAge = "UNLIMITED"
+	} else {
+		maxPwdAge = strconv.Itoa(policy.MaxPwdAge)
+	}
+	minPwdAge = strconv.Itoa(policy.MinPwdAge)
+	minPwdLen = strconv.Itoa(policy.MinPwdLen)
+	uniquePwd = strconv.Itoa(policy.UniquePwd)
+	command := fmt.Sprintf(`net accounts /FORCELOGOFF:%s /MINPWLEN:%s /MAXPWAGE:%s /MINPWAGE:%s /UNIQUEPW:%s`, forceLogOff, minPwdLen, maxPwdAge, minPwdAge, uniquePwd)
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	if !strings.Contains(output, "The command completed successfully") {
+		return errors.New(output)
+	}
+	return err
 }

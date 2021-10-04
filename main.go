@@ -205,6 +205,7 @@ func main() {
 	router.HandleFunc("/{id}/policies/{sid}/prohibitedprograms", routes.GetWindowsUserProhibitedProgramsPolicy).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/policies/{sid}/prohibitedprograms", routes.ChangeWindowsUserProhibitedProgramPolicy).Methods("OPTIONS", "POST")
 	router.HandleFunc("/{id}/passwordpolicies", routes.GetWindowsPasswordPolicy).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/passwordpolicies", routes.ChangeWindowsPasswordPolicy).Methods("OPTIONS", "PUT")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
