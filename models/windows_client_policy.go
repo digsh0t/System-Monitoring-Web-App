@@ -2,6 +2,8 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -69,22 +71,31 @@ func uglifyRegistryKeyList(regKeyList []RegistryKey) {
 	}
 }
 
-func (sshConnection *SshConnectionInfo) UpdateExplorerPolicySettings(sid string, keyList []RegistryKey) error {
+func (sshConnection *SshConnectionInfo) UpdateExplorerPolicySettings(uuid string, keyList []RegistryKey) error {
 	uglifyRegistryKeyList(keyList)
 	type modifyRegistryKeyList struct {
 		Host         string        `json:"host"`
 		RegistryPath string        `json:"registry_path"`
 		Key          []RegistryKey `json:"key"`
+		DataType     string        `json:"data_type"`
 	}
 	var registryKeyList modifyRegistryKeyList
 	registryKeyList.Host = sshConnection.HostNameSSH
-	registryKeyList.RegistryPath = `HKU:\` + sid + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer`
+	userBasePath, err := sshConnection.regLoadCurrentUser(uuid)
+	if err != nil {
+		return err
+	}
+	path := userBasePath + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer`
+	registryKeyList.RegistryPath = path
 	registryKeyList.Key = keyList
+	registryKeyList.DataType = "dword"
+
 	marshalled, err := json.Marshal(registryKeyList)
 	if err != nil {
 		return err
 	}
 	_, err = RunAnsiblePlaybookWithjson("./yamls/windows_client/add_or_update_registry.yml", string(marshalled))
+
 	return err
 }
 
@@ -100,4 +111,62 @@ func (sshConnection *SshConnectionInfo) GetProhibitedProgramsPolicy(sid string) 
 		programList = append(programList, key.Data)
 	}
 	return programList, err
+}
+
+func (sshConnection *SshConnectionInfo) UpdateWindowsUserProhibitedProgramsPolicy(uuid string, programList []string) error {
+	type modifyRegistry struct {
+		Host         string        `json:"host"`
+		RegistryPath string        `json:"registry_path"`
+		Key          []RegistryKey `json:"key"`
+		DataType     string        `json:"data_type"`
+	}
+	var registry modifyRegistry
+	var keyList []RegistryKey
+
+	registry.Host = sshConnection.HostNameSSH
+	userBasePath, err := sshConnection.regLoadCurrentUser(uuid)
+	if err != nil {
+		return err
+	}
+	registry.RegistryPath = userBasePath + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun`
+	for i, program := range programList {
+		keyList = append(keyList, RegistryKey{Data: program, Path: strconv.Itoa(i + 1)})
+	}
+	registry.Key = keyList
+	registry.DataType = "string"
+	marshalled, err := json.Marshal(registry)
+	if err != nil {
+		return err
+	}
+	_, err = RunAnsiblePlaybookWithjson("./yamls/windows_client/add_or_update_registry.yml", string(marshalled))
+	return err
+}
+
+func (sshConnection SshConnectionInfo) regLoadCurrentUser(uuid string) (string, error) {
+	username, err := sshConnection.getWindowsUsernameFromUUID(uuid)
+	if err != nil {
+		return "", err
+	}
+	path := `C:\users\` + username + `\ntuser.dat`
+	_, err = sshConnection.RunCommandFromSSHConnectionUseKeys(`reg load HKU\` + username + " " + path)
+	if err != nil {
+		if strings.Contains(err.Error(), "The process cannot access the file because it is being used by another process.") {
+			return `HKU:\` + uuid, nil
+		}
+
+		return "", err
+	}
+
+	return `HKU:\` + username, nil
+}
+
+func (sshConnection SshConnectionInfo) getWindowsUsernameFromUUID(uuid string) (string, error) {
+	command := fmt.Sprintf(`osqueryi --json "SELECT username FROM users WHERE uuid LIKE '%s'"`, uuid)
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	if err != nil {
+		return "", err
+	}
+	var userList []User
+	json.Unmarshal([]byte(output), &userList)
+	return userList[0].Username, nil
 }

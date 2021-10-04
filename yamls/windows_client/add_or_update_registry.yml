@@ -7,7 +7,7 @@
       path: "{{ registry_path }}"
       name: "{{ item.path }}"
       data: "{{ item.data }}"
-      type: dword
+      type: "{{ data_type }}"
     loop: "{{ key }}"
 
-#Usage: ansible-playbook --extra-vars '{"host":"DESKTOP-AUKB810","registry_path":"HKU:\\S-1-5-21-1572063403-3487170947-126735497-1000\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\test","key":[{"path":"key1","data":1},{"path":"key2","data":0}]}' yamls/windows_client/add_or_update_registry.yml
+#Usage: ansible-playbook --extra-vars '{"host":"DESKTOP-AUKB810","registry_path":"HKU:\\S-1-5-21-1572063403-3487170947-126735497-1000\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\test","data_type":"dword","key":[{"path":"key1","data":1},{"path":"key2","data":0}]}' yamls/windows_client/add_or_update_registry.yml
