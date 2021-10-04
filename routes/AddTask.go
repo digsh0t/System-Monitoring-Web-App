@@ -41,7 +41,6 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 
 	var task models.Task
 	json.Unmarshal(body, &task)
-
 	task.UserId, err = auth.ExtractUserId(r)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read user id from token").Error())
