@@ -20,6 +20,7 @@ type ClientUser struct {
 	UIDSigned   string `json:"uid_signed"`
 	Username    string `json:"username"`
 	UUID        string `json:"uuid"`
+	IsEnabled   bool   `json:"is_enabled"`
 }
 
 type LocalUserGroup struct {
@@ -60,6 +61,10 @@ func (sshConnection *SshConnectionInfo) GetLocalUsers() ([]ClientUser, error) {
 	var userList []ClientUser
 
 	err = json.Unmarshal([]byte(result), &userList)
+	if err != nil {
+		return nil, err
+	}
+	_, err = sshConnection.checkIfWindowsUserEnabled(&userList)
 	return userList, err
 }
 
@@ -186,12 +191,13 @@ func (sshConnection SshConnectionInfo) GetWindowsLoginAppExecutionHistory(userna
 	return appHistory, err
 }
 
-func (sshConnection SshConnectionInfo) CheckIfWindowsUserEnabled(username string) (bool, error) {
-	command := fmt.Sprintf(`powershell -Command "Get-LocalUser -name %s"`, username)
+func (sshConnection SshConnectionInfo) checkIfWindowsUserEnabled(userList *[]ClientUser) (bool, error) {
+	command := `powershell -Command "Get-LocalUser"`
 	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(command)
 	if err != nil {
 		return false, err
 	}
+	parseUserEnabledResult(*userList, output)
 	if strings.Trim(output, "\r\n ") == "" {
 		return false, nil
 	}
@@ -199,6 +205,27 @@ func (sshConnection SshConnectionInfo) CheckIfWindowsUserEnabled(username string
 		return false, nil
 	} else {
 		return true, nil
+	}
+}
+
+func parseUserEnabledResult(userList []ClientUser, output string) {
+	output = strings.Trim(output, "\r\n ")
+	for i, line := range strings.Split(output, "\r\n") {
+		if i < 2 {
+			continue
+		}
+		vars := strings.SplitN(line, " ", 2)
+		for i, user := range userList {
+			if strings.EqualFold(user.Username, strings.ToLower(strings.Trim(vars[0], "\r\n "))) {
+				if strings.Contains(vars[1], "True") {
+					userList[i].IsEnabled = true
+					break
+				} else {
+					userList[i].IsEnabled = false
+					break
+				}
+			}
+		}
 	}
 }
 
