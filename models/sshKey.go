@@ -226,3 +226,28 @@ func GetKeyIdFromPublicKey(pubKey string) (int, error) {
 	}
 	return -1, err
 }
+
+func (sshKey SSHKey) WriteKeyToFile(filepath string) error {
+	_, err := os.Stat(filepath)
+	if err != nil {
+		err = nil
+		_, err := os.Create(filepath)
+		if err != nil {
+			return err
+		}
+	}
+	secret, err := AESDecryptKey(sshKey.PrivateKey)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filepath, []byte(secret), 0600)
+	return err
+}
+
+func RemoveFile(filepath string) error {
+	err := os.Remove(filepath)
+	if err != nil {
+		return err
+	}
+	return nil
+}

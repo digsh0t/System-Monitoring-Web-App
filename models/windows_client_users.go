@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -183,4 +184,52 @@ func (sshConnection SshConnectionInfo) GetWindowsLoginAppExecutionHistory(userna
 	}
 	appHistory, err = parseWindowsAppExecution(result)
 	return appHistory, err
+}
+
+func (sshConnection SshConnectionInfo) CheckIfWindowsUserEnabled(username string) (bool, error) {
+	command := fmt.Sprintf(`powershell -Command "Get-LocalUser -name %s"`, username)
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	if err != nil {
+		return false, err
+	}
+	if strings.Trim(output, "\r\n ") == "" {
+		return false, nil
+	}
+	if strings.Contains(output, "False") {
+		return false, nil
+	} else {
+		return true, nil
+	}
+}
+
+func (sshConnection SshConnectionInfo) ChangeWindowsUserEnableStatus(username string, enabled bool) error {
+	var isEnabled string
+	if enabled {
+		isEnabled = "yes"
+	} else {
+		isEnabled = "no"
+	}
+	command := fmt.Sprintf(`net user %s /active:%s"`, username, isEnabled)
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	if err != nil {
+		return err
+	}
+	if strings.Contains(output, "The command completed successfully.") {
+		return nil
+	}
+	return errors.New(output)
+}
+
+func (sshConnection SshConnectionInfo) ChangeWindowsLocalUserPassword(username string, password string) error {
+	type newPassword struct {
+		Host     string `json:"host"`
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	nP, err := json.Marshal(newPassword{sshConnection.HostNameSSH, username, password})
+	if err != nil {
+		return err
+	}
+	_, err = RunAnsiblePlaybookWithjson("./yamls/windows_client/change_user_password.yml", string(nP))
+	return err
 }

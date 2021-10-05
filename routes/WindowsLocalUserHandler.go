@@ -355,3 +355,89 @@ func GetWindowsLogonAppExecutionHistory(w http.ResponseWriter, r *http.Request) 
 	}
 	utils.JSON(w, http.StatusOK, appHistory)
 }
+
+func GetWindowsUserEnableStatus(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	username := vars["username"]
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	isEnabled, err := sshConnection.CheckIfWindowsUserEnabled(username)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	returnJson := simplejson.New()
+	returnJson.Set("username", username)
+	returnJson.Set("is_enabled", isEnabled)
+
+	utils.JSON(w, http.StatusOK, returnJson)
+}
+
+func ChangeWindowsEnabledStatus(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	username := vars["username"]
+	isEnabled, err := strconv.ParseBool(vars["is_enabled"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = sshConnection.ChangeWindowsUserEnableStatus(username, isEnabled)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+}
+
+func ChangeWindowsLocalUserPassword(w http.ResponseWriter, r *http.Request) {
+
+	type newPassword struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	var nP newPassword
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = json.Unmarshal(body, &nP)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	sshConnection, err := models.GetSSHConnectionFromId(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = sshConnection.ChangeWindowsLocalUserPassword(nP.Username, nP.Password)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+}

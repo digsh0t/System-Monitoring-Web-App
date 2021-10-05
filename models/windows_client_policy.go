@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -10,6 +11,14 @@ import (
 type RegistryKey struct {
 	Data string `json:"data"`
 	Path string `json:"path"`
+}
+
+type PasswordPolicy struct {
+	ForceLogOff int `json:"force_log_off"`
+	MinPwdLen   int `json:"min_pwd_len"`
+	MaxPwdAge   int `json:"max_pwd_age"`
+	MinPwdAge   int `json:"min_pwd_age"`
+	UniquePwd   int `json:"unique_pwd"`
 }
 
 func parseKeyList(output string) ([]RegistryKey, error) {
@@ -169,4 +178,72 @@ func (sshConnection SshConnectionInfo) getWindowsUsernameFromUUID(uuid string) (
 	var userList []User
 	json.Unmarshal([]byte(output), &userList)
 	return userList[0].Username, nil
+}
+
+func (sshConnection SshConnectionInfo) GetWindowsPasswordPolicy() (PasswordPolicy, error) {
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`net accounts`)
+	if err != nil {
+		return PasswordPolicy{}, err
+	}
+	policy, err := parsePasswordPolicyResult(output)
+	return policy, err
+}
+
+func parsePasswordPolicyResult(output string) (PasswordPolicy, error) {
+	var policy PasswordPolicy
+	var values []string
+	var err error
+	for i, line := range strings.Split(output, "\n") {
+		if i > 4 {
+			break
+		}
+		keyAndValue := strings.Split(line, ":")
+		keyAndValue[1] = strings.Trim(keyAndValue[1], "\r\n ")
+		if strings.Contains(keyAndValue[1], "Never") || strings.Contains(keyAndValue[1], "Unlimited") || strings.Contains(keyAndValue[1], "None") {
+			keyAndValue[1] = "0"
+		}
+		values = append(values, keyAndValue[1])
+	}
+	policy.ForceLogOff, err = strconv.Atoi(values[0])
+	if err != nil {
+		return policy, err
+	}
+	policy.MinPwdAge, err = strconv.Atoi(values[1])
+	if err != nil {
+		return policy, err
+	}
+	policy.MaxPwdAge, err = strconv.Atoi(values[2])
+	if err != nil {
+		return policy, err
+	}
+	policy.MinPwdLen, err = strconv.Atoi(values[3])
+	if err != nil {
+		return policy, err
+	}
+	policy.UniquePwd, err = strconv.Atoi(values[4])
+	return policy, err
+
+}
+
+func (sshConnection SshConnectionInfo) ChangeWindowsPasswordPolicy(policy PasswordPolicy) error {
+	var forceLogOff, maxPwdAge, minPwdLen, minPwdAge, uniquePwd string
+	if policy.ForceLogOff == 0 {
+		forceLogOff = "NO"
+	} else {
+		forceLogOff = strconv.Itoa(policy.ForceLogOff)
+	}
+	if policy.MaxPwdAge == 0 {
+		maxPwdAge = "UNLIMITED"
+	} else {
+		maxPwdAge = strconv.Itoa(policy.MaxPwdAge)
+	}
+	minPwdAge = strconv.Itoa(policy.MinPwdAge)
+	minPwdLen = strconv.Itoa(policy.MinPwdLen)
+	uniquePwd = strconv.Itoa(policy.UniquePwd)
+	command := fmt.Sprintf(`net accounts /FORCELOGOFF:%s /MINPWLEN:%s /MAXPWAGE:%s /MINPWAGE:%s /UNIQUEPW:%s`, forceLogOff, minPwdLen, maxPwdAge, minPwdAge, uniquePwd)
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	if !strings.Contains(output, "The command completed successfully") {
+		return errors.New(output)
+	}
+	return err
 }
