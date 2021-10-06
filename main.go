@@ -31,7 +31,9 @@ func main() {
 	// sid := "S-1-5-21-1572063403-3487170947-126735497-1000"
 	// var keyList []models.RegistryKey
 	// keyList = append(keyList, models.RegistryKey{Data: "1", Path: "Disables all Control Panel programs and the PC settings app"})
-	// output, err := sshConnection.RunAnsiblePlaybookWithjson("./yamls/debug.yml", `{"host":"DESKTOP-AUKB810"}`)
+	// var userList []models.ClientUser
+	// userList = append(userList, models.ClientUser{Username: "Administrator"}, models.ClientUser{Username: "guest"}, models.ClientUser{Username: "TRILX"})
+	// output, err := sshConnection.CheckIfWindowsUserEnabled(&userList)
 	// if err != nil {
 	// 	log.Println(err)
 	// }
@@ -171,7 +173,7 @@ func main() {
 	//Windows Local Users Management
 	router.HandleFunc("/{id}/localuser", routes.GetWindowsLocalUser).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/localuser/changepassword", routes.ChangeWindowsLocalUserPassword).Methods("OPTIONS", "PUT")
-	router.HandleFunc("/{id}/localuser/{username}/enabled", routes.GetWindowsUserEnableStatus).Methods("OPTIONS", "GET")
+	//router.HandleFunc("/{id}/localuser/{username}/enabled", routes.GetWindowsUserEnableStatus).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/localuser/{username}/enabled/{is_enabled}", routes.ChangeWindowsEnabledStatus).Methods("OPTIONS", "PUT")
 	router.HandleFunc("/{id}/localuser/{username}/groups", routes.GetWindowsGroupListOfUser).Methods("OPTIONS", "GET")
 	router.HandleFunc("/localuser/groups", routes.ReplaceWindowsGroupOfUser).Methods("OPTIONS", "POST")
