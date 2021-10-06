@@ -257,7 +257,13 @@ func TestPingCisco(w http.ResponseWriter, r *http.Request) {
 	returnJson := simplejson.New()
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatals)
-	utils.JSON(w, http.StatusOK, returnJson)
+	var statusCode int
+	if len(fatals) == 0 {
+		statusCode = http.StatusOK
+	} else {
+		statusCode = http.StatusBadRequest
+	}
+	utils.JSON(w, statusCode, returnJson)
 
 	// Write Event Web
 	hostname, err := models.ConvertListIdToHostnameVer2(ciscoJson.SshConnectionId)
