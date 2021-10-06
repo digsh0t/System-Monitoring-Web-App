@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -566,20 +567,20 @@ func (sshConnection SshConnectionInfo) RunAnsiblePlaybookWithjson(filepath strin
 	if err != nil {
 		return "", err
 	}
-	err = sshKey.WriteKeyToFile("./tmp/private_key")
+	err = sshKey.WriteKeyToFile("./tmp/private_key_" + strconv.Itoa(sshConnection.SSHKeyId))
 	if err != nil {
 		return "", err
 	}
 
 	var args []string
-	args = append(args, "--private-key", "./tmp/private_key")
+	args = append(args, "--private-key", "./tmp/private_key_"+strconv.Itoa(sshConnection.SSHKeyId))
 	if extraVars != "" {
 		args = append(args, "--extra-vars", extraVars, filepath)
 	} else {
 		args = append(args, filepath)
 	}
 	defer func() {
-		RemoveFile("./tmp/private_key")
+		RemoveFile("./tmp/private_key_" + strconv.Itoa(sshConnection.SSHKeyId))
 	}()
 
 	cmd := exec.Command("ansible-playbook", args...)
