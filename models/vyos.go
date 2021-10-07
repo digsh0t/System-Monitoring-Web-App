@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -317,12 +318,14 @@ func ListLogsVyos(sshConnectionId int) ([]VyosLog, error) {
 
 		// Get Service and Message
 		tmpLine := trimLine[21:]
-		devideIndex := strings.Index(tmpLine, "]: ") + 1
+		re := regexp.MustCompile(":")
+		spilit := re.Split(tmpLine, 2)
 
-		vyosLog.Service = tmpLine[:devideIndex]
+		vyosLog.Service = spilit[0]
 
-		vyosLog.Message = tmpLine[devideIndex+2:]
+		vyosLog.Message = strings.TrimSpace(spilit[1])
 
+		// Append
 		vyosLogsList = append(vyosLogsList, vyosLog)
 
 	}
