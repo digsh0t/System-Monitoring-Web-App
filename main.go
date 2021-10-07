@@ -142,6 +142,7 @@ func main() {
 	router.HandleFunc("/vyos/list/{id}", routes.GetInfoVyos).Methods("GET")
 	router.HandleFunc("/vyos/config/ip", routes.ConfigIPVyos).Methods("POST")
 	router.HandleFunc("/vyos/list", routes.ListAllVyOS).Methods("GET")
+	router.HandleFunc("/vyos/logs", routes.ListLogsVyos).Methods("GET")
 
 	// Network Automation: Cisco
 	router.HandleFunc("/cisco/list", routes.ListAllCisco).Methods("GET")
