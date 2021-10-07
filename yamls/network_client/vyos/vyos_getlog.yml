@@ -1,0 +1,12 @@
+- name: Get Information Cisco
+  connection: network_cli
+  hosts: "{{ host_var }}"
+  gather_facts: false
+  tasks:
+  - name: show log of vyos
+    vyos_command:
+      commands:
+      - show log tail 200
+    register: output
+    
+  - debug: msg="{{ output.stdout_lines }}"
