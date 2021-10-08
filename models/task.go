@@ -15,6 +15,16 @@ import (
 	"github.com/wintltr/login-api/database"
 )
 
+type IndependenceTask struct {
+	filepath      string
+	extraArgs     string
+	sshConnection SshConnectionInfo
+}
+
+func (task IndependenceTask) RunIndependenceTask() {
+	task.sshConnection.RunAnsiblePlaybookWithjson(task.filepath, task.extraArgs)
+}
+
 type Task struct {
 	TaskId        int       `json:"task_id"`
 	TemplateId    int       `json:"template_id"`

@@ -91,6 +91,19 @@ func (sshConnection *SshConnectionInfo) TestConnectionPublicKey() (bool, error) 
 	}
 }
 
+func (sshConnection SshConnectionInfo) CheckSSHConnectionExist() (bool, error) {
+	sshConnectionList, err := GetAllSSHConnection()
+	if err != nil {
+		return true, err
+	}
+	for _, curConnection := range sshConnectionList {
+		if curConnection.HostSSH == sshConnection.HostSSH && curConnection.PortSSH == sshConnection.PortSSH {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 	db := database.ConnectDB()
 	defer db.Close()
