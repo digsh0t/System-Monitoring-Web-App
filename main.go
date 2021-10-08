@@ -152,6 +152,7 @@ func main() {
 	router.HandleFunc("/cisco/config/staticroute", routes.ConfigStaticRouteCisco).Methods("POST")
 	router.HandleFunc("/cisco/testping", routes.TestPingCisco).Methods("POST")
 	router.HandleFunc("/cisco/logs", routes.ListLogsCisco).Methods("GET")
+	router.HandleFunc("/cisco/traffic", routes.GetTrafficCisco).Methods("GET")
 
 	//Windows Firewall Settings
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")

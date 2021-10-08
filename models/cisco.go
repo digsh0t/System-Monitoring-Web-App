@@ -6,8 +6,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Jeffail/gabs"
+	g "github.com/gosnmp/gosnmp"
 	"github.com/wintltr/login-api/utils"
 )
 
@@ -416,6 +418,75 @@ func ListLogsCisco(sshConnectionId int) ([]CiscoLog, error) {
 		ciscoLogsList = append(ciscoLogsList, ciscoLog)
 
 	}
+
+	return ciscoLogsList, err
+
+}
+
+// Get Traffic Cisco
+func GetTrafficCisco(sshConnectionId int) ([]CiscoLog, error) {
+	var (
+		ciscoLogsList []CiscoLog
+		err           error
+	)
+	// Get Hostname
+	sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
+	if err != nil {
+		return ciscoLogsList, errors.New("fail to get ssh connection")
+	}
+
+	// Create Json
+	ciscoJson := CiscoJson{
+		Host: []string{sshConnection.HostNameSSH},
+	}
+
+	// Marshal and run playbook
+	ciscoJsonMarshal, err := json.Marshal(ciscoJson)
+	if err != nil {
+		return ciscoLogsList, errors.New("fail to marshal json")
+	}
+	_, err = RunAnsiblePlaybookWithjson("./yamls/network_client/cisco/cisco_config_snmp.yml", string(ciscoJsonMarshal))
+	if err != nil {
+		return ciscoLogsList, errors.New("fail to run playbook")
+	}
+
+	// build our own GoSNMP struct, rather than using g.Default
+	params := &g.GoSNMP{
+		Target:        sshConnection.HostSSH,
+		Port:          161,
+		Version:       g.Version3,
+		SecurityModel: g.UserSecurityModel,
+		MsgFlags:      g.AuthPriv,
+		Timeout:       time.Duration(30) * time.Second,
+		SecurityParameters: &g.UsmSecurityParameters{UserName: "snmpUser",
+			AuthenticationProtocol:   g.MD5,
+			AuthenticationPassphrase: "snmpP@ssword",
+			PrivacyProtocol:          g.DES,
+			PrivacyPassphrase:        "snmpP@ssword",
+		},
+	}
+	err = params.Connect()
+	if err != nil {
+		return ciscoLogsList, errors.New("fail to connect snmp")
+	}
+	defer params.Conn.Close()
+
+	/*oids := []string{"1.3.6.1.2.1.2.2.1.11."}
+	result := params.Walk(oids, func(dataUnit g.SnmpPDU) error { return err }) // Get() accepts up to g.MAX_OIDS
+	if err2 != nil {
+		return ciscoLogsList, errors.New("fail to get oids")
+	}
+
+	for i, variable := range result.Variables {
+		fmt.Printf("%d: oid: %s ", i, variable.Name)
+
+		switch variable.Type {
+		case g.OctetString:
+			fmt.Printf("string: %s\n", string(variable.Value.([]byte)))
+		default:
+			fmt.Printf("number: %d\n", g.ToBigInt(variable.Value))
+		}
+	}*/
 
 	return ciscoLogsList, err
 
