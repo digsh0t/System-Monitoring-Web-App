@@ -52,7 +52,11 @@ func TestSSHConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status, err = sshConnection.TestConnectionPublicKey()
+	if sshConnection.PasswordSSH == "" {
+		status, err = sshConnection.TestConnectionPublicKey()
+	} else {
+		status, err = sshConnection.TestConnectionPassword()
+	}
 	var eventStatus string
 	if err != nil {
 		returnJson.Set("Status", status)
