@@ -98,7 +98,7 @@ func (sshConnection SshConnectionInfo) CheckSSHConnectionExist() (bool, error) {
 	}
 	for _, curConnection := range sshConnectionList {
 		if curConnection.HostSSH == sshConnection.HostSSH && curConnection.PortSSH == sshConnection.PortSSH {
-			return true, nil
+			return true, errors.New("This SSH Connection is already exists")
 		}
 	}
 	return false, nil
