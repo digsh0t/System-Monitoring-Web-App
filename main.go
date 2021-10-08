@@ -33,7 +33,7 @@ func main() {
 	// keyList = append(keyList, models.RegistryKey{Data: "1", Path: "Disables all Control Panel programs and the PC settings app"})
 	// var userList []models.ClientUser
 	// userList = append(userList, models.ClientUser{Username: "Administrator"}, models.ClientUser{Username: "guest"}, models.ClientUser{Username: "TRILX"})
-	// output, err := sshConnection.CheckIfWindowsUserEnabled(&userList)
+	// output, err := sshConnection.CheckSSHConnectionExist()
 	// if err != nil {
 	// 	log.Println(err)
 	// }
@@ -174,7 +174,7 @@ func main() {
 
 	//Windows Local Users Management
 	router.HandleFunc("/{id}/localuser", routes.GetWindowsLocalUser).Methods("OPTIONS", "GET")
-	router.HandleFunc("/{id}/localuser/changepassword", routes.ChangeWindowsLocalUserPassword).Methods("OPTIONS", "PUT")
+	router.HandleFunc("/{id}/localuser/changepassword", routes.ChangeWindowsLocalUserPassword).Methods("OPTIONS", "POST")
 	//router.HandleFunc("/{id}/localuser/{username}/enabled", routes.GetWindowsUserEnableStatus).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/localuser/{username}/enabled/{is_enabled}", routes.ChangeWindowsEnabledStatus).Methods("OPTIONS", "PUT")
 	router.HandleFunc("/{id}/localuser/{username}/groups", routes.GetWindowsGroupListOfUser).Methods("OPTIONS", "GET")
