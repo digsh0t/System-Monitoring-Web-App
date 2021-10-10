@@ -43,11 +43,15 @@ func (sshConnection *SshConnectionInfo) TestConnectionPassword() (bool, error) {
 		Timeout:         30 * time.Second,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
+	sshConfig.Config.KeyExchanges = append(sshConfig.Config.KeyExchanges, "diffie-hellman-group1-sha1")
+	cipherOrder := sshConfig.Ciphers
+	sshConfig.Ciphers = append(cipherOrder, "aes128-ctr", "aes192-ctr", "aes256-ctr", "arcfour256", "arcfour128", "arcfour", "aes128-cbc")
 
 	addr := fmt.Sprintf("%s:%d", sshConnection.HostSSH, sshConnection.PortSSH)
 
 	_, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
+		fmt.Println(err.Error())
 		return false, err
 	} else {
 		return true, err
