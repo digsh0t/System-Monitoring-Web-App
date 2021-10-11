@@ -257,7 +257,13 @@ func TestPingCisco(w http.ResponseWriter, r *http.Request) {
 	returnJson := simplejson.New()
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatals)
-	utils.JSON(w, http.StatusOK, returnJson)
+	var statusCode int
+	if len(fatals) == 0 {
+		statusCode = http.StatusOK
+	} else {
+		statusCode = http.StatusBadRequest
+	}
+	utils.JSON(w, statusCode, returnJson)
 
 	// Write Event Web
 	hostname, err := models.ConvertListIdToHostnameVer2(ciscoJson.SshConnectionId)
@@ -270,6 +276,64 @@ func TestPingCisco(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 		return
+	}
+
+}
+
+// List Cisco Logs
+func ListLogsCisco(w http.ResponseWriter, r *http.Request) {
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+	// Get Id parameter
+	query := r.URL.Query()
+	id, err := strconv.Atoi(query.Get("id"))
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
+		return
+	}
+
+	logsList, err := models.ListLogsCisco(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+	} else {
+		utils.JSON(w, http.StatusOK, logsList)
+	}
+
+}
+
+// Get Cisco Traffic
+func GetTrafficCisco(w http.ResponseWriter, r *http.Request) {
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+	// Get Id parameter
+	query := r.URL.Query()
+	id, err := strconv.Atoi(query.Get("id"))
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
+		return
+	}
+
+	logsList, err := models.GetTrafficCisco(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+	} else {
+		utils.JSON(w, http.StatusOK, logsList)
 	}
 
 }

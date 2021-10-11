@@ -34,10 +34,10 @@ func GetWindowsEventLogs(w http.ResponseWriter, r *http.Request) {
 	logname := query.Get("logname")
 
 	// Get Start Time parameter
-	startTime := query.Get("starttime")
+	startTime := query.Get("start")
 
 	// Get End Time parameter
-	endTime := query.Get("endtime")
+	endTime := query.Get("end")
 
 	windowsLogsList, err := models.GetWindowsEventLogs(id, logname, startTime, endTime)
 	if err != nil {

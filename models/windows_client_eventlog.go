@@ -51,6 +51,7 @@ func GetWindowsEventLogs(sshConnectionId int, logname string, startTime string, 
 	if endTime != "" {
 		query += " -Before " + "'" + endTime + "'"
 	}
+
 	// Run remote command
 	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(query)
 	if err != nil {
@@ -68,7 +69,7 @@ func GetWindowsEventLogs(sshConnectionId int, logname string, startTime string, 
 	lines := strings.Split(output, "\n")
 	for index, line := range lines {
 		var windowsLog WindowsLogs
-		if index > 2 {
+		if index > 1 {
 
 			// Get Log Index
 			indexRaw := line[:8]
