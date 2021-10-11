@@ -213,7 +213,7 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 	var eventStatus string
 	if err != nil {
 		returnJson.Set("Status", false)
-		returnJson.Set("Error", errors.New("error while regenerate ansible inventory").Error())
+		returnJson.Set("Error", err)
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		eventStatus = "failed"
 	} else {

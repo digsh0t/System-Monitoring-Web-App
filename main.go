@@ -24,21 +24,20 @@ func main() {
 
 	// firewallSetting := `{"host":"vmware-windows", "name":"add firewall test-in"}`
 	//models.DeleteFirewallRule(firewallSetting)
-	sshConnection, err := models.GetSSHConnectionFromId(51)
-	if err != nil {
-		log.Println(err)
-	}
+	// sshConnection, err := models.GetSSHConnectionFromId(51)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 	// sid := "S-1-5-21-1572063403-3487170947-126735497-1000"
 	// var keyList []models.RegistryKey
 	// keyList = append(keyList, models.RegistryKey{Data: "1", Path: "Disables all Control Panel programs and the PC settings app"})
 	// var userList []models.ClientUser
 	// userList = append(userList, models.ClientUser{Username: "Administrator"}, models.ClientUser{Username: "guest"}, models.ClientUser{Username: "TRILX"})
-	sshConnection = &models.SshConnectionInfo{HostSSH: "192.168.163.140", PortSSH: 22}
-	output, err := sshConnection.CheckSSHConnectionExist()
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println(output)
+	// output, err := sshConnection.CheckSSHConnectionExist()
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// log.Println(output)
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
