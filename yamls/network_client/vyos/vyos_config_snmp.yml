@@ -1,0 +1,20 @@
+- name: Enable SNMPv3
+  connection: network_cli
+  hosts: "{{ host }}"
+  gather_facts: false
+  tasks:
+  - name: Enable SNMPv3
+    vyos_config:
+     lines:
+     - set service snmp community public authorization ro
+     - set service snmp location 'VyOS Datacenter'
+     - set service snmp v3 engineid '000000000000000000000002'
+     - set service snmp v3 group snmpGroup mode 'ro'
+     - set service snmp v3 group snmpGroup view 'default'
+     - set service snmp v3 user snmpUser auth plaintext-password 'snmpP@ssword'
+     - set service snmp v3 user snmpUser auth type 'md5'
+     - set service snmp v3 user snmpUser group 'snmpGroup'
+     - set service snmp v3 user snmpUser privacy plaintext-password 'snmpP@ssword'
+     - set service snmp v3 user snmpUser privacy type 'des'
+     - set service snmp v3 view default oid 1
+     save: yes

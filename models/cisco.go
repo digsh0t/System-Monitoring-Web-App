@@ -450,6 +450,46 @@ func GetTrafficCisco(sshConnectionId int) ([]CiscoLog, error) {
 		return ciscoLogsList, errors.New("fail to run playbook")
 	}
 
+	type CiscoTraffic struct {
+		interfaceName string
+		inOctet1      uint
+		inOctet2      int
+	}
+
+	var trafficList []CiscoTraffic
+	// Get Interface name
+	value, err := GetSubTreeSNMP(*sshConnection, "1.3.6.1.2.1.2.2.1.2")
+	if err != nil {
+		return ciscoLogsList, errors.New("fail to get oid")
+	}
+	for _, interfaceName := range value {
+		var traffic CiscoTraffic
+		traffic.interfaceName = string(interfaceName.([]byte))
+		trafficList = append(trafficList, traffic)
+	}
+
+	// Get IfInOctet 1
+	value, err = GetSubTreeSNMP(*sshConnection, "1.3.6.1.2.1.2.2.1.10")
+	if err != nil {
+		return ciscoLogsList, errors.New("fail to get oid")
+	}
+	/*
+		for index, inOctet := range value {
+			trafficList[index].inOctet1 = inOctet.(uint)
+			value := trafficList[index].inOctet1 - 1
+		}
+	*/
+
+	return ciscoLogsList, err
+
+}
+
+func GetSubTreeSNMP(sshConnection SshConnectionInfo, oid string) ([]interface{}, error) {
+	var (
+		value []interface{}
+		err   error
+	)
+
 	// build our own GoSNMP struct, rather than using g.Default
 	params := &g.GoSNMP{
 		Target:        sshConnection.HostSSH,
@@ -467,27 +507,16 @@ func GetTrafficCisco(sshConnectionId int) ([]CiscoLog, error) {
 	}
 	err = params.Connect()
 	if err != nil {
-		return ciscoLogsList, errors.New("fail to connect snmp")
+		return value, err
 	}
 	defer params.Conn.Close()
 
-	/*oids := []string{"1.3.6.1.2.1.2.2.1.11."}
-	result := params.Walk(oids, func(dataUnit g.SnmpPDU) error { return err }) // Get() accepts up to g.MAX_OIDS
-	if err2 != nil {
-		return ciscoLogsList, errors.New("fail to get oids")
+	err = params.Walk(oid, func(dataUnit g.SnmpPDU) error {
+		value = append(value, dataUnit.Value)
+		return err
+	})
+	if err != nil {
+		return value, err
 	}
-
-	for i, variable := range result.Variables {
-		fmt.Printf("%d: oid: %s ", i, variable.Name)
-
-		switch variable.Type {
-		case g.OctetString:
-			fmt.Printf("string: %s\n", string(variable.Value.([]byte)))
-		default:
-			fmt.Printf("number: %d\n", g.ToBigInt(variable.Value))
-		}
-	}*/
-
-	return ciscoLogsList, err
-
+	return value, err
 }

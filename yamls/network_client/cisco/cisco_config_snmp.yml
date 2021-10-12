@@ -9,3 +9,7 @@
      - snmp-server community public
      - snmp-server group snmpGroup v3 priv
      - snmp-server user snmpUser snmpGroup v3 auth md5 snmpP@ssword priv des snmpP@ssword
+    
+  - name: save running to startup when modified
+    ios_config:
+     save_when: modified
