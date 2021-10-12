@@ -57,6 +57,13 @@ CREATE TABLE event_web (
   
 );
 
+CREATE TABLE  invent_group (
+    invent_group_id INT PRIMARY KEY AUTO_INCREMENT,
+    invent_group_name varchar(60),
+);
+
+ALTER TABLE ssh_connections ADD group_id INT;
+FOREIGN KEY (group_id) references invent_group(invent_group_id);
 
 
 
