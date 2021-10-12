@@ -43,7 +43,7 @@ func (sshConnection *SshConnectionInfo) TestConnectionPassword() (bool, error) {
 		Timeout:         30 * time.Second,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	sshConfig.Config.KeyExchanges = append(sshConfig.Config.KeyExchanges, "diffie-hellman-group1-sha1")
+	sshConfig.Config.KeyExchanges = append(sshConfig.Config.KeyExchanges, "diffie-hellman-group1-sha1", "ecdh-sha2-nistp384")
 	cipherOrder := sshConfig.Ciphers
 	sshConfig.Ciphers = append(cipherOrder, "aes128-ctr", "aes192-ctr", "aes256-ctr", "arcfour256", "arcfour128", "arcfour", "aes128-cbc")
 
@@ -283,7 +283,7 @@ func GetAllOSSSHConnection(osType string) ([]SshConnectionInfo, error) {
 	var query string
 
 	if osType == "Linux" {
-		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos FROM ssh_connections WHERE sc_ostype='Ubuntu' or sc_ostype LIKE '%CentOS%'`
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos FROM ssh_connections WHERE sc_ostype='Ubuntu' or sc_ostype LIKE '%CentOS%' or sc_ostype LIKE '%Kali%'`
 	} else {
 		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos FROM ssh_connections WHERE sc_ostype LIKE '%Windows%'`
 	}
@@ -865,4 +865,52 @@ func (sshConnection SshConnectionInfo) RunAnsiblePlaybookWithjson(filepath strin
 	}
 	output = out.String()
 	return output, err
+}
+
+func CountUnknownOS() (int, error) {
+	var (
+		count int
+		err   error
+	)
+	db := database.ConnectDB()
+	defer db.Close()
+
+	// Count sshConnection with os_type is unknown and not a network device
+	query := `SELECT count(*) FROM ssh_connections WHERE sc_ostype = "Unknown" and sc_isnetwork = 0`
+	selDB, err := db.Query(query)
+	if err != nil {
+		return count, err
+	}
+
+	for selDB.Next() {
+		err = selDB.Scan(&count)
+		if err != nil {
+			return count, err
+		}
+	}
+	return count, err
+}
+
+func CountNetworkOS() (int, error) {
+	var (
+		count int
+		err   error
+	)
+	db := database.ConnectDB()
+	defer db.Close()
+
+	// Count sshConnection with os_type is unknown and not a network device
+	query := `SELECT count(*) FROM ssh_connections WHERE sc_isnetwork = 1`
+	selDB, err := db.Query(query)
+	if err != nil {
+		return count, err
+	}
+
+	for selDB.Next() {
+		err = selDB.Scan(&count)
+		if err != nil {
+			return count, err
+		}
+	}
+	return count, err
 }

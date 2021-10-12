@@ -161,11 +161,47 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 
 	err = models.GenerateInventory()
 	if err != nil {
-		fmt.Println("err", err.Error())
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", errors.New("error while regenerate ansible inventory").Error())
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		return
+	}
+
+	if sshConnectionInfo.IsNetwork {
+
+		type SNMPJson struct {
+			Host string `json:"host"`
+		}
+
+		// Create Json
+		snmpJson := SNMPJson{
+			Host: sshConnectionInfo.HostNameSSH,
+		}
+
+		// Marshal and run playbook
+		snmpJsonMarshal, err := json.Marshal(snmpJson)
+		if err != nil {
+			returnJson.Set("Status", false)
+			returnJson.Set("Error", errors.New("fail to open snmp on network device").Error())
+			utils.JSON(w, http.StatusBadRequest, returnJson)
+			return
+		}
+		var filepath string
+		switch sshConnectionInfo.NetworkOS {
+		case "ios":
+			filepath = "./yamls/network_client/cisco/cisco_config_snmp.yml"
+		case "vyos":
+			fmt.Println("check")
+			filepath = "./yamls/network_client/vyos/vyos_config_snmp.yml"
+		}
+
+		_, err = models.RunAnsiblePlaybookWithjson(filepath, string(snmpJsonMarshal))
+		if err != nil {
+			returnJson.Set("Status", false)
+			returnJson.Set("Error", errors.New("fail to open snmp on network device").Error())
+			utils.JSON(w, http.StatusBadRequest, returnJson)
+			return
+		}
 	}
 
 	// Return Json

@@ -137,6 +137,9 @@ func main() {
 	router.HandleFunc("/wauser/list", routes.ListAllWebAppUser).Methods("GET")
 	router.HandleFunc("/wauser/list/{id}", routes.ListWebAppUser).Methods("GET")
 
+	// Web App Report
+	router.HandleFunc("/webapp/report", routes.GetReport).Methods("GET")
+
 	// Network Automation: Vyos
 	//router.HandleFunc("/vyos/listconfig/{id}", routes.GetInfoConfigVyos).Methods("GET")
 	router.HandleFunc("/vyos/list/{id}", routes.GetInfoVyos).Methods("GET")
@@ -153,6 +156,11 @@ func main() {
 	router.HandleFunc("/cisco/testping", routes.TestPingCisco).Methods("POST")
 	router.HandleFunc("/cisco/logs", routes.ListLogsCisco).Methods("GET")
 	router.HandleFunc("/cisco/traffic", routes.GetTrafficCisco).Methods("GET")
+
+	// Network Router
+	router.HandleFunc("/network/router/interfaces", routes.GetRouterInterfaces).Methods("GET")
+	router.HandleFunc("/network/router/system", routes.GetRouterSystem).Methods("GET")
+	router.HandleFunc("/network/router/ip", routes.GetRouterIP).Methods("GET")
 
 	//Windows Firewall Settings
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")
