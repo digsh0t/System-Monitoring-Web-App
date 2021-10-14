@@ -167,6 +167,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Add SNMP account if connection is network device.
 	if sshConnectionInfo.IsNetwork {
 
 		type SNMPJson struct {
@@ -191,7 +192,6 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 		case "ios":
 			filepath = "./yamls/network_client/cisco/cisco_config_snmp.yml"
 		case "vyos":
-			fmt.Println("check")
 			filepath = "./yamls/network_client/vyos/vyos_config_snmp.yml"
 		}
 

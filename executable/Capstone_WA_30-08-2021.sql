@@ -66,5 +66,9 @@ ALTER TABLE ssh_connections ADD group_id INT;
 FOREIGN KEY (group_id) references invent_group(invent_group_id);
 
 
-
+CREATE TABLE snmp_credential (
+    snmp_connection_id INT PRIMARY KEY,
+    snmp_username varchar(60),
+    snmp_password varchar(60)
+)
 
