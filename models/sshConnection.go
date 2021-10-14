@@ -130,11 +130,12 @@ func (sshConnection SshConnectionInfo) CheckSSHConnectionExist() (bool, error) {
 	return false, nil
 }
 
-func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
+func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (int64, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
 	var query string
+	var lastId int64
 
 	// Use key-base Authentication
 	if sshConnection.PasswordSSH == "" {
@@ -144,21 +145,26 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
 	}
 	stmt, err := db.Prepare(query)
 	if err != nil {
-		return false, err
+		return lastId, err
 	}
 	defer stmt.Close()
 
+	var res sql.Result
 	if sshConnection.PasswordSSH == "" {
-		_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkOS)
+		res, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkOS)
 	} else {
 		encryptedPassword := AESEncryptKey(sshConnection.PasswordSSH)
-		_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, encryptedPassword, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkOS)
+		res, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, encryptedPassword, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkOS)
 	}
 	if err != nil {
-		return false, err
+		return lastId, err
+	}
+	lastId, err = res.LastInsertId()
+	if err != nil {
+		return lastId, err
 	}
 
-	return true, err
+	return lastId, err
 }
 
 func GetAllSSHConnection() ([]SshConnectionInfo, error) {

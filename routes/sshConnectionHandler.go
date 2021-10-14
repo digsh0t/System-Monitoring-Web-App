@@ -151,7 +151,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 	// Get Os Type of PC and update to DB
 	sshConnectionInfo.OsType = sshConnectionInfo.GetOsType()
 
-	success, err := sshConnectionInfo.AddSSHConnectionToDB()
+	lastId, err := sshConnectionInfo.AddSSHConnectionToDB()
 	if err != nil {
 		returnJson.Set("Status", false)
 		returnJson.Set("Error", err.Error())
@@ -170,13 +170,33 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 	// Add SNMP account if connection is network device.
 	if sshConnectionInfo.IsNetwork {
 
+		snmpInfo := models.SNMPInfo{
+			AuthUsername:    utils.RandomString(8),
+			AuthPassword:    utils.RandomString(12),
+			PrivPassword:    utils.RandomString(12),
+			SSHConnectionID: int(lastId),
+		}
+		_, err := snmpInfo.AddSNMPConnectionToDB()
+		if err != nil {
+			returnJson.Set("Status", false)
+			returnJson.Set("Error", errors.New("fail to add snmp credential to DB").Error())
+			utils.JSON(w, http.StatusBadRequest, returnJson)
+			return
+		}
+
 		type SNMPJson struct {
-			Host string `json:"host"`
+			Host          string `json:"host"`
+			Auth_Username string `json:"auth_username"`
+			Auth_Password string `json:"auth_password"`
+			Priv_Password string `json:"priv_password"`
 		}
 
 		// Create Json
 		snmpJson := SNMPJson{
-			Host: sshConnectionInfo.HostNameSSH,
+			Host:          sshConnectionInfo.HostNameSSH,
+			Auth_Username: snmpInfo.AuthUsername,
+			Auth_Password: snmpInfo.AuthPassword,
+			Priv_Password: snmpInfo.PrivPassword,
 		}
 
 		// Marshal and run playbook
@@ -205,7 +225,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Return Json
-	utils.ReturnInsertJSON(w, success, err)
+	utils.ReturnInsertJSON(w, true, err)
 	eventStatus = "successfully"
 
 	// Write Event Web

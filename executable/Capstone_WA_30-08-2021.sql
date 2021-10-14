@@ -67,8 +67,12 @@ FOREIGN KEY (group_id) references invent_group(invent_group_id);
 
 
 CREATE TABLE snmp_credential (
-    snmp_connection_id INT PRIMARY KEY,
-    snmp_username varchar(60),
-    snmp_password varchar(60)
+    snmp_id INT PRIMARY KEY AUTO_INCREMENT,
+    snmp_auth_username varchar(60),
+    snmp_auth_password varchar(60),
+    snmp_priv_password varchar(60),
+    snmp_connection_id INT,
+    FOREIGN KEY (snmp_connection_id) references ssh_connections(sc_connection_id)
+    ON DELETE CASCADE
 )
 

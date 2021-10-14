@@ -349,21 +349,29 @@ func GetRouterIP(sshConnectionId int) ([]IpSNMP, error) {
 }
 
 func ConnectSNMP(sshConnection SshConnectionInfo) (*g.GoSNMP, error) {
-	var err error
+	var (
+		err    error
+		params *g.GoSNMP
+	)
 
+	// Get SNMP Credential
+	snmpCredential, err := GetSNMPCredentialFromSshConnectionId(sshConnection.SSHConnectionId)
+	if err != nil {
+		return params, err
+	}
 	// build our own GoSNMP struct, rather than using g.Default
-	params := &g.GoSNMP{
+	params = &g.GoSNMP{
 		Target:        sshConnection.HostSSH,
 		Port:          161,
 		Version:       g.Version3,
 		SecurityModel: g.UserSecurityModel,
 		MsgFlags:      g.AuthPriv,
 		Timeout:       time.Duration(30) * time.Second,
-		SecurityParameters: &g.UsmSecurityParameters{UserName: "snmpUser",
+		SecurityParameters: &g.UsmSecurityParameters{UserName: snmpCredential.AuthUsername,
 			AuthenticationProtocol:   g.MD5,
-			AuthenticationPassphrase: "snmpP@ssword",
+			AuthenticationPassphrase: snmpCredential.AuthPassword,
 			PrivacyProtocol:          g.DES,
-			PrivacyPassphrase:        "snmpP@ssword",
+			PrivacyPassphrase:        snmpCredential.PrivPassword,
 		},
 	}
 	err = params.Connect()
