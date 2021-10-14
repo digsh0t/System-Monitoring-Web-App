@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/wintltr/login-api/database"
@@ -51,9 +49,17 @@ func GetLatestSysInfo(sshConnection SshConnectionInfo) (SysInfo, error) {
 	// Linux CPU and Memory
 	if strings.Contains(sshConnection.OsType, "CentOS") || strings.Contains(sshConnection.OsType, "Ubuntu") {
 		sysInfo.AvgMem = CalcAvgMemUseForLinux(sshConnection)
-		sysInfo.AvgCPU = CalcAvgCPUFromTopForLinux(sshConnection)
-	} else {
-
+		sysInfo.AvgCPU, err = CalcAvgCPUFromTopForLinux(sshConnection)
+		if err != nil {
+			err = nil
+			sysInfo.AvgCPU = ""
+		}
+	} else if strings.Contains(sshConnection.OsType, "Windows") {
+		sysInfo.AvgCPU, err = CalcAvgCPUFromTopForWindows(sshConnection)
+		if err != nil {
+			err = nil
+			sysInfo.AvgCPU = ""
+		}
 	}
 
 	return sysInfo, err
@@ -72,31 +78,52 @@ func CalcAvgMemUseForLinux(sshConnection SshConnectionInfo) string {
 	return strings.Trim(string(result), "\n")
 }
 
-func CalcAvgCPUFromTopForLinux(sshConnection SshConnectionInfo) string {
+func CalcAvgCPUFromTopForLinux(sshConnection SshConnectionInfo) (string, error) {
 	var (
-		cpuUse float32
+		//cpuUse float32
 		result string
 		err    error
 	)
 
-	command := "top -b -n 1"
+	//command := "top -b -n 1"
+	command := `grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage " % "}'`
 	result, err = sshConnection.RunCommandFromSSHConnectionUseKeys(command)
 	if err != nil {
-		return result
+		return "", err
 	}
-
-	lines := strings.Split(string(result), "\n")
-	for _, line := range lines {
-		if strings.Contains(line, "%Cpu(s):") {
-			atributes := strings.Split(line, ",")
-			idle, err := strconv.ParseFloat(strings.Trim((atributes[3][:5]), " "), 32)
-			if err != nil {
-				return ""
+	result = strings.TrimSpace(result)
+	/*
+			lines := strings.Split(string(result), "\n")
+			for _, line := range lines {
+				if strings.Contains(line, "%Cpu(s):") {
+					atributes := strings.Split(line, ",")
+					idle, err := strconv.ParseFloat(strings.Trim((atributes[3][:5]), " "), 32)
+					if err != nil {
+						return "", err
+					}
+					cpuUse = 100 - float32(idle)
+				}
 			}
-			cpuUse = 100 - float32(idle)
-		}
+		return fmt.Sprintf("%.1f", cpuUse), err
+	*/
+	return result, err
+}
+
+func CalcAvgCPUFromTopForWindows(sshConnection SshConnectionInfo) (string, error) {
+	var (
+		//cpuUse float32
+		result string
+		err    error
+	)
+
+	command := `@for /f "skip=1" %p in ('wmic cpu get loadpercentage') do @echo %p%`
+	result, err = sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	if err != nil {
+		return "", err
 	}
-	return fmt.Sprintf("%.1f", cpuUse)
+	result = strings.TrimSpace(strings.Split(result, "\n")[0])
+
+	return result, err
 }
 
 func GetAllSysInfo(sshConnectionList []SshConnectionInfo) ([]SysInfo, error) {

@@ -3,7 +3,6 @@ package models
 import (
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -216,7 +215,6 @@ func GetRouterSystem(sshConnectionId int) (SystemSNMP, error) {
 	}
 
 	for index, variable := range result.Variables {
-		fmt.Println(index)
 		switch index {
 		case 0:
 			systemSNMP.SysDescr = string(variable.Value.([]byte))

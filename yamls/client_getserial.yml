@@ -1,0 +1,6 @@
+- name: Get client serial
+  hosts: "{{ host }}"
+  gather_facts: true
+  tasks:
+  - name: Get Serial
+    debug: msg="{{ ansible_product_serial }}"

@@ -3,13 +3,14 @@ package routes
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
-func GetReport(w http.ResponseWriter, r *http.Request) {
+func GetReport(w http.ResponseWriter, r *http.Request, start time.Time) {
 
 	//Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
@@ -22,7 +23,7 @@ func GetReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	report, err := models.GetReport(r)
+	report, err := models.GetReport(r, start)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 	} else {

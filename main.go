@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -44,6 +45,8 @@ func main() {
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
 	origins := handlers.AllowedOrigins([]string{"*"})
+	start := time.Now()
+
 	// Login
 	router.HandleFunc("/login", routes.Login).Methods("POST", "OPTIONS")
 
@@ -138,7 +141,9 @@ func main() {
 	router.HandleFunc("/wauser/list/{id}", routes.ListWebAppUser).Methods("GET")
 
 	// Web App Report
-	router.HandleFunc("/webapp/report", routes.GetReport).Methods("GET")
+	router.HandleFunc("/webapp/report", func(w http.ResponseWriter, r *http.Request) {
+		routes.GetReport(w, r, start)
+	}).Methods("GET")
 
 	// Network Automation: Vyos
 	//router.HandleFunc("/vyos/listconfig/{id}", routes.GetInfoConfigVyos).Methods("GET")
