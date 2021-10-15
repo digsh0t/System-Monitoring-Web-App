@@ -16,6 +16,8 @@ type User struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Role     string `json:"role"`
+	Secret   string `json:"secret"`
+	TwoFA    bool   `json:"2fa"`
 }
 
 //Check if username or password is legit
@@ -39,6 +41,28 @@ func GetIdFromUsername(username string) (int, error) {
 	}
 
 	return id, err
+}
+
+func (user User) UpdateSecret(secret string) error {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	stmt, err := db.Prepare("UPDATE wa_users SET wa_secret = ? WHERE wa_users_username = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	encrypted := AESEncryptKey(secret)
+	if secret == "" {
+		_, err = stmt.Exec("", user.Username)
+	} else {
+		_, err = stmt.Exec(encrypted, user.Username)
+	}
+	if err != nil {
+		return err
+	}
+	return err
 }
 
 func GetUsernameFromId(id int) (string, error) {
@@ -140,7 +164,7 @@ func InsertUserToDB(user User) error {
 	db := database.ConnectDB()
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO wa_users (wa_users_username, wa_users_password, wa_users_role) VALUES (?,?,?)")
+	stmt, err := db.Prepare(`INSERT INTO wa_users (wa_users_username, wa_users_password, wa_users_role,wa_secret) VALUES (?,?,?,"")`)
 	if err != nil {
 		return err
 	}
@@ -195,6 +219,23 @@ func UpdateUserToDB(user User) error {
 	return err
 }
 
+func (user User) Update2FAStatus(isTrue bool) error {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	stmt, err := db.Prepare("UPDATE wa_users SET wa_2fa = ? WHERE wa_users_id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(isTrue, user.UserId)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
 // List All Wep App User
 func GetAllUserFromDB() ([]User, error) {
 	db := database.ConnectDB()
@@ -233,13 +274,28 @@ func GetUserByIdFromDB(waUserId int) (User, error) {
 	defer db.Close()
 
 	var waUser User
-	row := db.QueryRow("SELECT wa_users_id, wa_users_username, wa_users_role FROM wa_users WHERE wa_users_id = ?", waUserId)
-	err := row.Scan(&waUser.UserId, &waUser.Username, &waUser.Role)
+	row := db.QueryRow("SELECT wa_users_id, wa_users_username, wa_users_role, wa_secret, wa_users_password, wa_2fa FROM wa_users WHERE wa_users_id = ?", waUserId)
+	err := row.Scan(&waUser.UserId, &waUser.Username, &waUser.Role, &waUser.Secret, &waUser.Password, &waUser.TwoFA)
 	if err != nil {
 		return waUser, err
 	}
 
 	return waUser, err
+
+}
+
+func (user User) GetSecret() (string, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	var secret string
+	row := db.QueryRow("SELECT wa_secret FROM wa_users WHERE wa_users_id = ?", user.UserId)
+	err := row.Scan(&secret)
+	if err != nil {
+		return "", err
+	}
+
+	return secret, err
 
 }
 

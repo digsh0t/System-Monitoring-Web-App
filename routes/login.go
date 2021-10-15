@@ -17,6 +17,8 @@ import (
 //Login handler to handle login
 func Login(w http.ResponseWriter, r *http.Request) {
 
+	var twofaSettings bool
+	var twofa string
 	// w.Header().Set("Access-Control-Allow-Origin", "*")
 	// w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	if r.Method == "OPTIONS" {
@@ -49,10 +51,25 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, "Wrong Username or Password")
 		eventStatus = "failed"
+		return
 	} else {
-		token, err := auth.CreateToken(user.UserId, user.Username, user.Role)
+		fullUser, err := models.GetUserByIdFromDB(user.UserId)
 		if err != nil {
-			fmt.Println("Fail to create token while login")
+			utils.ERROR(w, http.StatusUnauthorized, "Fail to create token while login")
+			return
+		}
+		if fullUser.TwoFA {
+			twofa = "not authorized"
+			user.Role = "not authorized"
+			twofaSettings = true
+		} else {
+			twofa = "not configured"
+			twofaSettings = false
+		}
+		token, err := auth.CreateToken(user.UserId, user.Username, user.Role, twofa)
+		if err != nil {
+			utils.ERROR(w, http.StatusUnauthorized, "Fail to create token while login")
+			return
 		}
 
 		// Write Event Web
@@ -66,6 +83,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		//Return Login Success Authorization Json
 		returnJson := simplejson.New()
 		returnJson.Set("Authorization", token)
+		returnJson.Set("2fa", twofaSettings)
 		returnJson.Set("Error", "")
 		utils.JSON(w, http.StatusOK, returnJson)
 		eventStatus = "successfully"
