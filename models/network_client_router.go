@@ -42,13 +42,21 @@ type SystemSNMP struct {
 	SysServices int    `josn:"sysServices"`
 }
 
-type IpSNMP struct {
+type IpAddrSNMP struct {
 	IpAdEntIfIndex      int    `json:"ipAdEntIfIndex"`
 	IpInterface         string `json:"ipInterface"`
 	IpAdEntAddr         string `json:"ipAdEntAddr"`
 	IpAdEntNetMask      string `json:"ipAdEntNetMask"`
 	IpAdEntBcastAddr    int    `json:"ipAdEntBcastAddr"`
 	IpAdEntReasmMaxSize int    `json:"ipAdEntReasmMaxSize"`
+}
+
+type IpNetToMediaSNMP struct {
+	IpNetToMediaIfIndex     int    `json:"ipNetToMediaIfIndex"`
+	IpInterface             string `json:"ipInterface"`
+	IpNetToMediaPhysAddress string `json:"ipNetToMediaPhysAddress"`
+	IpNetToMediaNetAddress  string `json:"ipNetToMediaNetAddress"`
+	IpNetToMediaType        string `json:"ipNetToMediaType"`
 }
 
 // Get Router Interfaces
@@ -188,6 +196,76 @@ func GetRouterInterfaces(sshConnectionId int) ([]InterfaceSNMP, error) {
 
 }
 
+// Get Router Interfaces
+func GetMapIndexInterfaceName(sshConnectionId int) (map[int]string, error) {
+	var (
+		err error
+	)
+	mapIndexName := make(map[int]string)
+	// Get Hostname
+	sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
+	if err != nil {
+		return mapIndexName, errors.New("fail to get ssh connection")
+	}
+
+	// Connect SNMP
+	params, err := ConnectSNMP(*sshConnection)
+	if err != nil {
+		return mapIndexName, errors.New("fail to connect SNMP")
+	}
+	defer params.Conn.Close()
+
+	// Get max row index
+	oidsList := []string{".1.3.6.1.2.1.2.1.0"}
+	result, err := params.Get(oidsList)
+	if err != nil {
+		return mapIndexName, errors.New("fail to get numbers of interfaces")
+	}
+
+	rowNum := result.Variables[0].Value.(int)
+
+	// Initial array 2 dimensions
+	array2d := make([][]interface{}, rowNum)
+	for i := range array2d {
+		array2d[i] = make([]interface{}, 22)
+	}
+
+	// Get Interfaces Information
+	oids := ".1.3.6.1.2.1.2.2.1"
+	column := 0
+	row := 0
+	err = params.Walk(oids, func(dataUnit g.SnmpPDU) error {
+		switch dataUnit.Type {
+		case g.OctetString:
+			bytes := dataUnit.Value.([]byte)
+			array2d[row][column] = string(bytes)
+		default:
+			array2d[row][column] = dataUnit.Value
+		}
+		row++
+		if row == rowNum {
+			column++
+			row = 0
+		}
+		return err
+	})
+	if err != nil {
+		return mapIndexName, errors.New("fail to get information")
+	}
+
+	rowNumber := len(array2d)
+
+	for i := 0; i < rowNumber; i++ {
+		index := array2d[i][0].(int)
+		interfaceName := array2d[i][1].(string)
+		mapIndexName[index] = interfaceName
+
+	}
+
+	return mapIndexName, err
+
+}
+
 // Get Router System Info
 func GetRouterSystem(sshConnectionId int) (SystemSNMP, error) {
 	var (
@@ -239,10 +317,10 @@ func GetRouterSystem(sshConnectionId int) (SystemSNMP, error) {
 }
 
 // Get Router Interfaces
-func GetRouterIP(sshConnectionId int) ([]IpSNMP, error) {
+func GetRouterIPAddr(sshConnectionId int) ([]IpAddrSNMP, error) {
 	var (
-		ipSNMPList    []IpSNMP
-		tmpIpSNMPList []IpSNMP
+		ipSNMPList    []IpAddrSNMP
+		tmpIpSNMPList []IpAddrSNMP
 		err           error
 	)
 	// Get Hostname
@@ -302,7 +380,7 @@ func GetRouterIP(sshConnectionId int) ([]IpSNMP, error) {
 	columnNumber := len(array2d[0])
 
 	for i := 0; i < rowNumber; i++ {
-		var ipSNMP IpSNMP
+		var ipSNMP IpAddrSNMP
 		for y := 0; y < columnNumber; y++ {
 			switch y {
 			case 0:
@@ -329,7 +407,7 @@ func GetRouterIP(sshConnectionId int) ([]IpSNMP, error) {
 	}
 
 	for _, interfaces := range interfaceSNMPList {
-		var ipSNMP IpSNMP
+		var ipSNMP IpAddrSNMP
 		ipSNMP.IpAdEntIfIndex = interfaces.IfIndex
 		ipSNMP.IpInterface = interfaces.IfDescription
 		for _, tmpIpSNMP := range tmpIpSNMPList {
@@ -380,4 +458,116 @@ func ConnectSNMP(sshConnection SshConnectionInfo) (*g.GoSNMP, error) {
 		return params, err
 	}
 	return params, err
+}
+
+// Get Router Ip Net To Media
+func GetRouterIPNetToMedia(sshConnectionId int) ([]IpNetToMediaSNMP, error) {
+	var (
+		ipNetToMediaSNMPList []IpNetToMediaSNMP
+		err                  error
+	)
+	// Get Hostname
+	sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
+	if err != nil {
+		return ipNetToMediaSNMPList, errors.New("fail to get ssh connection")
+	}
+
+	// Connect SNMP
+	params, err := ConnectSNMP(*sshConnection)
+	if err != nil {
+		return ipNetToMediaSNMPList, errors.New("fail to connect SNMP")
+	}
+	defer params.Conn.Close()
+
+	// Get max row index
+	oidsList := ".1.3.6.1.2.1.4.22.1.1"
+	rowNum := 0
+	err = params.Walk(oidsList, func(dataUnit g.SnmpPDU) error {
+		rowNum++
+		return err
+	})
+	if err != nil {
+		return ipNetToMediaSNMPList, errors.New("fail to get number of rows")
+	}
+
+	// Initial array 2 dimensions
+	array2d := make([][]interface{}, rowNum)
+	for i := range array2d {
+		array2d[i] = make([]interface{}, 4)
+	}
+
+	// Get IpNetToMedia Information
+	oids := ".1.3.6.1.2.1.4.22.1"
+	column := 0
+	row := 0
+	err = params.Walk(oids, func(dataUnit g.SnmpPDU) error {
+		switch dataUnit.Type {
+		case g.OctetString:
+			if column == 1 {
+				encodedString := hex.EncodeToString(dataUnit.Value.([]byte))
+				var rawMacAddress string
+				for k, v := range encodedString {
+					if k == 2 || k == 4 || k == 6 || k == 8 || k == 10 {
+						rawMacAddress += "-"
+					}
+					rawMacAddress += string(v)
+				}
+				array2d[row][column] = strings.ToUpper(rawMacAddress)
+			} else {
+				bytes := dataUnit.Value.([]byte)
+				array2d[row][column] = string(bytes)
+			}
+		default:
+			array2d[row][column] = dataUnit.Value
+		}
+		row++
+		if row == rowNum {
+			column++
+			row = 0
+		}
+		return err
+	})
+	if err != nil {
+		return ipNetToMediaSNMPList, errors.New("fail to get information")
+	}
+
+	mapIndexInterfaceName, err := GetMapIndexInterfaceName(sshConnectionId)
+	if err != nil {
+		return ipNetToMediaSNMPList, errors.New("fail to get map index name information")
+	}
+
+	rowNumber := len(array2d)
+	columnNumber := len(array2d[0])
+
+	for i := 0; i < rowNumber; i++ {
+		var ipNetToMediaSNMP IpNetToMediaSNMP
+		for y := 0; y < columnNumber; y++ {
+			switch y {
+			case 0:
+				ipNetToMediaSNMP.IpNetToMediaIfIndex = array2d[i][y].(int)
+			case 1:
+				ipNetToMediaSNMP.IpNetToMediaPhysAddress = array2d[i][y].(string)
+			case 2:
+				ipNetToMediaSNMP.IpNetToMediaNetAddress = array2d[i][y].(string)
+			case 3:
+				ipNetToMediaType := array2d[i][y].(int)
+				switch ipNetToMediaType {
+				case 1:
+					ipNetToMediaSNMP.IpNetToMediaType = "other"
+				case 2:
+					ipNetToMediaSNMP.IpNetToMediaType = "invalid"
+				case 3:
+					ipNetToMediaSNMP.IpNetToMediaType = "dynamic"
+				case 4:
+					ipNetToMediaSNMP.IpNetToMediaType = "static"
+				}
+			}
+		}
+		ipNetToMediaSNMP.IpInterface = mapIndexInterfaceName[ipNetToMediaSNMP.IpNetToMediaIfIndex]
+		ipNetToMediaSNMPList = append(ipNetToMediaSNMPList, ipNetToMediaSNMP)
+
+	}
+
+	return ipNetToMediaSNMPList, err
+
 }

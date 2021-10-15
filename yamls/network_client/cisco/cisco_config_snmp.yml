@@ -9,7 +9,7 @@
      - snmp-server community public
      - snmp-server group snmpGroup v3 priv
      - snmp-server user "{{ auth_username }}" snmpGroup v3 auth md5 "{{ auth_password }}" priv des "{{ priv_password }}"
+     save_when: changed
     
-  - name: save running to startup when modified
-    ios_config:
-     save_when: modified
+  
+     
