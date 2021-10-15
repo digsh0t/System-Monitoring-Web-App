@@ -203,9 +203,20 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 		snmpJsonMarshal, err := json.Marshal(snmpJson)
 		if err != nil {
 			returnJson.Set("Status", false)
-			returnJson.Set("Error", errors.New("fail to open snmp on network device").Error())
+			returnJson.Set("Error", errors.New("fail to marshal json").Error())
 			utils.JSON(w, http.StatusBadRequest, returnJson)
 			return
+		}
+
+		// Enable NETCONF connection on Juniper device
+		if sshConnectionInfo.NetworkOS == "junos" {
+			_, err := models.RunAnsiblePlaybookWithjson("./yamls/network_client/juniper/juniper_enable_netconf.yml", string(snmpJsonMarshal))
+			if err != nil {
+				returnJson.Set("Status", false)
+				returnJson.Set("Error", errors.New("fail to enable NETCONF on juniper device").Error())
+				utils.JSON(w, http.StatusBadRequest, returnJson)
+				return
+			}
 		}
 		var filepath string
 		switch sshConnectionInfo.NetworkOS {
@@ -213,6 +224,8 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 			filepath = "./yamls/network_client/cisco/cisco_config_snmp.yml"
 		case "vyos":
 			filepath = "./yamls/network_client/vyos/vyos_config_snmp.yml"
+		case "junos":
+			filepath = "./yamls/network_client/juniper/juniper_config_snmp.yml"
 		}
 
 		_, err = models.RunAnsiblePlaybookWithjson(filepath, string(snmpJsonMarshal))

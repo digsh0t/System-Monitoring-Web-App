@@ -359,6 +359,7 @@ func ConnectSNMP(sshConnection SshConnectionInfo) (*g.GoSNMP, error) {
 	if err != nil {
 		return params, err
 	}
+
 	// build our own GoSNMP struct, rather than using g.Default
 	params = &g.GoSNMP{
 		Target:        sshConnection.HostSSH,

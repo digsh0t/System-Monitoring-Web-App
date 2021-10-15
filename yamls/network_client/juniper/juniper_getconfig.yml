@@ -1,0 +1,8 @@
+- name: Enable SNMPv3
+  connection: network_cli
+  hosts: "{{ host }}"
+  gather_facts: false
+  tasks:
+  - name: show version
+    junos_command:
+     commands: show version

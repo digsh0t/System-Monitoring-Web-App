@@ -1,0 +1,14 @@
+- name: Enable SNMPv3
+  connection: netconf
+  hosts: "{{ host }}"
+  gather_facts: false
+  tasks:
+  - name: Enable SNMPv3
+    junos_config:
+     lines:
+     - set snmp v3 usm local-engine user "{{ auth_username }}" authentication-md5 authentication-password "{{ auth_password }}"
+     - set snmp v3 usm local-engine user "{{ auth_username }}" privacy-des privacy-password "{{ priv_password }}"
+     - set snmp v3 vacm security-to-group security-model usm security-name "{{ auth_username }}" group SNMPV3GROUP
+     - set snmp v3 vacm access group SNMPV3GROUP default-context-prefix security-model any security-level privacy read-view SNMPVIEW
+     - set snmp v3 vacm access group SNMPV3GROUP default-context-prefix security-model any security-level privacy write-view SNMPVIEW
+     comment: update config
