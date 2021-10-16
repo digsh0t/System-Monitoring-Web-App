@@ -3,7 +3,9 @@ package models
 import (
 	"crypto/rand"
 	"encoding/base32"
+	"strings"
 
+	"github.com/dgryski/dgoogauth"
 	"github.com/yeqown/go-qrcode"
 )
 
@@ -67,4 +69,23 @@ func GenerateQR(username string) (string, string, error) {
 	// 	return nil, "", err
 	// }
 	return authLink, secret, nil
+}
+
+func CheckTOTP(secret string, totp string) (bool, error) {
+	otpConfig := &dgoogauth.OTPConfig{
+		Secret:      strings.TrimSpace(secret),
+		WindowSize:  3,
+		HotpCounter: 0,
+	}
+
+	trimmedToken := strings.TrimSpace(totp)
+
+	// Validate token
+	ok, err := otpConfig.Authenticate(trimmedToken)
+
+	// if the token is invalid or expired
+	if err != nil {
+		return false, err
+	}
+	return ok, nil
 }

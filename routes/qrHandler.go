@@ -5,10 +5,8 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"github.com/bitly/go-simplejson"
-	"github.com/dgryski/dgoogauth"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
@@ -85,18 +83,7 @@ func VerifyQR(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(body, &otp)
 
 	// setup the one-time-password configuration.
-	otpConfig := &dgoogauth.OTPConfig{
-		Secret:      strings.TrimSpace(secret),
-		WindowSize:  3,
-		HotpCounter: 0,
-	}
-
-	trimmedToken := strings.TrimSpace(otp.Totp)
-
-	// Validate token
-	ok, err := otpConfig.Authenticate(trimmedToken)
-
-	// if the token is invalid or expired
+	ok, err := models.CheckTOTP(secret, otp.Totp)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
@@ -156,9 +143,14 @@ func VerifyQRSettingsRoute(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	ok, err := models.CheckTOTP(secret, vI.Secret)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	returnJson := simplejson.New()
-	if user.Password == hashedPwd && vI.Secret == secret {
+	if user.Password == hashedPwd && ok {
 		user.Update2FAStatus(true)
 		returnJson.Set("success", true)
 	} else {

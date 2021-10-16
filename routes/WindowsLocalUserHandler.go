@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
+	"github.com/wintltr/login-api/notifications"
 	"github.com/wintltr/login-api/utils"
 )
 
@@ -413,6 +414,13 @@ func ChangeWindowsLocalUserPassword(w http.ResponseWriter, r *http.Request) {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
+
+	userid, err := auth.ExtractUserId(r)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	var nP newPassword
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
@@ -437,7 +445,8 @@ func ChangeWindowsLocalUserPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	err = sshConnection.ChangeWindowsLocalUserPassword(nP.Username, nP.Password)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
+		// utils.ERROR(w, http.StatusBadRequest, err.Error())
+		// return
+		notifications.SendToNotificationChannel(err.Error(), "notification-"+strconv.Itoa(userid)+"channel", "change-windows-user-password")
 	}
 }
