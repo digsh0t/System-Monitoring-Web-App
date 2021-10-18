@@ -125,3 +125,32 @@ func GetRouterIPNetToMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+// Get Router IP Info
+func GetRouterIPRoute(w http.ResponseWriter, r *http.Request) {
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+	// Get Id parameter
+	query := r.URL.Query()
+	id, err := strconv.Atoi(query.Get("id"))
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
+		return
+	}
+
+	routeSNMP, err := models.GetRouterIPRoute(id)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+	} else {
+		utils.JSON(w, http.StatusOK, routeSNMP)
+	}
+
+}

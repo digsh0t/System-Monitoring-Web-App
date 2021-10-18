@@ -167,6 +167,7 @@ func main() {
 	router.HandleFunc("/network/router/system", routes.GetRouterSystem).Methods("GET")
 	router.HandleFunc("/network/router/ipaddr", routes.GetRouterIPAddr).Methods("GET")
 	router.HandleFunc("/network/router/iptomedia", routes.GetRouterIPNetToMedia).Methods("GET")
+	router.HandleFunc("/network/router/iproute", routes.GetRouterIPRoute).Methods("GET")
 
 	//Windows Firewall Settings
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")

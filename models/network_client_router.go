@@ -59,6 +59,22 @@ type IpNetToMediaSNMP struct {
 	IpNetToMediaType        string `json:"ipNetToMediaType"`
 }
 
+type IpRouteSNMP struct {
+	IpRouteIfIndex int    `json:"ipRouteIfIndex"`
+	IpRouteDest    string `json:"ipRouteDest"`
+	IpRouteMetric1 int    `json:"ipRouteMetric1"`
+	IpRouteMetric2 int    `json:"ipRouteMetric2"`
+	IpRouteMetric3 int    `json:"ipRouteMetric3"`
+	IpRouteMetric4 int    `json:"ipRouteMetric4"`
+	IpRouteNextHop string `json:"ipRouteNextHop"`
+	IpRouteType    string `json:"ipRouteType"`
+	IpRouteProto   string `json:"ipRouteProto"`
+	IpRouteAge     int    `json:"ipRouteAge"`
+	IpRouteMask    string `json:"ipRouteMask"`
+	IpRouteMetric5 int    `json:"ipRouteMetric5"`
+	IpRouteInfo    string `json:"ipRouteInfo"`
+}
+
 // Get Router Interfaces
 func GetRouterInterfaces(sshConnectionId int) ([]InterfaceSNMP, error) {
 	var (
@@ -569,5 +585,163 @@ func GetRouterIPNetToMedia(sshConnectionId int) ([]IpNetToMediaSNMP, error) {
 	}
 
 	return ipNetToMediaSNMPList, err
+
+}
+
+// Get Router route
+func GetRouterIPRoute(sshConnectionId int) ([]IpRouteSNMP, error) {
+	var (
+		ipRouteSNMPList []IpRouteSNMP
+		err             error
+	)
+	// Get Hostname
+	sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
+	if err != nil {
+		return ipRouteSNMPList, errors.New("fail to get ssh connection")
+	}
+
+	// Connect SNMP
+	params, err := ConnectSNMP(*sshConnection)
+	if err != nil {
+		return ipRouteSNMPList, errors.New("fail to connect SNMP")
+	}
+	defer params.Conn.Close()
+
+	// Get max row index
+	oidsList := ".1.3.6.1.2.1.4.21.1.1"
+	rowNum := 0
+	err = params.Walk(oidsList, func(dataUnit g.SnmpPDU) error {
+		rowNum++
+		return err
+	})
+	if err != nil {
+		return ipRouteSNMPList, errors.New("fail to get number of rows")
+	}
+
+	// No record
+	if rowNum == 0 {
+		return ipRouteSNMPList, err
+	}
+	// Initial array 2 dimensions
+	array2d := make([][]interface{}, rowNum)
+	for i := range array2d {
+		array2d[i] = make([]interface{}, 13)
+	}
+
+	// Get Route Information
+	oids := ".1.3.6.1.2.1.4.21.1"
+	column := 0
+	row := 0
+	err = params.Walk(oids, func(dataUnit g.SnmpPDU) error {
+		switch dataUnit.Type {
+		case g.OctetString:
+			bytes := dataUnit.Value.([]byte)
+			array2d[row][column] = string(bytes)
+		default:
+			array2d[row][column] = dataUnit.Value
+		}
+		row++
+		if row == rowNum {
+			column++
+			row = 0
+		}
+		return err
+	})
+	if err != nil {
+		return ipRouteSNMPList, errors.New("fail to get information")
+	}
+
+	rowNumber := len(array2d)
+	columnNumber := len(array2d[0])
+
+	if sshConnection.NetworkOS != "vyos" {
+		for i := 0; i < rowNumber; i++ {
+			var ipRouteSNMP IpRouteSNMP
+			for y := 0; y < columnNumber; y++ {
+				switch y {
+				case 0:
+					ipRouteSNMP.IpRouteDest = array2d[i][y].(string)
+				case 1:
+					ipRouteSNMP.IpRouteIfIndex = array2d[i][y].(int)
+				case 2:
+					ipRouteSNMP.IpRouteMetric1 = array2d[i][y].(int)
+				case 3:
+					ipRouteSNMP.IpRouteMetric2 = array2d[i][y].(int)
+				case 4:
+					ipRouteSNMP.IpRouteMetric3 = array2d[i][y].(int)
+				case 5:
+					ipRouteSNMP.IpRouteMetric4 = array2d[i][y].(int)
+				case 6:
+					ipRouteSNMP.IpRouteNextHop = array2d[i][y].(string)
+				case 7:
+					ipRouteType := array2d[i][y].(int)
+					switch ipRouteType {
+					case 1:
+						ipRouteSNMP.IpRouteType = "other"
+					case 2:
+						ipRouteSNMP.IpRouteType = "invalid"
+					case 3:
+						ipRouteSNMP.IpRouteType = "direct"
+					case 4:
+						ipRouteSNMP.IpRouteType = "indirect"
+					}
+				case 8:
+					ipRouteProto := array2d[i][y].(int)
+					ipRouteSNMP.IpRouteProto = utils.ReferenceIpRouteProtoRecord(ipRouteProto)
+				case 9:
+					ipRouteSNMP.IpRouteAge = array2d[i][y].(int)
+				case 10:
+					ipRouteSNMP.IpRouteMask = array2d[i][y].(string)
+				case 11:
+					ipRouteSNMP.IpRouteMetric5 = array2d[i][y].(int)
+				case 12:
+					ipRouteSNMP.IpRouteInfo = array2d[i][y].(string)
+
+				}
+			}
+			ipRouteSNMPList = append(ipRouteSNMPList, ipRouteSNMP)
+
+		}
+	} else {
+		for i := 0; i < rowNumber; i++ {
+			var ipRouteSNMP IpRouteSNMP
+			for y := 0; y < columnNumber; y++ {
+				switch y {
+				case 0:
+					ipRouteSNMP.IpRouteDest = array2d[i][y].(string)
+				case 1:
+					ipRouteSNMP.IpRouteIfIndex = array2d[i][y].(int)
+				case 2:
+					ipRouteSNMP.IpRouteMetric1 = array2d[i][y].(int)
+				case 3:
+					ipRouteSNMP.IpRouteNextHop = array2d[i][y].(string)
+				case 4:
+					ipRouteType := array2d[i][y].(int)
+					switch ipRouteType {
+					case 1:
+						ipRouteSNMP.IpRouteType = "other"
+					case 2:
+						ipRouteSNMP.IpRouteType = "invalid"
+					case 3:
+						ipRouteSNMP.IpRouteType = "direct"
+					case 4:
+						ipRouteSNMP.IpRouteType = "indirect"
+					}
+				case 5:
+					ipRouteProto := array2d[i][y].(int)
+					ipRouteSNMP.IpRouteProto = utils.ReferenceIpRouteProtoRecord(ipRouteProto)
+				case 6:
+					ipRouteSNMP.IpRouteMask = array2d[i][y].(string)
+				case 7:
+					ipRouteSNMP.IpRouteInfo = array2d[i][y].(string)
+				}
+
+			}
+			ipRouteSNMPList = append(ipRouteSNMPList, ipRouteSNMP)
+
+		}
+	}
+
+	return ipRouteSNMPList, err
 
 }

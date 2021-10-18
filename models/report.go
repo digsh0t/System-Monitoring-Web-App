@@ -22,6 +22,7 @@ type Report struct {
 	SshConnection_total    int            `json:"sshConnection_total"`
 	SshKey_total           int            `json:"sshKey_total"`
 	Template_total         int            `json:"template_total"`
+	EventWeb_total         int            `json:"eventWeb_total"`
 	User_total             int            `json:"user_total"`
 	CurrentUserWebApp      string         `json:"currentUserWebApp"`
 	CurrentUserWebAppRole  string         `json:"currentUserWebAppRole"`
@@ -87,6 +88,13 @@ func GetReport(r *http.Request, start time.Time) (Report, error) {
 	}
 	reportInfo.Template_total = len(templates)
 
+	// Get number of eventWeb Log
+	evenWebs, err := GetAllEventWebFromDB()
+	if err != nil {
+		return reportInfo, errors.New("fail to get event web")
+	}
+	reportInfo.EventWeb_total = len(evenWebs)
+
 	// Get User total
 	users, err := GetAllUserFromDB()
 	if err != nil {
@@ -120,12 +128,12 @@ func GetReport(r *http.Request, start time.Time) (Report, error) {
 
 	reportInfo.WebServerRunningTime = secondsToHuman(int(secondDuration))
 
-	// Get Client Report
+	/*  // Get Client Report
 	reportInfo.Client_report, err = GetClientReport()
 	if err != nil {
 		return reportInfo, errors.New("fail to get client report")
 	}
-
+	*/
 	return reportInfo, err
 
 }
