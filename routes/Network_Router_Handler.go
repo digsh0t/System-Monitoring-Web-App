@@ -1,17 +1,20 @@
 package routes
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
-	"strconv"
 
+	"github.com/bitly/go-simplejson"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
-// Get Cisco Traffic
-func GetRouterInterfaces(w http.ResponseWriter, r *http.Request) {
+// config Ipv4 for router
+func ConfigIPRouter(w http.ResponseWriter, r *http.Request) {
+
 	//Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
 	if err != nil {
@@ -22,135 +25,50 @@ func GetRouterInterfaces(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
 		return
 	}
-	// Get Id parameter
-	query := r.URL.Query()
-	id, err := strconv.Atoi(query.Get("id"))
+
+	var routerJson models.RouterJson
+	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to parse json").Error())
+		return
+	}
+	err = json.Unmarshal(reqBody, &routerJson)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to parse json").Error())
 		return
 	}
 
-	interfaceSNMP, err := models.GetRouterInterfaces(id)
+	// Config IP
+	outputList, err := models.ConfigIPRouter(routerJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-	} else {
-		utils.JSON(w, http.StatusOK, interfaceSNMP)
-	}
-
-}
-
-// Get Cisco Traffic
-func GetRouterSystem(w http.ResponseWriter, r *http.Request) {
-	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
-		return
-	}
-	if !isAuthorized {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
-		return
-	}
-	// Get Id parameter
-	query := r.URL.Query()
-	id, err := strconv.Atoi(query.Get("id"))
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
 		return
 	}
 
-	systemSNMP, err := models.GetRouterSystem(id)
+	// Processing Output From Ansible
+	status, fatals, err := models.ProcessingAnsibleOutputList(outputList)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-	} else {
-		utils.JSON(w, http.StatusOK, systemSNMP)
-	}
-
-}
-
-// Get Router IP Info
-func GetRouterIPAddr(w http.ResponseWriter, r *http.Request) {
-	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
-		return
-	}
-	if !isAuthorized {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
-		return
-	}
-	// Get Id parameter
-	query := r.URL.Query()
-	id, err := strconv.Atoi(query.Get("id"))
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
+		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
 		return
 	}
 
-	ipSNMP, err := models.GetRouterIPAddr(id)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-	} else {
-		utils.JSON(w, http.StatusOK, ipSNMP)
-	}
+	// Return Json
+	returnJson := simplejson.New()
+	returnJson.Set("Status", status)
+	returnJson.Set("Fatal", fatals)
+	utils.JSON(w, http.StatusOK, returnJson)
 
-}
-
-// Get Router IP Info
-func GetRouterIPNetToMedia(w http.ResponseWriter, r *http.Request) {
-	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	// Write Event Web
+	hostname, err := models.ConvertListIdToHostnameVer2(routerJson.SshConnectionId)
 	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		utils.ERROR(w, http.StatusBadRequest, "fail to get hostname")
 		return
 	}
-	if !isAuthorized {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
-		return
-	}
-	// Get Id parameter
-	query := r.URL.Query()
-	id, err := strconv.Atoi(query.Get("id"))
+	description := "Config IP to network device " + hostname + " successfully"
+	_, err = models.WriteWebEvent(r, "Network", description)
 	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 		return
-	}
-
-	ipSNMP, err := models.GetRouterIPNetToMedia(id)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-	} else {
-		utils.JSON(w, http.StatusOK, ipSNMP)
-	}
-
-}
-
-// Get Router IP Info
-func GetRouterIPRoute(w http.ResponseWriter, r *http.Request) {
-	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
-		return
-	}
-	if !isAuthorized {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
-		return
-	}
-	// Get Id parameter
-	query := r.URL.Query()
-	id, err := strconv.Atoi(query.Get("id"))
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
-		return
-	}
-
-	routeSNMP, err := models.GetRouterIPRoute(id)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-	} else {
-		utils.JSON(w, http.StatusOK, routeSNMP)
 	}
 
 }

@@ -14,8 +14,6 @@
       - name: "{{ interface }}"
         ipv4:
         - address: "{{ address4 }}"
-        ipv6:
-        - address: "{{ address6 }}"
       state: merged
   - name: Set Status of interface
     ios_interfaces:

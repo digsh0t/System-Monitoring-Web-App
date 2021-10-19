@@ -30,6 +30,7 @@ type SshConnectionInfo struct {
 	SSHKeyId        int    `json:"sshKeyId"`
 	OsType          string `json:"osType"`
 	IsNetwork       bool   `json:"isNetwork"`
+	NetworkType     string `json:"networkType"`
 	NetworkOS       string `json:"networkOS"`
 }
 
@@ -139,9 +140,9 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (int64, error) {
 
 	// Use key-base Authentication
 	if sshConnection.PasswordSSH == "" {
-		query = "INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_isnetwork, sc_networkos) VALUES (?,?,?,?,?,?,?,?,?)"
+		query = "INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_isnetwork, sc_networktype, sc_networkos) VALUES (?,?,?,?,?,?,?,?,?,?)"
 	} else {
-		query = "INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, sc_password, sc_ostype, sc_isnetwork, sc_networkos) VALUES (?,?,?,?,?,?,?,?,?)"
+		query = "INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, sc_password, sc_ostype, sc_isnetwork, sc_networktype, sc_networkos) VALUES (?,?,?,?,?,?,?,?,?,?)"
 	}
 	stmt, err := db.Prepare(query)
 	if err != nil {
@@ -151,10 +152,10 @@ func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (int64, error) {
 
 	var res sql.Result
 	if sshConnection.PasswordSSH == "" {
-		res, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkOS)
+		res, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkType, sshConnection.NetworkOS)
 	} else {
 		encryptedPassword := AESEncryptKey(sshConnection.PasswordSSH)
-		res, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, encryptedPassword, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkOS)
+		res, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, encryptedPassword, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkType, sshConnection.NetworkOS)
 	}
 	if err != nil {
 		return lastId, err
@@ -396,10 +397,10 @@ func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 	defer db.Close()
 
 	var sshConnection SshConnectionInfo
-	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_networkos FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
 	var password sql.NullString
 	var keyId sql.NullInt32
-	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &password, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &keyId, &sshConnection.OsType, &sshConnection.NetworkOS)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &password, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &keyId, &sshConnection.OsType, &sshConnection.NetworkType, &sshConnection.NetworkOS)
 	if row == nil {
 		return nil, errors.New("ssh connection doesn't exist")
 	}

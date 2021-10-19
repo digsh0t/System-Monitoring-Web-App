@@ -162,12 +162,15 @@ func main() {
 	router.HandleFunc("/cisco/logs", routes.ListLogsCisco).Methods("GET")
 	router.HandleFunc("/cisco/traffic", routes.GetTrafficCisco).Methods("GET")
 
-	// Network Router
-	router.HandleFunc("/network/router/interfaces", routes.GetRouterInterfaces).Methods("GET")
-	router.HandleFunc("/network/router/system", routes.GetRouterSystem).Methods("GET")
-	router.HandleFunc("/network/router/ipaddr", routes.GetRouterIPAddr).Methods("GET")
-	router.HandleFunc("/network/router/iptomedia", routes.GetRouterIPNetToMedia).Methods("GET")
-	router.HandleFunc("/network/router/iproute", routes.GetRouterIPRoute).Methods("GET")
+	// Network Get Information
+	router.HandleFunc("/network/interfaces", routes.GetNetworkInterfaces).Methods("GET")
+	router.HandleFunc("/network/system", routes.GetNetworkSystem).Methods("GET")
+	router.HandleFunc("/network/ipaddr", routes.GetNetworkIPAddr).Methods("GET")
+	router.HandleFunc("/network/iptomedia", routes.GetNetworkIPNetToMedia).Methods("GET")
+	router.HandleFunc("/network/iproute", routes.GetNetworkIPRoute).Methods("GET")
+
+	// Network Router Configuration
+	router.HandleFunc("/network/router/config/ip", routes.ConfigIPRouter).Methods("POST")
 
 	//Windows Firewall Settings
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")
