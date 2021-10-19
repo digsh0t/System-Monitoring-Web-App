@@ -76,7 +76,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		description := "User \"" + user.Username + "\" login to web app " + eventStatus
 		_, err = models.WriteWebEvent(r, "Login", description)
 		if err != nil {
-			utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+			utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 			return
 		}
 
