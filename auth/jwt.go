@@ -16,13 +16,15 @@ type TokenData struct {
 	Role     string
 	Userid   int
 	Exp      uint64
+	Twofa    string
 }
 
-func CreateToken(userId int, username string, role string) (string, error) {
+func CreateToken(userId int, username string, role string, twofa string) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["username"] = username
 	claims["role"] = role
 	claims["userid"] = userId
+	claims["2fa"] = twofa
 	claims["exp"] = time.Now().Add(time.Hour * 12).Unix() // Token expires after 12 hours
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
@@ -79,6 +81,10 @@ func ExtractTokenMetadata(r *http.Request) (*TokenData, error) {
 		if !ok {
 			return nil, err
 		}
+		twofa, ok := claims["2fa"].(string)
+		if !ok {
+			return nil, err
+		}
 		role, ok := claims["role"].(string)
 		if !ok {
 			return nil, err
@@ -96,6 +102,7 @@ func ExtractTokenMetadata(r *http.Request) (*TokenData, error) {
 			Role:     role,
 			Userid:   userId,
 			Exp:      exp,
+			Twofa:    twofa,
 		}, nil
 	}
 	return nil, err

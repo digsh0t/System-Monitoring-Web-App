@@ -301,7 +301,7 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 	var eventStatus string
 	if err != nil {
 		returnJson.Set("Status", false)
-		returnJson.Set("Error", errors.New("error while regenerate ansible inventory").Error())
+		returnJson.Set("Error", err)
 		utils.JSON(w, http.StatusBadRequest, returnJson)
 		eventStatus = "failed"
 	} else {
@@ -329,6 +329,16 @@ func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 		//CORS
 		// return "OKOK"
 		json.NewEncoder(w).Encode("OKOK")
+		return
+	}
+
+	tokenData, err := auth.ExtractTokenMetadata(r)
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if tokenData.Twofa != "authorized" {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("Please turn on 2FA settings to use this function").Error())
 		return
 	}
 

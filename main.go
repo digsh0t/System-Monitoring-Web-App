@@ -233,5 +233,11 @@ func main() {
 	router.HandleFunc("/{id}/passwordpolicies", routes.GetWindowsPasswordPolicy).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/passwordpolicies", routes.ChangeWindowsPasswordPolicy).Methods("OPTIONS", "PUT")
 
+	//2FA QR managements
+	router.HandleFunc("/qr/on", routes.GenerateQR).Methods("OPTIONS", "GET")
+	router.HandleFunc("/qr/off", routes.TurnOff2FARoute).Methods("OPTIONS", "POST")
+	router.HandleFunc("/qr/verify", routes.VerifyQR).Methods("OPTIONS", "POST")
+	router.HandleFunc("/qr/on/verify", routes.VerifyQRSettingsRoute).Methods("OPTIONS", "POST")
+
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
