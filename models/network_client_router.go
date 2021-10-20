@@ -63,3 +63,48 @@ func ConfigIPRouter(routerJson RouterJson) ([]string, error) {
 	}
 	return outputList, err
 }
+
+// config static route
+func ConfigStaticRouteRouter(routerJson RouterJson) ([]string, error) {
+	var (
+		outputList []string
+		err        error
+	)
+	// Get Hostname from Id
+	for _, id := range routerJson.SshConnectionId {
+		sshConnection, err := GetSSHConnectionFromId(id)
+		if err != nil {
+			return outputList, errors.New("fail to parse id")
+		}
+
+		routerJson.Host = sshConnection.HostNameSSH
+
+		// Convert netmask to prefix length for vyos and junos
+		if sshConnection.NetworkOS == "vyos" || sshConnection.NetworkOS == "junos" {
+			stringMask := net.IPMask(net.ParseIP(routerJson.Mask).To4())
+
+			length, _ := stringMask.Size()
+			routerJson.Prefix += "/" + strconv.Itoa(length)
+		}
+
+		// Marshal and run playbook
+		ciscoJsonMarshal, err := json.Marshal(routerJson)
+		if err != nil {
+			return outputList, err
+		}
+		var filepath string
+		if sshConnection.NetworkOS == "ios" {
+			filepath = "./yamls/network_client/cisco/cisco_config_staticroute.yml"
+		} else if sshConnection.NetworkOS == "vyos" {
+			filepath = "./yamls/network_client/vyos/vyos_config_staticroute.yml"
+		} else if sshConnection.NetworkOS == "junos" {
+			filepath = "./yamls/network_client/juniper/juniper_config_staticroute.yml"
+		}
+		output, err := RunAnsiblePlaybookWithjson(filepath, string(ciscoJsonMarshal))
+		if err != nil {
+			return outputList, errors.New("fail to load yaml file")
+		}
+		outputList = append(outputList, output)
+	}
+	return outputList, err
+}

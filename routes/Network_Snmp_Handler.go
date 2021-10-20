@@ -39,7 +39,7 @@ func GetNetworkInterfaces(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Get Cisco Traffic
+// Get Network System
 func GetNetworkSystem(w http.ResponseWriter, r *http.Request) {
 	//Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
@@ -151,6 +151,31 @@ func GetNetworkIPRoute(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 	} else {
 		utils.JSON(w, http.StatusOK, routeSNMP)
+	}
+
+}
+
+// Get Network System
+func ListNetworkDevices(w http.ResponseWriter, r *http.Request) {
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+	// Get Id parameter
+	query := r.URL.Query()
+	networkType := query.Get("device")
+
+	sshConnectionList, err := models.GetAllSSHConnectionByNetworkType(networkType)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+	} else {
+		utils.JSON(w, http.StatusOK, sshConnectionList)
 	}
 
 }

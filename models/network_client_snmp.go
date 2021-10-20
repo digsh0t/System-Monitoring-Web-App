@@ -20,7 +20,7 @@ type InterfaceSNMP struct {
 	IfPhysAddress   string `json:"ifPhysAddress"`
 	IfAdminStatus   string `json:"ifAdminStatus"`
 	IfOperStatus    string `json:"ifOperStatus"`
-	IfLastChange    uint32 `json:"ifLastChange"`
+	IfLastChange    string `json:"ifLastChange"`
 	IfInOctets      uint   `json:"ifInOctets"`
 	IfInUcastPkts   uint   `json:"ifInUcastPkts"`
 	IfInNUcastPkts  uint   `json:"ifInNUcastPkts"`
@@ -36,7 +36,7 @@ type InterfaceSNMP struct {
 type SystemSNMP struct {
 	SysDescr    string `json:"sysDescr"`
 	SysObjectID string `json:"sysObjectID"`
-	SysUpTime   uint32 `json:"sysUpTime"`
+	SysUpTime   string `json:"sysUpTime"`
 	SysContact  string `json:"sysContact"`
 	SysName     string `json:"sysName"`
 	SysLocation string `json:"sysLocation"`
@@ -73,7 +73,6 @@ type IpRouteSNMP struct {
 	IpRouteAge     int    `json:"ipRouteAge"`
 	IpRouteMask    string `json:"ipRouteMask"`
 	IpRouteMetric5 int    `json:"ipRouteMetric5"`
-	IpRouteInfo    string `json:"ipRouteInfo"`
 }
 
 // Get Router Interfaces
@@ -200,14 +199,15 @@ func ParseRouterInterfaces(array2d [][]interface{}) []InterfaceSNMP {
 				case 4:
 					interfaceSNMP.IfOperStatus = "unknown"
 				case 5:
-					interfaceSNMP.IfOperStatus = "domant"
+					interfaceSNMP.IfOperStatus = "dormant"
 				case 6:
 					interfaceSNMP.IfOperStatus = "notPresent"
 				case 7:
 					interfaceSNMP.IfOperStatus = "lowerLayerDown"
 				}
 			case 8:
-				interfaceSNMP.IfLastChange = array2d[i][y].(uint32)
+				rawIfLastChange := array2d[i][y].(uint32)
+				interfaceSNMP.IfLastChange = utils.HundredSecondsToHuman(int(rawIfLastChange))
 			case 9:
 				interfaceSNMP.IfInOctets = array2d[i][y].(uint)
 			case 10:
@@ -273,7 +273,8 @@ func ParseSwitchInterfaces(array2d [][]interface{}) []InterfaceSNMP {
 					interfaceSNMP.IfOperStatus = "down"
 				}
 			case 8:
-				interfaceSNMP.IfLastChange = array2d[i][y].(uint32)
+				rawIfLastChange := array2d[i][y].(uint32)
+				interfaceSNMP.IfLastChange = utils.HundredSecondsToHuman(int(rawIfLastChange))
 			case 9:
 				interfaceSNMP.IfInOctets = array2d[i][y].(uint)
 			case 10:
@@ -401,7 +402,8 @@ func GetNetworkSystem(sshConnectionId int) (SystemSNMP, error) {
 		case 1:
 			systemSNMP.SysObjectID = variable.Value.(string)
 		case 2:
-			systemSNMP.SysUpTime = variable.Value.(uint32)
+			rawSysUpTime := variable.Value.(uint32)
+			systemSNMP.SysUpTime = utils.HundredSecondsToHuman(int(rawSysUpTime))
 		case 3:
 			systemSNMP.SysContact = string(variable.Value.([]byte))
 		case 4:
@@ -681,12 +683,17 @@ func GetNetworkIPRoute(sshConnectionId int) ([]IpRouteSNMP, error) {
 		ipRouteSNMPList []IpRouteSNMP
 		err             error
 	)
+
 	// Get Hostname
 	sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
 	if err != nil {
 		return ipRouteSNMPList, errors.New("fail to get ssh connection")
 	}
 
+	// Exception: Juniper not supported
+	if sshConnection.NetworkType == "router" && sshConnection.NetworkOS == "junos" {
+		return ipRouteSNMPList, errors.New("this function is not supported on the device")
+	}
 	// Connect SNMP
 	params, err := ConnectSNMP(*sshConnection)
 	if err != nil {
@@ -781,8 +788,6 @@ func GetNetworkIPRoute(sshConnectionId int) ([]IpRouteSNMP, error) {
 					ipRouteSNMP.IpRouteMask = array2d[i][y].(string)
 				case 11:
 					ipRouteSNMP.IpRouteMetric5 = array2d[i][y].(int)
-				case 12:
-					ipRouteSNMP.IpRouteInfo = array2d[i][y].(string)
 
 				}
 			}
@@ -819,8 +824,6 @@ func GetNetworkIPRoute(sshConnectionId int) ([]IpRouteSNMP, error) {
 					ipRouteSNMP.IpRouteProto = utils.ReferenceIpRouteProtoRecord(ipRouteProto)
 				case 6:
 					ipRouteSNMP.IpRouteMask = array2d[i][y].(string)
-				case 7:
-					ipRouteSNMP.IpRouteInfo = array2d[i][y].(string)
 				}
 
 			}

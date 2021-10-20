@@ -1,0 +1,9 @@
+- name: Configure static route
+  connection: network_cli
+  hosts: "{{ host }}"
+  gather_facts: false
+  tasks:
+  - name: Configure static route
+    vyos_static_route:
+     prefix: "{{ prefix }}"
+     next_hop: "{{ next_hop }}"

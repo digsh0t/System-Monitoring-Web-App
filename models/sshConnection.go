@@ -327,6 +327,45 @@ func GetAllOSSSHConnection(osType string) ([]SshConnectionInfo, error) {
 	return connectionInfos, err
 }
 
+func GetAllSSHConnectionByNetworkType(networkType string) ([]SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+	var query string
+
+	query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networktype = ?`
+	selDB, err := db.Query(query, networkType)
+	if err != nil {
+		return nil, err
+	}
+
+	var connectionInfo SshConnectionInfo
+	var connectionInfos []SshConnectionInfo
+	for selDB.Next() {
+		var networkOS sql.NullString
+		var password sql.NullString
+		var keyId sql.NullInt32
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &password, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &keyId, &connectionInfo.IsNetwork, &connectionInfo.NetworkType, &networkOS)
+		if err != nil {
+			return nil, err
+		}
+		connectionInfo.NetworkOS = networkOS.String
+
+		// Decrypted Password if exist
+		var decryptedPassword string
+		if password.String != "" {
+			decryptedPassword, err = AESDecryptKey(password.String)
+			if err != nil {
+				return nil, err
+			}
+
+		}
+		connectionInfo.PasswordSSH = decryptedPassword
+		connectionInfo.SSHKeyId = int(keyId.Int32)
+		connectionInfos = append(connectionInfos, connectionInfo)
+	}
+	return connectionInfos, err
+}
+
 func GetAllSSHConnectionWithPassword() ([]SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
