@@ -8,3 +8,7 @@
      prefix: "{{ prefix }}"
      mask: "{{ mask }}"
      next_hop: "{{ next_hop }}"
+
+  - name: save running to startup when modified
+    ios_config:
+     save_when: modified

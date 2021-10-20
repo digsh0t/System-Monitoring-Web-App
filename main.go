@@ -169,6 +169,7 @@ func main() {
 	router.HandleFunc("/network/iptomedia", routes.GetNetworkIPNetToMedia).Methods("GET")
 	router.HandleFunc("/network/iproute", routes.GetNetworkIPRoute).Methods("GET")
 	router.HandleFunc("/network/list", routes.ListNetworkDevices).Methods("GET")
+	router.HandleFunc("/network/testping", routes.TestPingNetworkDevices).Methods("POST")
 
 	// Network Router Configuration
 	router.HandleFunc("/network/router/config/ip", routes.ConfigIPRouter).Methods("POST")

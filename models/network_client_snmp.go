@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -73,6 +74,12 @@ type IpRouteSNMP struct {
 	IpRouteAge     int    `json:"ipRouteAge"`
 	IpRouteMask    string `json:"ipRouteMask"`
 	IpRouteMetric5 int    `json:"ipRouteMetric5"`
+}
+
+type NetworkJson struct {
+	SshConnectionId []int  `json:"sshConnectionId"`
+	Host            string `json:"host"`
+	Dest            string `json:"dest"`
 }
 
 // Get Router Interfaces
@@ -834,4 +841,41 @@ func GetNetworkIPRoute(sshConnectionId int) ([]IpRouteSNMP, error) {
 
 	return ipRouteSNMPList, err
 
+}
+
+// config static route
+func TestPingNetworkDevices(networkJson NetworkJson) ([]string, error) {
+	var (
+		outputList []string
+		err        error
+	)
+	// Get Hostname from Id
+	for _, id := range networkJson.SshConnectionId {
+		sshConnection, err := GetSSHConnectionFromId(id)
+		if err != nil {
+			return outputList, errors.New("fail to parse id")
+		}
+
+		networkJson.Host = sshConnection.HostNameSSH
+
+		// Marshal and run playbook
+		ciscoJsonMarshal, err := json.Marshal(networkJson)
+		if err != nil {
+			return outputList, err
+		}
+		var filepath string
+		if sshConnection.NetworkOS == "ios" {
+			filepath = "./yamls/network_client/cisco/cisco_test_ping.yml"
+		} else if sshConnection.NetworkOS == "vyos" {
+			filepath = "./yamls/network_client/vyos/vyos_test_ping.yml"
+		} else if sshConnection.NetworkOS == "junos" {
+			filepath = "./yamls/network_client/juniper/juniper_test_ping.yml"
+		}
+		output, err := RunAnsiblePlaybookWithjson(filepath, string(ciscoJsonMarshal))
+		if err != nil {
+			return outputList, errors.New("fail to load yaml file")
+		}
+		outputList = append(outputList, output)
+	}
+	return outputList, err
 }
