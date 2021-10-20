@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -179,17 +180,31 @@ func ParseRouterInterfaces(array2d [][]interface{}) []InterfaceSNMP {
 				interfaceSNMP.IfPhysAddress = array2d[i][y].(string)
 			case 6:
 				rawIfAdminStatus := array2d[i][y].(int)
-				if rawIfAdminStatus == 1 {
+				switch rawIfAdminStatus {
+				case 1:
 					interfaceSNMP.IfAdminStatus = "up"
-				} else {
+				case 2:
 					interfaceSNMP.IfAdminStatus = "down"
+				case 3:
+					interfaceSNMP.IfAdminStatus = "testing"
 				}
 			case 7:
 				rawIfOperStatus := array2d[i][y].(int)
-				if rawIfOperStatus == 1 {
+				switch rawIfOperStatus {
+				case 1:
 					interfaceSNMP.IfOperStatus = "up"
-				} else {
+				case 2:
 					interfaceSNMP.IfOperStatus = "down"
+				case 3:
+					interfaceSNMP.IfOperStatus = "testing"
+				case 4:
+					interfaceSNMP.IfOperStatus = "unknown"
+				case 5:
+					interfaceSNMP.IfOperStatus = "domant"
+				case 6:
+					interfaceSNMP.IfOperStatus = "notPresent"
+				case 7:
+					interfaceSNMP.IfOperStatus = "lowerLayerDown"
 				}
 			case 8:
 				interfaceSNMP.IfLastChange = array2d[i][y].(uint32)
@@ -431,6 +446,7 @@ func GetNetworkIPAddr(sshConnectionId int) ([]IpAddrSNMP, error) {
 		return err
 	})
 	if err != nil {
+		fmt.Println(err.Error())
 		return ipSNMPList, errors.New("fail to get numbers of interfaces")
 	}
 

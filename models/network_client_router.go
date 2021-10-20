@@ -3,6 +3,8 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"net"
+	"strconv"
 )
 
 type RouterJson struct {
@@ -10,6 +12,7 @@ type RouterJson struct {
 	Host            string `json:"host"`
 	Interface       string `json:"interface"`
 	Address4        string `json:"address4"`
+	NetMask4        string `json:"netmask4"`
 	Address6        string `json:"address6"`
 	Prefix          string `json:"prefix"`
 	Mask            string `json:"mask"`
@@ -33,6 +36,13 @@ func ConfigIPRouter(routerJson RouterJson) ([]string, error) {
 
 		routerJson.Host = sshConnection.HostNameSSH
 
+		// Convert netmask to prefix length
+		stringMask := net.IPMask(net.ParseIP(routerJson.NetMask4).To4())
+
+		length, _ := stringMask.Size()
+		routerJson.Address4 += "/" + strconv.Itoa(length)
+
+		// Marshal and run playbook
 		ciscoJsonMarshal, err := json.Marshal(routerJson)
 		if err != nil {
 			return outputList, err

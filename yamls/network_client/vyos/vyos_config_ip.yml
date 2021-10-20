@@ -12,4 +12,8 @@
     vyos_l3_interface:
      name: "{{ interface }}"
      ipv4: "{{ address4 }}"
+
+  - name: Save configuaration to starup file
+    vyos_config:
+     save: yes
            
