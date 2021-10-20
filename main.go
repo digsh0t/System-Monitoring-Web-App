@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -45,6 +46,8 @@ func main() {
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
 	origins := handlers.AllowedOrigins([]string{"*"})
+	start := time.Now()
+
 	// Login
 	router.HandleFunc("/login", routes.Login).Methods("POST", "OPTIONS")
 
@@ -138,6 +141,11 @@ func main() {
 	router.HandleFunc("/wauser/list", routes.ListAllWebAppUser).Methods("GET")
 	router.HandleFunc("/wauser/list/{id}", routes.ListWebAppUser).Methods("GET")
 
+	// Web App Report
+	router.HandleFunc("/webapp/report", func(w http.ResponseWriter, r *http.Request) {
+		routes.GetReport(w, r, start)
+	}).Methods("GET")
+
 	// Network Automation: Vyos
 	//router.HandleFunc("/vyos/listconfig/{id}", routes.GetInfoConfigVyos).Methods("GET")
 	router.HandleFunc("/vyos/list/{id}", routes.GetInfoVyos).Methods("GET")
@@ -154,6 +162,16 @@ func main() {
 	router.HandleFunc("/cisco/testping", routes.TestPingCisco).Methods("POST")
 	router.HandleFunc("/cisco/logs", routes.ListLogsCisco).Methods("GET")
 	router.HandleFunc("/cisco/traffic", routes.GetTrafficCisco).Methods("GET")
+
+	// Network Get Information
+	router.HandleFunc("/network/interfaces", routes.GetNetworkInterfaces).Methods("GET")
+	router.HandleFunc("/network/system", routes.GetNetworkSystem).Methods("GET")
+	router.HandleFunc("/network/ipaddr", routes.GetNetworkIPAddr).Methods("GET")
+	router.HandleFunc("/network/iptomedia", routes.GetNetworkIPNetToMedia).Methods("GET")
+	router.HandleFunc("/network/iproute", routes.GetNetworkIPRoute).Methods("GET")
+
+	// Network Router Configuration
+	router.HandleFunc("/network/router/config/ip", routes.ConfigIPRouter).Methods("POST")
 
 	//Windows Firewall Settings
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")

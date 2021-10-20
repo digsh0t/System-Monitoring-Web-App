@@ -46,6 +46,7 @@ func AESDecryptKey(encryptedPrivateKey string) (string, error) {
 func encrypt(key []byte, message string) (encmess string, err error) {
 	plainText := []byte(message)
 
+	// Initialize Cipher block
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return
@@ -59,6 +60,7 @@ func encrypt(key []byte, message string) (encmess string, err error) {
 		return
 	}
 
+	// Encrypt IV
 	stream := cipher.NewCFBEncrypter(block, iv)
 	stream.XORKeyStream(cipherText[aes.BlockSize:], plainText)
 

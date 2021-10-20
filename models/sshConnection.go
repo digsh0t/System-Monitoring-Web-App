@@ -30,6 +30,7 @@ type SshConnectionInfo struct {
 	SSHKeyId        int    `json:"sshKeyId"`
 	OsType          string `json:"osType"`
 	IsNetwork       bool   `json:"isNetwork"`
+	NetworkType     string `json:"networkType"`
 	NetworkOS       string `json:"networkOS"`
 }
 
@@ -43,11 +44,15 @@ func (sshConnection *SshConnectionInfo) TestConnectionPassword() (bool, error) {
 		Timeout:         30 * time.Second,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
+	sshConfig.Config.KeyExchanges = append(sshConfig.Config.KeyExchanges, "diffie-hellman-group1-sha1", "ecdh-sha2-nistp384")
+	cipherOrder := sshConfig.Ciphers
+	sshConfig.Ciphers = append(cipherOrder, "aes128-ctr", "aes192-ctr", "aes256-ctr", "arcfour256", "arcfour128", "arcfour", "aes128-cbc")
 
 	addr := fmt.Sprintf("%s:%d", sshConnection.HostSSH, sshConnection.PortSSH)
 
 	_, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
+		fmt.Println(err.Error())
 		return false, err
 	} else {
 		return true, err
@@ -126,35 +131,41 @@ func (sshConnection SshConnectionInfo) CheckSSHConnectionExist() (bool, error) {
 	return false, nil
 }
 
-func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (bool, error) {
+func (sshConnection *SshConnectionInfo) AddSSHConnectionToDB() (int64, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 
 	var query string
+	var lastId int64
 
 	// Use key-base Authentication
 	if sshConnection.PasswordSSH == "" {
-		query = "INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_isnetwork, sc_networkos) VALUES (?,?,?,?,?,?,?,?,?)"
+		query = "INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_isnetwork, sc_networktype, sc_networkos) VALUES (?,?,?,?,?,?,?,?,?,?)"
 	} else {
-		query = "INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, sc_password, sc_ostype, sc_isnetwork, sc_networkos) VALUES (?,?,?,?,?,?,?,?,?)"
+		query = "INSERT INTO ssh_connections (sc_username, sc_host, sc_hostname, sc_port, creator_id, sc_password, sc_ostype, sc_isnetwork, sc_networktype, sc_networkos) VALUES (?,?,?,?,?,?,?,?,?,?)"
 	}
 	stmt, err := db.Prepare(query)
 	if err != nil {
-		return false, err
+		return lastId, err
 	}
 	defer stmt.Close()
 
+	var res sql.Result
 	if sshConnection.PasswordSSH == "" {
-		_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkOS)
+		res, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, sshConnection.SSHKeyId, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkType, sshConnection.NetworkOS)
 	} else {
 		encryptedPassword := AESEncryptKey(sshConnection.PasswordSSH)
-		_, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, encryptedPassword, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkOS)
+		res, err = stmt.Exec(sshConnection.UserSSH, sshConnection.HostSSH, sshConnection.HostNameSSH, sshConnection.PortSSH, sshConnection.CreatorId, encryptedPassword, sshConnection.OsType, sshConnection.IsNetwork, sshConnection.NetworkType, sshConnection.NetworkOS)
 	}
 	if err != nil {
-		return false, err
+		return lastId, err
+	}
+	lastId, err = res.LastInsertId()
+	if err != nil {
+		return lastId, err
 	}
 
-	return true, err
+	return lastId, err
 }
 
 func GetAllSSHConnection() ([]SshConnectionInfo, error) {
@@ -279,7 +290,7 @@ func GetAllOSSSHConnection(osType string) ([]SshConnectionInfo, error) {
 	var query string
 
 	if osType == "Linux" {
-		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos FROM ssh_connections WHERE sc_ostype='Ubuntu' or sc_ostype LIKE '%CentOS%'`
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos FROM ssh_connections WHERE sc_ostype='Ubuntu' or sc_ostype LIKE '%CentOS%' or sc_ostype LIKE '%Kali%'`
 	} else {
 		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos FROM ssh_connections WHERE sc_ostype LIKE '%Windows%'`
 	}
@@ -386,10 +397,10 @@ func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 	defer db.Close()
 
 	var sshConnection SshConnectionInfo
-	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
 	var password sql.NullString
 	var keyId sql.NullInt32
-	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &password, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &keyId, &sshConnection.OsType)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &password, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &keyId, &sshConnection.OsType, &sshConnection.NetworkType, &sshConnection.NetworkOS)
 	if row == nil {
 		return nil, errors.New("ssh connection doesn't exist")
 	}
@@ -861,4 +872,52 @@ func (sshConnection SshConnectionInfo) RunAnsiblePlaybookWithjson(filepath strin
 	}
 	output = out.String()
 	return output, err
+}
+
+func CountUnknownOS() (int, error) {
+	var (
+		count int
+		err   error
+	)
+	db := database.ConnectDB()
+	defer db.Close()
+
+	// Count sshConnection with os_type is unknown and not a network device
+	query := `SELECT count(*) FROM ssh_connections WHERE sc_ostype = "Unknown" and sc_isnetwork = 0`
+	selDB, err := db.Query(query)
+	if err != nil {
+		return count, err
+	}
+
+	for selDB.Next() {
+		err = selDB.Scan(&count)
+		if err != nil {
+			return count, err
+		}
+	}
+	return count, err
+}
+
+func CountNetworkOS() (int, error) {
+	var (
+		count int
+		err   error
+	)
+	db := database.ConnectDB()
+	defer db.Close()
+
+	// Count sshConnection with os_type is unknown and not a network device
+	query := `SELECT count(*) FROM ssh_connections WHERE sc_isnetwork = 1`
+	selDB, err := db.Query(query)
+	if err != nil {
+		return count, err
+	}
+
+	for selDB.Next() {
+		err = selDB.Scan(&count)
+		if err != nil {
+			return count, err
+		}
+	}
+	return count, err
 }

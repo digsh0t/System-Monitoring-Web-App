@@ -59,6 +59,30 @@ func RunAnsiblePlaybookWithjson(filepath string, extraVars string) (string, erro
 	return output, err
 }
 
+func ProcessingAnsibleOutputList(ansible_output_list []string) (map[string]bool, []string, error) {
+	var (
+		statusList map[string]bool
+		fatalList  []string
+		err        error
+	)
+	for _, output := range ansible_output_list {
+		status, fatal, err := ProcessingAnsibleOutput(output)
+		if err != nil {
+			return status, fatalList, err
+		}
+
+		// Append status
+		for index, value := range status {
+			statusList[index] = value
+		}
+
+		// Append fatal
+		fatalList = append(fatalList, fatal...)
+
+	}
+	return statusList, fatalList, err
+}
+
 // RegExp Fatal And Recap from Ansible Output
 func ProcessingAnsibleOutput(ansible_output string) (map[string]bool, []string, error) {
 	var (
