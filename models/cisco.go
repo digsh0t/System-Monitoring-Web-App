@@ -50,10 +50,8 @@ type CiscoJson struct {
 }
 
 type CiscoLog struct {
-	TimeStamp   string `json:"timeStamp"`
-	Facility    string `json:"facility"`
-	Severity    string `json:"severity"`
-	Mnemonic    string `json:"mnemonic"`
+	TimeStamp   string `json:"timestamp"`
+	Service     string `json:"service"`
 	Description string `json:"description"`
 }
 
@@ -324,31 +322,8 @@ func TestPingCisco(ciscoJson CiscoJson) (string, error) {
 }
 
 // Get Log Cisco
-func ListLogsCisco(sshConnectionId int) ([]CiscoLog, error) {
-	var (
-		ciscoLogsList []CiscoLog
-		err           error
-	)
-	// Get Hostname
-	hostname, err := GetSshHostnameFromId(sshConnectionId)
-	if err != nil {
-		return ciscoLogsList, errors.New("fail to get ssh connection")
-	}
-
-	// Create Json
-	ciscoJson := CiscoJson{
-		Host: []string{hostname},
-	}
-
-	// Marshal and run playbook
-	ciscoJsonMarshal, err := json.Marshal(ciscoJson)
-	if err != nil {
-		return ciscoLogsList, errors.New("fail to marshal json")
-	}
-	output, err := RunAnsiblePlaybookWithjson("./yamls/network_client/cisco/cisco_getlog.yml", string(ciscoJsonMarshal))
-	if err != nil {
-		return ciscoLogsList, errors.New("fail to marshal json")
-	}
+func ParseLogsCisco(output string) ([]NetworkLogs, error) {
+	var networkLogsList []NetworkLogs
 
 	// Get substring from ansible output
 	data := utils.ExtractSubString(output, " => ", "PLAY RECAP")
@@ -356,19 +331,19 @@ func ListLogsCisco(sshConnectionId int) ([]CiscoLog, error) {
 	// Parse Json format
 	jsonParsed, err := gabs.ParseJSON([]byte(data))
 	if err != nil {
-		return ciscoLogsList, errors.New("fail to parse json output")
+		return networkLogsList, errors.New("fail to parse json output")
 	}
 
 	// Get List Arrays
 	tmpList, err := jsonParsed.Search("msg").Children()
 	if err != nil {
-		return ciscoLogsList, errors.New("fail to parse json output")
+		return networkLogsList, errors.New("fail to parse json output")
 	}
 
 	// Get Specific Array
 	lines, err := tmpList[0].Children()
 	if err != nil {
-		return ciscoLogsList, errors.New("fail to parse json output")
+		return networkLogsList, errors.New("fail to parse json output")
 	}
 
 	// Line: "*Oct  4 03:14:27.338: %LINK-3-UPDOWN: Interface Serial3/0, changed state to up"
@@ -376,50 +351,26 @@ func ListLogsCisco(sshConnectionId int) ([]CiscoLog, error) {
 
 		// Check if existing log, case no returns empty list
 		if line.String() == "\"\"" {
-			return ciscoLogsList, nil
+			return networkLogsList, nil
 		}
 
-		var ciscoLog CiscoLog
+		var networkLogs NetworkLogs
 		attributes := strings.Split(line.String(), ": ")
 
 		// Get Time
-		ciscoLog.TimeStamp = strings.Trim(attributes[0], "\"*")
+		networkLogs.TimeStamp = strings.Trim(attributes[0], "\"*")
+
+		// Get Service
+		networkLogs.Service = attributes[1]
 
 		// Get Description
-		ciscoLog.Description = strings.Trim(attributes[2], "\"")
+		networkLogs.Description = strings.Trim(attributes[2], "\"")
 
-		tmpAttributes := strings.Split(attributes[1], "-")
-		// Get Facility
-		ciscoLog.Facility = strings.Trim(tmpAttributes[0], "%")
-
-		// Get Severity
-		switch tmpAttributes[1] {
-		case "0":
-			ciscoLog.Severity = "Emergency"
-		case "1":
-			ciscoLog.Severity = "Alert"
-		case "2":
-			ciscoLog.Severity = "Critical"
-		case "3":
-			ciscoLog.Severity = "Error"
-		case "4":
-			ciscoLog.Severity = "Warning"
-		case "5":
-			ciscoLog.Severity = "Notice"
-		case "6":
-			ciscoLog.Severity = "Informational"
-		case "7":
-			ciscoLog.Severity = "Debug"
-		}
-
-		// Get Mnemonic
-		ciscoLog.Mnemonic = tmpAttributes[2]
-
-		ciscoLogsList = append(ciscoLogsList, ciscoLog)
+		networkLogsList = append(networkLogsList, networkLogs)
 
 	}
 
-	return ciscoLogsList, err
+	return networkLogsList, err
 
 }
 

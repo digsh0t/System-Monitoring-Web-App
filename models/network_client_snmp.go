@@ -76,6 +76,12 @@ type IpRouteSNMP struct {
 	IpRouteMetric5 int    `json:"ipRouteMetric5"`
 }
 
+type NetworkLogs struct {
+	TimeStamp   string `json:"timestamp"`
+	Service     string `json:"service"`
+	Description string `json:"description"`
+}
+
 type NetworkJson struct {
 	SshConnectionId []int  `json:"sshConnectionId"`
 	Host            string `json:"host"`
@@ -843,7 +849,7 @@ func GetNetworkIPRoute(sshConnectionId int) ([]IpRouteSNMP, error) {
 
 }
 
-// config static route
+// Test network ping
 func TestPingNetworkDevices(networkJson NetworkJson) ([]string, error) {
 	var (
 		outputList []string
@@ -878,4 +884,53 @@ func TestPingNetworkDevices(networkJson NetworkJson) ([]string, error) {
 		outputList = append(outputList, output)
 	}
 	return outputList, err
+}
+
+// Get Network Log
+func GetNetworkLog(sshConnectionId int) ([]NetworkLogs, error) {
+	var (
+		networkLogsList []NetworkLogs
+		err             error
+	)
+	// Get Hostname from Id
+
+	sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
+	if err != nil {
+		return networkLogsList, errors.New("fail to parse id")
+	}
+	networkJson := NetworkJson{
+		Host: sshConnection.HostNameSSH,
+	}
+
+	// Marshal and run playbook
+	ciscoJsonMarshal, err := json.Marshal(networkJson)
+	if err != nil {
+		return networkLogsList, err
+	}
+	var filepath string
+	if sshConnection.NetworkOS == "ios" {
+		filepath = "./yamls/network_client/cisco/cisco_getlog.yml"
+	} else if sshConnection.NetworkOS == "vyos" {
+		filepath = "./yamls/network_client/vyos/vyos_getlog.yml"
+	} else if sshConnection.NetworkOS == "junos" {
+		filepath = "./yamls/network_client/juniper/juniper_getlog.yml"
+	}
+	output, err := RunAnsiblePlaybookWithjson(filepath, string(ciscoJsonMarshal))
+	if err != nil {
+		return networkLogsList, errors.New("fail to load yaml file")
+	}
+
+	switch sshConnection.NetworkOS {
+	case "ios":
+		networkLogsList, err = ParseLogsCisco(output)
+	case "vyos":
+		networkLogsList, err = ParseLogsVyos(output)
+	case "junos":
+		networkLogsList, err = ParseLogsJuniper(output)
+	}
+	if err != nil {
+		return networkLogsList, errors.New("fail to get network device logs")
+	}
+
+	return networkLogsList, err
 }
