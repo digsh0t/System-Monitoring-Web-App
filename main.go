@@ -241,7 +241,8 @@ func main() {
 	router.HandleFunc("/qr/on/verify", routes.VerifyQRSettingsRoute).Methods("OPTIONS", "POST")
 
 	//Syslog
-	router.HandleFunc("/{id}/syslog/{date}", routes.GetSysLogFilesRoute).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/syslog/{date}/{page}", routes.GetSysLogFilesRoute).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/syslog/{date}/pri/{pri}/{page}", routes.GetSysLogByPriRoute).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
