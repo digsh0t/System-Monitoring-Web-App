@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+
 	//go goroutines.CheckClientOnlineStatusGour()
 	// sshKey, err := models.GetSSHKeyFromId(14)
 	// if err != nil {
@@ -240,6 +241,9 @@ func main() {
 	router.HandleFunc("/qr/off", routes.TurnOff2FARoute).Methods("OPTIONS", "POST")
 	router.HandleFunc("/qr/verify", routes.VerifyQR).Methods("OPTIONS", "POST")
 	router.HandleFunc("/qr/on/verify", routes.VerifyQRSettingsRoute).Methods("OPTIONS", "POST")
+
+	//Syslog
+	router.HandleFunc("/{id}/syslog/{date}", routes.GetSysLogFilesRoute).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
