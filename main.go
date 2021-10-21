@@ -13,6 +13,11 @@ import (
 
 func main() {
 
+	priStat, err := models.GetAllClientSyslogPriStat("/var/log/remotelogs", "20-10-2021")
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(priStat)
 	//go goroutines.CheckClientOnlineStatusGour()
 	// sshKey, err := models.GetSSHKeyFromId(14)
 	// if err != nil {
