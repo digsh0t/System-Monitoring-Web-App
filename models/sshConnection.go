@@ -285,14 +285,26 @@ func GetAllSSHConnectionFromGroupId(groupId int) ([]SshConnectionInfo, error) {
 }
 
 func GetAllOSSSHConnection(osType string) ([]SshConnectionInfo, error) {
+	var (
+		connectionInfos []SshConnectionInfo
+		err             error
+	)
 	db := database.ConnectDB()
 	defer db.Close()
 	var query string
 
 	if osType == "Linux" {
-		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos FROM ssh_connections WHERE sc_ostype='Ubuntu' or sc_ostype LIKE '%CentOS%' or sc_ostype LIKE '%Kali%'`
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_ostype='Ubuntu' or sc_ostype LIKE '%CentOS%' or sc_ostype LIKE '%Kali%'`
+	} else if osType == "ios" {
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networkos='ios'`
+	} else if osType == "vyos" {
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networkos='vyos'`
+	} else if osType == "junos" {
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networkos='junos'`
+	} else if osType == "Windows" {
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_ostype LIKE '%Windows%'`
 	} else {
-		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos FROM ssh_connections WHERE sc_ostype LIKE '%Windows%'`
+		return connectionInfos, err
 	}
 	selDB, err := db.Query(query)
 	if err != nil {
@@ -300,12 +312,12 @@ func GetAllOSSSHConnection(osType string) ([]SshConnectionInfo, error) {
 	}
 
 	var connectionInfo SshConnectionInfo
-	var connectionInfos []SshConnectionInfo
+
 	for selDB.Next() {
 		var networkOS sql.NullString
 		var password sql.NullString
 		var keyId sql.NullInt32
-		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &password, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &keyId, &connectionInfo.IsNetwork, &networkOS)
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &password, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &keyId, &connectionInfo.IsNetwork, &connectionInfo.NetworkType, &networkOS)
 		if err != nil {
 			return nil, err
 		}

@@ -331,17 +331,18 @@ func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("OKOK")
 		return
 	}
+	/*
+		tokenData, err := auth.ExtractTokenMetadata(r)
+		if err != nil {
+			utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+			return
+		}
 
-	tokenData, err := auth.ExtractTokenMetadata(r)
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
-		return
-	}
-	if tokenData.Twofa != "authorized" {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("Please turn on 2FA settings to use this function").Error())
-		return
-	}
-
+			if tokenData.Twofa != "authorized" {
+				utils.ERROR(w, http.StatusUnauthorized, errors.New("Please turn on 2FA settings to use this function").Error())
+				return
+			}
+	*/
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())

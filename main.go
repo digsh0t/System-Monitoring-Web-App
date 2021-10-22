@@ -170,6 +170,7 @@ func main() {
 	router.HandleFunc("/network/list", routes.ListNetworkDevices).Methods("GET")
 	router.HandleFunc("/network/testping", routes.TestPingNetworkDevices).Methods("POST")
 	router.HandleFunc("/network/log", routes.GetNetworkLog).Methods("GET")
+	router.HandleFunc("/network/config/syslog", routes.ConfigNetworkSyslog).Methods("POST")
 
 	// Network Router Configuration
 	router.HandleFunc("/network/router/config/ip", routes.ConfigIPRouter).Methods("POST")
