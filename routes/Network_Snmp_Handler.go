@@ -225,22 +225,15 @@ func TestPingNetworkDevices(w http.ResponseWriter, r *http.Request) {
 
 	// Return Json
 	returnJson := simplejson.New()
+	var statusCode int
+	if len(fatals) == 0 {
+		statusCode = http.StatusOK
+	} else {
+		statusCode = http.StatusBadRequest
+	}
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatals)
-	utils.JSON(w, http.StatusOK, returnJson)
-
-	// Write Event Web
-	hostname, err := models.ConvertListIdToHostnameVer2(networkJson.SshConnectionId)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to get hostname")
-		return
-	}
-	description := "Test ping to network device " + hostname + " successfully"
-	_, err = models.WriteWebEvent(r, "Network", description)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
-		return
-	}
+	utils.JSON(w, statusCode, returnJson)
 
 }
 

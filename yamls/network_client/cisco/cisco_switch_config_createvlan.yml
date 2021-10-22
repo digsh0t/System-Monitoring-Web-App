@@ -1,0 +1,17 @@
+- name: Create vlan
+  connection: network_cli
+  gather_facts: false
+  hosts: "{{ host }}"
+  tasks:
+  - name: Create vlan
+    ios_vlan:
+     vlan_id: "{{ vlanId }}"
+     name: "{{ vlanName }}"
+     state: present
+  - name: enable vlan 
+    ios_config:
+     lines: interface vlan {{ vlanId }}
+     
+  - name: save running to startup when modified
+    ios_config:
+     save_when: modified

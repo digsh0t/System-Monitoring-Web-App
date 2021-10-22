@@ -620,6 +620,9 @@ func (sshConnection *SshConnectionInfo) connectSSHWithSSHKeys() (*ssh.Client, er
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
+	cipherOrder := sshConfig.Ciphers
+	sshConfig.Ciphers = append(cipherOrder, "aes128-ctr", "aes192-ctr", "aes256-ctr", "arcfour256", "arcfour128", "arcfour", "aes128-cbc")
+
 	addr := fmt.Sprintf("%s:%d", sshConnection.HostSSH, sshConnection.PortSSH)
 
 	sshClient, err := ssh.Dial("tcp", addr, sshConfig)
@@ -683,6 +686,8 @@ func (sshConnection *SshConnectionInfo) connectSSHWithPassword() (*ssh.Client, e
 		Timeout:         30 * time.Second,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
+	cipherOrder := clientConfig.Ciphers
+	clientConfig.Ciphers = append(cipherOrder, "aes128-ctr", "aes192-ctr", "aes256-ctr", "arcfour256", "arcfour128", "arcfour", "aes128-cbc")
 
 	// connect to ssh
 

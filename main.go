@@ -175,6 +175,13 @@ func main() {
 	router.HandleFunc("/network/router/config/ip", routes.ConfigIPRouter).Methods("POST")
 	router.HandleFunc("/network/router/config/staticroute", routes.ConfigStaticRouteRouter).Methods("POST")
 
+	// Network Switch Configuration
+	router.HandleFunc("/network/switch/get/vlan", routes.GetVlanSwitch).Methods("GET")
+	router.HandleFunc("/network/switch/get/interface", routes.GetInterfaceSwitch).Methods("GET")
+	router.HandleFunc("/network/switch/config/createvlan", routes.CreateVlanSwitch).Methods("POST")
+	router.HandleFunc("/network/switch/config/interfacetovlan", routes.AddInterfaceToVlanSwitch).Methods("POST")
+	router.HandleFunc("/network/switch/config/deletevlan", routes.DeleteVlanSwitch).Methods("DELETE")
+
 	//Windows Firewall Settings
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")
 	router.HandleFunc("/firewall", routes.AddWindowsFirewall).Methods("OPTIONS", "POST")
