@@ -83,3 +83,14 @@ func GetSysLogByPriRoute(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("logs", logs)
 	utils.JSON(w, http.StatusOK, returnJson)
 }
+
+func GetAllClientSysLogPriStatRoute(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	date := vars["date"]
+	logs, err := models.GetAllClientSyslogPriStat("/var/log/remotelogs", date)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.JSON(w, http.StatusOK, logs)
+}

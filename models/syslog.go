@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Syslog struct {
@@ -73,7 +74,11 @@ func parseSyslog(rawLogs string) ([]Syslog, error) {
 		if err != nil {
 			return nil, err
 		}
-		log.Timegenerated = vars[2]
+		log.Timegenerated, err = timestampToDate(vars[2])
+		if err != nil {
+			return nil, err
+		}
+
 		log.Hostname = vars[3]
 		log.ProgramName = programName
 		log.ProcessId = processId
@@ -81,6 +86,14 @@ func parseSyslog(rawLogs string) ([]Syslog, error) {
 		logs = append(logs, log)
 	}
 	return logs, nil
+}
+
+func timestampToDate(timestamp string) (string, error) {
+	i, err := strconv.ParseInt(timestamp, 10, 64)
+	if err != nil {
+		return "", err
+	}
+	return time.Unix(i, 0).String(), err
 }
 
 func parseSyslogRowNumbers(rawLogs string) (SyslogPriStat, error) {
