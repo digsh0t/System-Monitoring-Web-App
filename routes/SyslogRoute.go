@@ -94,3 +94,14 @@ func GetAllClientSysLogPriStatRoute(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.JSON(w, http.StatusOK, logs)
 }
+
+func GetAllClientSysLogRoute(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	date := vars["date"]
+	logs, err := models.GetAllClientSyslog("/var/log/remotelogs", date)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.JSON(w, http.StatusOK, logs[:10])
+}

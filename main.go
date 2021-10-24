@@ -13,6 +13,11 @@ import (
 
 func main() {
 
+	// logRows, err := models.GetAllClientSyslog("/var/log/remotelogs", "22-10-2021")
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// log.Println(logRows)
 	//go goroutines.CheckClientOnlineStatusGour()
 	// sshKey, err := models.GetSSHKeyFromId(14)
 	// if err != nil {
@@ -244,6 +249,7 @@ func main() {
 	router.HandleFunc("/syslog/pristat/{date}", routes.GetAllClientSysLogPriStatRoute).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/syslog/{date}/{page}", routes.GetSysLogFilesRoute).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/syslog/{date}/pri/{pri}/{page}", routes.GetSysLogByPriRoute).Methods("OPTIONS", "GET")
+	router.HandleFunc("/all/syslog/{date}", routes.GetAllClientSysLogRoute).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

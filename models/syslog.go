@@ -3,6 +3,7 @@ package models
 import (
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -261,4 +262,41 @@ func GetAllClientSyslogPriStat(logBasePath string, date string) (SyslogPriStat, 
 		tmpStat = SyslogPriStat{}
 	}
 	return syslogPriStat, err
+}
+
+func GetAllClientSyslog(logBasePath string, date string) ([]Syslog, error) {
+	var syslogRows, tmpRows []Syslog
+	var err error
+	sshConnectionList, err := GetAllSSHConnection()
+	if err != nil {
+		return nil, err
+	}
+	for _, sshConnection := range sshConnectionList {
+		tmpRows, err = GetClientSyslog("/var/log/remotelogs", sshConnection.SSHConnectionId, date)
+		if err != nil {
+			return nil, err
+		}
+		syslogRows = append(syslogRows, tmpRows...)
+		tmpRows = nil
+	}
+	syslogRows, err = sortSyslogByDate(syslogRows)
+	return syslogRows, err
+}
+
+func sortSyslogByDate(logRows []Syslog) ([]Syslog, error) {
+	var logTime1, logTime2 time.Time
+	var err error
+	var layoutNumber string = "2006-01-02 15:04:05 -0700 -07"
+	sort.SliceStable(logRows, func(i, j int) bool {
+		logTime1, err = time.Parse(layoutNumber, logRows[i].Timegenerated)
+		if err != nil {
+			return false
+		}
+		logTime2, err = time.Parse(layoutNumber, logRows[j].Timegenerated)
+		if err != nil {
+			return false
+		}
+		return logTime1.After(logTime2)
+	})
+	return logRows, err
 }
