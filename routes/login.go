@@ -84,6 +84,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		returnJson := simplejson.New()
 		returnJson.Set("Authorization", token)
 		returnJson.Set("2fa", twofaSettings)
+		returnJson.Set("user_id", user.UserId)
 		returnJson.Set("Error", "")
 		utils.JSON(w, http.StatusOK, returnJson)
 		eventStatus = "successfully"
