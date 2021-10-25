@@ -1,9 +1,12 @@
 package routes
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
@@ -104,4 +107,38 @@ func GetAllClientSysLogRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.JSON(w, http.StatusOK, logs[:10])
+}
+
+func SetupSyslogRoute(w http.ResponseWriter, r *http.Request) {
+
+	type receivedStruct struct {
+		ID       int    `json:"id"`
+		ServerIP string `json:"server_ip"`
+	}
+	var received receivedStruct
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = json.Unmarshal(body, &received)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	sshConnection, err := models.GetSSHConnectionFromId(received.ID)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if strings.Contains(strings.ToLower(sshConnection.OsType), "windows") {
+		err = sshConnection.SetupSyslogWindows(received.ServerIP, `C:\Program Files (x86)\nxlog\conf\nxlog.conf`)
+	} else if strings.Contains(strings.ToLower(sshConnection.OsType), "ubuntu") {
+		_, err = sshConnection.SetupSyslogRsyslog(received.ServerIP, `/etc/rsyslog.conf`)
+	}
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
 }

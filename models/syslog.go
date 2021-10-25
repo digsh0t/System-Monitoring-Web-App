@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"os"
 	"regexp"
 	"sort"
@@ -299,4 +300,189 @@ func sortSyslogByDate(logRows []Syslog) ([]Syslog, error) {
 		return logTime1.After(logTime2)
 	})
 	return logRows, err
+}
+
+func (sshConnection SshConnectionInfo) SetupSyslogWindows(serverIp string, configFilePath string) error {
+	var command string
+	newConfig := `Panic Soft
+	#NoFreeOnExit TRUE
+	
+	define ROOT     C:\Program Files (x86)\nxlog
+	define CERTDIR  %ROOT%\cert
+	define CONFDIR  %ROOT%\conf
+	define LOGDIR   %ROOT%\data
+	define LOGFILE  %LOGDIR%\nxlog.log
+	LogFile %LOGFILE%
+	
+	Moduledir %ROOT%\modules
+	CacheDir  %ROOT%\data
+	Pidfile   %ROOT%\data\nxlog.pid
+	SpoolDir  %ROOT%\data
+	
+	<Extension _syslog>
+		Module      xm_syslog
+	</Extension>
+	
+	<Extension _charconv>
+		Module      xm_charconv
+		AutodetectCharsets iso8859-2, utf-8, utf-16, utf-32
+	</Extension>
+	
+	<Extension _exec>
+		Module      xm_exec
+	</Extension>
+	
+	<Extension _fileop>
+		Module      xm_fileop
+	
+		# Check the size of our log file hourly, rotate if larger than 5MB
+		<Schedule>
+			Every   1 hour
+			Exec    if (file_exists('%LOGFILE%') and \
+					   (file_size('%LOGFILE%') >= 5M)) \
+						file_cycle('%LOGFILE%', 8);
+		</Schedule>
+	
+		# Rotate our log file every week on Sunday at midnight
+		<Schedule>
+			When    @weekly
+			Exec    if file_exists('%LOGFILE%') file_cycle('%LOGFILE%', 8);
+		</Schedule>
+	</Extension>
+	
+	# Snare compatible example configuration
+	# Collecting event log
+	 <Input in>
+		 Module      im_msvistalog
+	 </Input>
+	# Buffering log if TLS/SSL out is unreachable
+	 <Processor buffer>
+		Module      pm_buffer
+		Type        Disk
+	
+		# 40 MiB buffer
+		MaxSize     40960
+	
+		# Generate warning message at 20 MiB
+		WarnLimit   20480
+	 </Processor>
+	# Converting events to Snare format and sending them out over TCP syslog
+	<Output out>
+		Module  om_tcp
+		Host    ` + serverIp + `
+		Port    514
+		Exec    to_syslog_bsd();
+	</Output>
+	# 
+	# Connect input 'in' to output 'out'
+	 <Route 1>
+		 Path        in => buffer => out
+	 </Route>
+	
+	`
+	if configFilePath == "" {
+		configFilePath = `C:\Program Files (x86)\nxlog\conf\nxlog.conf`
+	}
+	command = "(" + writeNewFileCMDCommand(newConfig) + ") > " + `"` + configFilePath + `"`
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	if err != nil {
+		return err
+	}
+	command += newConfig
+	if strings.Trim(output, "\r\n\t ") != "" {
+		return errors.New(output)
+	}
+	return err
+}
+
+func writeNewFileCMDCommand(text string) string {
+	var command string = "echo "
+	for _, line := range strings.Split(text, "\n") {
+		line = strings.ReplaceAll(line, "(", "^(")
+		line = strings.ReplaceAll(line, ")", "^)")
+		line = strings.ReplaceAll(line, "&", "^&")
+		line = strings.ReplaceAll(line, "<", "^<")
+		line = strings.ReplaceAll(line, ">", "^>")
+		command += strings.Trim(line, "\r\n\t ") + `& echo.`
+	}
+	return command
+}
+
+func (sshConnection SshConnectionInfo) SetupSyslogRsyslog(serverIp string, configFilePath string) (string, error) {
+	var command string
+	newConfig := `
+# /etc/rsyslog.conf configuration file for rsyslog
+#
+# For more information install rsyslog-doc and see
+# /usr/share/doc/rsyslog-doc/html/configuration/index.html
+#
+# Default logging rules can be found in /etc/rsyslog.d/50-default.conf
+
+
+#################
+#### MODULES ####
+#################
+
+module(load="imuxsock") # provides support for local system logging
+#module(load="immark")  # provides --MARK-- message capability
+
+# provides UDP syslog reception
+module(load="imudp")
+input(type="imudp" port="514")
+
+# provides TCP syslog reception
+#module(load="imtcp")
+#input(type="imtcp" port="514")
+
+# provides kernel logging support and enable non-kernel klog messages
+module(load="imklog" permitnonkernelfacility="on")
+
+###########################
+#### GLOBAL DIRECTIVES ####
+###########################
+
+#
+# Use traditional timestamp format.
+# To enable high precision timestamps, comment out the following line.
+#
+$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat
+
+# Filter duplicated messages
+$RepeatedMsgReduction on
+
+#
+# Set the default permissions for all log files.
+#
+$FileOwner syslog
+$FileGroup adm
+$FileCreateMode 0640
+$DirCreateMode 0755
+$Umask 0022
+$PrivDropToUser syslog
+$PrivDropToGroup syslog
+
+#
+# Where to place spool and state files
+#
+$WorkDirectory /var/spool/rsyslog
+
+#
+# Include all config files in /etc/rsyslog.d/
+#
+$IncludeConfig /etc/rsyslog.d/*.conf
+*.* @@` + serverIp + `:514          # Use @@ for TCP protocol
+`
+	if configFilePath == "" {
+		configFilePath = `/etc/rsyslog.conf`
+	}
+	command = `echo -e '` + newConfig + `' > "` + configFilePath + `"`
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(command)
+	if err != nil {
+		return output, err
+	}
+	command += newConfig
+	if strings.Trim(output, "\r\n\t ") != "" {
+		return output, errors.New(output)
+	}
+	return output, err
 }
