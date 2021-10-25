@@ -549,6 +549,67 @@ func DeleteSSHConnection(id int) (bool, error) {
 	return true, err
 }
 
+func AddSNMPToNetworkDevice(sshConnectionInfo SshConnectionInfo, lastId int64) (bool, error) {
+	var (
+		result bool
+		err    error
+	)
+	snmpInfo := SNMPInfo{
+		AuthUsername:    utils.RandomString(8),
+		AuthPassword:    utils.RandomString(12),
+		PrivPassword:    utils.RandomString(12),
+		SSHConnectionID: int(lastId),
+	}
+	result, err = snmpInfo.AddSNMPConnectionToDB()
+	if err != nil {
+		return result, errors.New("fail to add snmp credential to DB")
+	}
+
+	type SNMPJson struct {
+		Host          string `json:"host"`
+		Auth_Username string `json:"auth_username"`
+		Auth_Password string `json:"auth_password"`
+		Priv_Password string `json:"priv_password"`
+	}
+
+	// Create Json
+	snmpJson := SNMPJson{
+		Host:          sshConnectionInfo.HostNameSSH,
+		Auth_Username: snmpInfo.AuthUsername,
+		Auth_Password: snmpInfo.AuthPassword,
+		Priv_Password: snmpInfo.PrivPassword,
+	}
+
+	// Marshal and run playbook
+	snmpJsonMarshal, err := json.Marshal(snmpJson)
+	if err != nil {
+		return false, errors.New("fail to marshal json")
+	}
+
+	// Enable NETCONF connection on Juniper device
+	if sshConnectionInfo.NetworkOS == "junos" {
+		_, err := RunAnsiblePlaybookWithjson("./yamls/network_client/juniper/juniper_enable_netconf.yml", string(snmpJsonMarshal))
+		if err != nil {
+			return false, errors.New("fail to enable NETCONF on juniper device")
+		}
+	}
+	var filepath string
+	switch sshConnectionInfo.NetworkOS {
+	case "ios":
+		filepath = "./yamls/network_client/cisco/cisco_config_snmp.yml"
+	case "vyos":
+		filepath = "./yamls/network_client/vyos/vyos_config_snmp.yml"
+	case "junos":
+		filepath = "./yamls/network_client/juniper/juniper_config_snmp.yml"
+	}
+
+	_, err = RunAnsiblePlaybookWithjson(filepath, string(snmpJsonMarshal))
+	if err != nil {
+		return false, errors.New("fail to enable snmp on network device")
+	}
+	return result, err
+}
+
 func GenerateInventory() error {
 	var inventory string
 	// Get sshConnection No Group

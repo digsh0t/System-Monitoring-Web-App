@@ -169,69 +169,10 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 
 	// Add SNMP account if connection is network device.
 	if sshConnectionInfo.IsNetwork {
-
-		snmpInfo := models.SNMPInfo{
-			AuthUsername:    utils.RandomString(8),
-			AuthPassword:    utils.RandomString(12),
-			PrivPassword:    utils.RandomString(12),
-			SSHConnectionID: int(lastId),
-		}
-		_, err := snmpInfo.AddSNMPConnectionToDB()
+		result, err := models.AddSNMPToNetworkDevice(sshConnectionInfo, lastId)
 		if err != nil {
-			returnJson.Set("Status", false)
-			returnJson.Set("Error", errors.New("fail to add snmp credential to DB").Error())
-			utils.JSON(w, http.StatusBadRequest, returnJson)
-			return
-		}
-
-		type SNMPJson struct {
-			Host          string `json:"host"`
-			Auth_Username string `json:"auth_username"`
-			Auth_Password string `json:"auth_password"`
-			Priv_Password string `json:"priv_password"`
-		}
-
-		// Create Json
-		snmpJson := SNMPJson{
-			Host:          sshConnectionInfo.HostNameSSH,
-			Auth_Username: snmpInfo.AuthUsername,
-			Auth_Password: snmpInfo.AuthPassword,
-			Priv_Password: snmpInfo.PrivPassword,
-		}
-
-		// Marshal and run playbook
-		snmpJsonMarshal, err := json.Marshal(snmpJson)
-		if err != nil {
-			returnJson.Set("Status", false)
-			returnJson.Set("Error", errors.New("fail to marshal json").Error())
-			utils.JSON(w, http.StatusBadRequest, returnJson)
-			return
-		}
-
-		// Enable NETCONF connection on Juniper device
-		if sshConnectionInfo.NetworkOS == "junos" {
-			_, err := models.RunAnsiblePlaybookWithjson("./yamls/network_client/juniper/juniper_enable_netconf.yml", string(snmpJsonMarshal))
-			if err != nil {
-				returnJson.Set("Status", false)
-				returnJson.Set("Error", errors.New("fail to enable NETCONF on juniper device").Error())
-				utils.JSON(w, http.StatusBadRequest, returnJson)
-				return
-			}
-		}
-		var filepath string
-		switch sshConnectionInfo.NetworkOS {
-		case "ios":
-			filepath = "./yamls/network_client/cisco/cisco_config_snmp.yml"
-		case "vyos":
-			filepath = "./yamls/network_client/vyos/vyos_config_snmp.yml"
-		case "junos":
-			filepath = "./yamls/network_client/juniper/juniper_config_snmp.yml"
-		}
-
-		_, err = models.RunAnsiblePlaybookWithjson(filepath, string(snmpJsonMarshal))
-		if err != nil {
-			returnJson.Set("Status", false)
-			returnJson.Set("Error", errors.New("fail to open snmp on network device").Error())
+			returnJson.Set("Status", result)
+			returnJson.Set("Error", err.Error())
 			utils.JSON(w, http.StatusBadRequest, returnJson)
 			return
 		}
@@ -331,18 +272,18 @@ func GetAllSSHConnection(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("OKOK")
 		return
 	}
-	/*
-		tokenData, err := auth.ExtractTokenMetadata(r)
-		if err != nil {
-			utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
-			return
-		}
 
-			if tokenData.Twofa != "authorized" {
-				utils.ERROR(w, http.StatusUnauthorized, errors.New("Please turn on 2FA settings to use this function").Error())
-				return
-			}
-	*/
+	tokenData, err := auth.ExtractTokenMetadata(r)
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+
+	if tokenData.Twofa != "authorized" {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("please turn on 2FA settings to use this function").Error())
+		return
+	}
+
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
