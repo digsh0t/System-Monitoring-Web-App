@@ -104,6 +104,7 @@ func VerifyQR(w http.ResponseWriter, r *http.Request) {
 	returnJson := simplejson.New()
 	returnJson.Set("ok", ok)
 	returnJson.Set("authorization", token)
+	returnJson.Set("user_id", user.UserId)
 	utils.JSON(w, http.StatusOK, returnJson)
 }
 

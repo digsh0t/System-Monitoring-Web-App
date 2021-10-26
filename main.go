@@ -24,18 +24,11 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	// firewallSetting := `{"host":"vmware-windows", "name":"add firewall test-in"}`
-	//models.DeleteFirewallRule(firewallSetting)
-	// sshConnection, err := models.GetSSHConnectionFromId(51)
+	// sshConnection, err := models.GetSSHConnectionFromId(55)
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// sid := "S-1-5-21-1572063403-3487170947-126735497-1000"
-	// var keyList []models.RegistryKey
-	// keyList = append(keyList, models.RegistryKey{Data: "1", Path: "Disables all Control Panel programs and the PC settings app"})
-	// var userList []models.ClientUser
-	// userList = append(userList, models.ClientUser{Username: "Administrator"}, models.ClientUser{Username: "guest"}, models.ClientUser{Username: "TRILX"})
-	// output, err := sshConnection.CheckSSHConnectionExist()
+	// output, err := sshConnection.SetupSyslogRsyslog("192.168.163.1", "")
 	// if err != nil {
 	// 	log.Println(err)
 	// }
@@ -251,7 +244,11 @@ func main() {
 	router.HandleFunc("/qr/on/verify", routes.VerifyQRSettingsRoute).Methods("OPTIONS", "POST")
 
 	//Syslog
-	router.HandleFunc("/{id}/syslog/{date}", routes.GetSysLogFilesRoute).Methods("OPTIONS", "GET")
+	router.HandleFunc("/syslog/pristat/{date}", routes.GetAllClientSysLogPriStatRoute).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/syslog/{date}/{page}", routes.GetSysLogFilesRoute).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/syslog/{date}/pri/{pri}/{page}", routes.GetSysLogByPriRoute).Methods("OPTIONS", "GET")
+	router.HandleFunc("/all/syslog/{date}", routes.GetAllClientSysLogRoute).Methods("OPTIONS", "GET")
+	router.HandleFunc("/syslog/setup", routes.SetupSyslogRoute).Methods("OPTIONS", "POST")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
