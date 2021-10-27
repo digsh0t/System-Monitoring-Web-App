@@ -34,6 +34,11 @@ type SshConnectionInfo struct {
 	NetworkOS       string `json:"networkOS"`
 }
 
+type Os_version struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+}
+
 //Test SSH connection using username and password
 func (sshConnection *SshConnectionInfo) TestConnectionPassword() (bool, error) {
 	sshConfig := &ssh.ClientConfig{
@@ -125,7 +130,7 @@ func (sshConnection SshConnectionInfo) CheckSSHConnectionExist() (bool, error) {
 	}
 	for _, curConnection := range sshConnectionList {
 		if curConnection.HostSSH == sshConnection.HostSSH && curConnection.PortSSH == sshConnection.PortSSH {
-			return true, errors.New("This SSH Connection is already exists")
+			return true, errors.New("this SSH Connection is already exists")
 		}
 	}
 	return false, nil
@@ -806,15 +811,13 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithPassword(cmd string) (str
 func (sshConnection *SshConnectionInfo) GetOsType() string {
 
 	var osType string
-	type OsJson struct {
-		Name string `json:"name"`
-	}
+
 	if sshConnection.IsNetwork {
 		return "Unknown"
 	}
 
 	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT name FROM os_version"`)
-	var osJson []OsJson
+	var osJson []Os_version
 	if err != nil {
 		osType = "Unknown"
 	} else {

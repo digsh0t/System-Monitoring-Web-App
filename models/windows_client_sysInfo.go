@@ -9,7 +9,7 @@ import (
 	"github.com/Jeffail/gabs"
 )
 
-type osVersion struct {
+type OsVersion struct {
 	Arch         string `json:"arch"`
 	Build        string `json:"build"`
 	Codename     string `json:"codename"`
@@ -151,14 +151,14 @@ func (sshConnection SshConnectionInfo) GetIntefaceList() ([]interfaceInfo, error
 	return interfaceList, err
 }
 
-func parseOSVersion(output string) (osVersion, error) {
-	var osVersionList []osVersion
+func parseOSVersion(output string) (OsVersion, error) {
+	var osVersionList []OsVersion
 	err := json.Unmarshal([]byte(output), &osVersionList)
 	return osVersionList[0], err
 }
 
-func (sshConnection SshConnectionInfo) GetOSVersion() (osVersion, error) {
-	var os osVersion
+func (sshConnection SshConnectionInfo) GetOSVersion() (OsVersion, error) {
+	var os OsVersion
 	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM os_version"`)
 	if err != nil {
 		return os, err
@@ -170,7 +170,7 @@ func (sshConnection SshConnectionInfo) GetOSVersion() (osVersion, error) {
 func ParseAnsibleFactsOutput(output string) error {
 	openingTag := strings.Index(output, "{")
 	if openingTag < 0 {
-		return errors.New("Ansible Output is not JSON format")
+		return errors.New("ansible Output is not JSON format")
 	}
 	closingTag := strings.LastIndex(output, "}")
 	if closingTag < 0 {

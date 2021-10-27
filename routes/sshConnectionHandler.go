@@ -178,6 +178,14 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	result, err := models.AddSSHConnectionInformation(sshConnectionInfo, lastId)
+	if err != nil {
+		returnJson.Set("Status", result)
+		returnJson.Set("Error", err.Error())
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+
 	// Return Json
 	utils.ReturnInsertJSON(w, true, err)
 	eventStatus = "successfully"
