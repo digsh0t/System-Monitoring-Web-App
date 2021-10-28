@@ -4,17 +4,13 @@
   hosts: "{{ host }}"
   tasks:
   - name: Delete Configuration
-    ios_l3_interfaces:
-      config:
-      - name: "{{ interface }}"
-      state: deleted
+    ios_l3_interface:
+      name: "{{ interface }}"
+      state: absent
   - name: Replaces cisco device configuration with provided configuration
-    ios_l3_interfaces:
-      config:
-      - name: "{{ interface }}"
-        ipv4:
-        - address: "{{ address4 }}"
-      state: merged
+    ios_l3_interface:
+      name: "{{ interface }}"
+      ipv4: "{{ address4 }}"
   - name: Set Status of interface
     ios_interfaces:
      config:
