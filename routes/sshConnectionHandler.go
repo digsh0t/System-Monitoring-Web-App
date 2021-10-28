@@ -178,6 +178,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Get Detail Information Of Client
 	result, err := models.AddSSHConnectionInformation(sshConnectionInfo, lastId)
 	if err != nil {
 		returnJson.Set("Status", result)

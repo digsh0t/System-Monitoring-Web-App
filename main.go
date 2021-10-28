@@ -138,6 +138,7 @@ func main() {
 	router.HandleFunc("/webapp/report", func(w http.ResponseWriter, r *http.Request) {
 		routes.GetReport(w, r, start)
 	}).Methods("GET")
+	router.HandleFunc("/webapp/report/detail", routes.GetDetailOSReport).Methods("GET")
 
 	// Network Automation: Vyos
 	//router.HandleFunc("/vyos/listconfig/{id}", routes.GetInfoConfigVyos).Methods("GET")
