@@ -1,8 +1,11 @@
 package models
 
 import (
+	"bytes"
 	"errors"
+	"log"
 	"os"
+	"os/exec"
 	"regexp"
 	"sort"
 	"strconv"
@@ -485,4 +488,116 @@ $IncludeConfig /etc/rsyslog.d/*.conf
 		return output, errors.New(output)
 	}
 	return output, err
+}
+
+func SetupRsyslogServer(configFilePath string) (string, error) {
+	var command string
+	newConfig := `
+# rsyslog configuration file
+
+# For more information see /usr/share/doc/rsyslog-*/rsyslog_conf.html
+# or latest version online at http://www.rsyslog.com/doc/rsyslog_conf.html 
+# If you experience problems, see http://www.rsyslog.com/doc/troubleshoot.html
+
+#### MODULES ####
+
+module(load="imuxsock" 	  # provides support for local system logging (e.g. via logger command)
+	   SysSock.Use="off") # Turn off message reception via local log socket; 
+			  # local messages are retrieved through imjournal now.
+module(load="imjournal" 	    # provides access to the systemd journal
+	   StateFile="imjournal.state") # File to store the position in the journal
+#module(load="imklog") # reads kernel messages (the same are read from journald)
+#module(load="immark") # provides --MARK-- message capability
+
+# Provides UDP syslog reception
+# for parameters see http://www.rsyslog.com/doc/imudp.html
+module(load="imudp") # needs to be done just once
+input(type="imudp" port="514")
+
+# Provides TCP syslog reception
+# for parameters see http://www.rsyslog.com/doc/imtcp.html
+module(load="imtcp") # needs to be done just once
+input(type="imtcp" port="514")
+
+$template remote-incoming-logs, "/var/log/remotelogs/%FROMHOST-IP%/%$day%-%$month%-%$year%.log"
+
+$template precise,"%syslogpriority%,%syslogfacility%,%$now-unixtimestamp%,%HOSTNAME%,%syslogtag%,%msg%\n"
+
+*.* ?remote-incoming-logs;precise
+#### GLOBAL DIRECTIVES ####
+
+# Where to place auxiliary files
+global(workDirectory="/var/lib/rsyslog")
+
+# Use default timestamp format
+module(load="builtin:omfile" Template="RSYSLOG_TraditionalFileFormat")
+
+# Include all config files in /etc/rsyslog.d/
+include(file="/etc/rsyslog.d/*.conf" mode="optional")
+
+#### RULES ####
+
+# Log all kernel messages to the console.
+# Logging much else clutters up the screen.
+#kern.*                                                 /dev/console
+
+# Log anything (except mail) of level info or higher.
+# Don't log private authentication messages!
+*.info;mail.none;authpriv.none;cron.none                /var/log/messages
+
+# The authpriv file has restricted access.
+auth,authpriv.*                                              /var/log/secure
+
+# Log all the mail messages in one place.
+mail.*                                                  -/var/log/maillog
+
+
+# Log cron stuff
+cron.*                                                  /var/log/cron
+
+# Everybody gets emergency messages
+*.emerg                                                 :omusrmsg:*
+
+# Save news errors of level crit and higher in a special file.
+uucp,news.crit                                          /var/log/spooler
+
+# Save boot messages also to boot.log
+local7.*                                                /var/log/boot.log
+
+
+# ### sample forwarding rule ###
+#action(type="omfwd"  
+# An on-disk queue is created for this action. If the remote host is
+# down, messages are spooled to disk and sent when it is up again.
+#queue.filename="fwdRule1"       # unique name prefix for spool files
+#queue.maxdiskspace="1g"         # 1gb space limit (use as much as possible)
+#queue.saveonshutdown="on"       # save messages to disk on shutdown
+#queue.type="LinkedList"         # run asynchronously
+#action.resumeRetryCount="-1"    # infinite retries if host is down
+# Remote Logging (we use TCP for reliable delivery)
+# remote_host is: name/ip, e.g. 192.168.0.1, port optional e.g. 10514
+#Target="remote_host" Port="XXX" Protocol="tcp")`
+
+	if configFilePath == "" {
+		configFilePath = `/etc/rsyslog.conf`
+	}
+	newConfig = strings.ReplaceAll(newConfig, `\`, `\\`)
+	newConfig = strings.ReplaceAll(newConfig, `'`, `'\''`)
+	command = `echo -e '` + newConfig + `' > "/home/wintltr/Desktop/rsyslog.conf"`
+	cmd := exec.Command("bash", "-c", command)
+	var out, errbuf bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &errbuf
+	err := cmd.Run()
+	output := out.String()
+	stderr := errbuf.String()
+	log.Println(stderr)
+	command += newConfig
+	if err != nil {
+		return string(output), err
+	}
+	if strings.Trim(string(output), "\r\n\t ") != "" {
+		return string(output), errors.New(string(output))
+	}
+	return string(output), err
 }

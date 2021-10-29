@@ -28,7 +28,7 @@ func main() {
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// output, err := sshConnection.SetupSyslogRsyslog("192.168.163.1", "")
+	// output, err := models.SetupRsyslogServer("/home/wintltr/Desktop/rsyslog.conf")
 	// if err != nil {
 	// 	log.Println(err)
 	// }
