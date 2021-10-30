@@ -348,7 +348,6 @@ func ParseLogsCisco(output string) ([]NetworkLogs, error) {
 
 	// Line: "*Oct  4 03:14:27.338: %LINK-3-UPDOWN: Interface Serial3/0, changed state to up"
 	for _, line := range lines {
-
 		// Check if existing log, case no returns empty list
 		if line.String() == "\"\"" {
 			return networkLogsList, nil
@@ -361,10 +360,14 @@ func ParseLogsCisco(output string) ([]NetworkLogs, error) {
 		networkLogs.TimeStamp = strings.Trim(attributes[0], "\"*")
 
 		// Get Service
-		networkLogs.Service = attributes[1]
+		if strings.HasPrefix(attributes[1], "%") {
+			networkLogs.Service = attributes[1]
 
-		// Get Description
-		networkLogs.Description = strings.Trim(attributes[2], "\"")
+			// Get Description
+			networkLogs.Description = strings.Trim(attributes[2], "\"")
+		} else {
+			networkLogs.Description = strings.Trim(attributes[1], "\"")
+		}
 
 		networkLogsList = append(networkLogsList, networkLogs)
 

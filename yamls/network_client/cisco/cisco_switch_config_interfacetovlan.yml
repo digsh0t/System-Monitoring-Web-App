@@ -9,6 +9,6 @@
      interfaces: "{{ interfaces }}"
 
   - name: save running to startup when modified
-    ios_config:
+    ios_config: 
      save_when: modified
   

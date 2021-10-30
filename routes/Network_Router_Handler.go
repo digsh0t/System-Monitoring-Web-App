@@ -54,9 +54,15 @@ func ConfigIPRouter(w http.ResponseWriter, r *http.Request) {
 
 	// Return Json
 	returnJson := simplejson.New()
+	var statusCode int
+	if len(fatals) > 0 {
+		statusCode = http.StatusBadRequest
+	} else {
+		statusCode = http.StatusOK
+	}
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatals)
-	utils.JSON(w, http.StatusOK, returnJson)
+	utils.JSON(w, statusCode, returnJson)
 
 	// Write Event Web
 	hostname, err := models.ConvertListIdToHostnameVer2(routerJson.SshConnectionId)

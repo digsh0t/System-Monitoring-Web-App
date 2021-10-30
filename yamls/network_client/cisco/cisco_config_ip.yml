@@ -7,10 +7,12 @@
     ios_l3_interface:
       name: "{{ interface }}"
       state: absent
+
   - name: Replaces cisco device configuration with provided configuration
     ios_l3_interface:
       name: "{{ interface }}"
       ipv4: "{{ address4 }}"
+      
   - name: Set Status of interface
     ios_interfaces:
      config:
