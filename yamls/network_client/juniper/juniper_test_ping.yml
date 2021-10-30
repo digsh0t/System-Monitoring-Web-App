@@ -1,0 +1,8 @@
+- name: Test ping reachability
+  connection: network_cli
+  hosts: "{{ host }}"
+  gather_facts: false
+  tasks:
+  - name: Test ping reachability
+    junos_ping:
+     dest: "{{ dest }}"

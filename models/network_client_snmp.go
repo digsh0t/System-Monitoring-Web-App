@@ -2,7 +2,9 @@ package models
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -19,7 +21,7 @@ type InterfaceSNMP struct {
 	IfPhysAddress   string `json:"ifPhysAddress"`
 	IfAdminStatus   string `json:"ifAdminStatus"`
 	IfOperStatus    string `json:"ifOperStatus"`
-	IfLastChange    uint32 `json:"ifLastChange"`
+	IfLastChange    string `json:"ifLastChange"`
 	IfInOctets      uint   `json:"ifInOctets"`
 	IfInUcastPkts   uint   `json:"ifInUcastPkts"`
 	IfInNUcastPkts  uint   `json:"ifInNUcastPkts"`
@@ -35,7 +37,7 @@ type InterfaceSNMP struct {
 type SystemSNMP struct {
 	SysDescr    string `json:"sysDescr"`
 	SysObjectID string `json:"sysObjectID"`
-	SysUpTime   uint32 `json:"sysUpTime"`
+	SysUpTime   string `json:"sysUpTime"`
 	SysContact  string `json:"sysContact"`
 	SysName     string `json:"sysName"`
 	SysLocation string `json:"sysLocation"`
@@ -72,7 +74,19 @@ type IpRouteSNMP struct {
 	IpRouteAge     int    `json:"ipRouteAge"`
 	IpRouteMask    string `json:"ipRouteMask"`
 	IpRouteMetric5 int    `json:"ipRouteMetric5"`
-	IpRouteInfo    string `json:"ipRouteInfo"`
+}
+
+type NetworkLogs struct {
+	TimeStamp   string `json:"timestamp"`
+	Service     string `json:"service"`
+	Description string `json:"description"`
+}
+
+type NetworkJson struct {
+	SshConnectionId []int  `json:"sshConnectionId"`
+	Host            string `json:"host"`
+	Dest            string `json:"dest"`
+	IpSysLog        string `json:"ipSysLog"`
 }
 
 // Get Router Interfaces
@@ -179,20 +193,35 @@ func ParseRouterInterfaces(array2d [][]interface{}) []InterfaceSNMP {
 				interfaceSNMP.IfPhysAddress = array2d[i][y].(string)
 			case 6:
 				rawIfAdminStatus := array2d[i][y].(int)
-				if rawIfAdminStatus == 1 {
+				switch rawIfAdminStatus {
+				case 1:
 					interfaceSNMP.IfAdminStatus = "up"
-				} else {
+				case 2:
 					interfaceSNMP.IfAdminStatus = "down"
+				case 3:
+					interfaceSNMP.IfAdminStatus = "testing"
 				}
 			case 7:
 				rawIfOperStatus := array2d[i][y].(int)
-				if rawIfOperStatus == 1 {
+				switch rawIfOperStatus {
+				case 1:
 					interfaceSNMP.IfOperStatus = "up"
-				} else {
+				case 2:
 					interfaceSNMP.IfOperStatus = "down"
+				case 3:
+					interfaceSNMP.IfOperStatus = "testing"
+				case 4:
+					interfaceSNMP.IfOperStatus = "unknown"
+				case 5:
+					interfaceSNMP.IfOperStatus = "dormant"
+				case 6:
+					interfaceSNMP.IfOperStatus = "notPresent"
+				case 7:
+					interfaceSNMP.IfOperStatus = "lowerLayerDown"
 				}
 			case 8:
-				interfaceSNMP.IfLastChange = array2d[i][y].(uint32)
+				rawIfLastChange := array2d[i][y].(uint32)
+				interfaceSNMP.IfLastChange = utils.HundredSecondsToHuman(int(rawIfLastChange))
 			case 9:
 				interfaceSNMP.IfInOctets = array2d[i][y].(uint)
 			case 10:
@@ -258,7 +287,8 @@ func ParseSwitchInterfaces(array2d [][]interface{}) []InterfaceSNMP {
 					interfaceSNMP.IfOperStatus = "down"
 				}
 			case 8:
-				interfaceSNMP.IfLastChange = array2d[i][y].(uint32)
+				rawIfLastChange := array2d[i][y].(uint32)
+				interfaceSNMP.IfLastChange = utils.HundredSecondsToHuman(int(rawIfLastChange))
 			case 9:
 				interfaceSNMP.IfInOctets = array2d[i][y].(uint)
 			case 10:
@@ -386,7 +416,8 @@ func GetNetworkSystem(sshConnectionId int) (SystemSNMP, error) {
 		case 1:
 			systemSNMP.SysObjectID = variable.Value.(string)
 		case 2:
-			systemSNMP.SysUpTime = variable.Value.(uint32)
+			rawSysUpTime := variable.Value.(uint32)
+			systemSNMP.SysUpTime = utils.HundredSecondsToHuman(int(rawSysUpTime))
 		case 3:
 			systemSNMP.SysContact = string(variable.Value.([]byte))
 		case 4:
@@ -431,6 +462,7 @@ func GetNetworkIPAddr(sshConnectionId int) ([]IpAddrSNMP, error) {
 		return err
 	})
 	if err != nil {
+		fmt.Println(err.Error())
 		return ipSNMPList, errors.New("fail to get numbers of interfaces")
 	}
 
@@ -665,12 +697,17 @@ func GetNetworkIPRoute(sshConnectionId int) ([]IpRouteSNMP, error) {
 		ipRouteSNMPList []IpRouteSNMP
 		err             error
 	)
+
 	// Get Hostname
 	sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
 	if err != nil {
 		return ipRouteSNMPList, errors.New("fail to get ssh connection")
 	}
 
+	// Exception: Juniper not supported
+	if sshConnection.NetworkType == "router" && sshConnection.NetworkOS == "junos" {
+		return ipRouteSNMPList, errors.New("this function is not supported on the device")
+	}
 	// Connect SNMP
 	params, err := ConnectSNMP(*sshConnection)
 	if err != nil {
@@ -765,8 +802,6 @@ func GetNetworkIPRoute(sshConnectionId int) ([]IpRouteSNMP, error) {
 					ipRouteSNMP.IpRouteMask = array2d[i][y].(string)
 				case 11:
 					ipRouteSNMP.IpRouteMetric5 = array2d[i][y].(int)
-				case 12:
-					ipRouteSNMP.IpRouteInfo = array2d[i][y].(string)
 
 				}
 			}
@@ -803,8 +838,6 @@ func GetNetworkIPRoute(sshConnectionId int) ([]IpRouteSNMP, error) {
 					ipRouteSNMP.IpRouteProto = utils.ReferenceIpRouteProtoRecord(ipRouteProto)
 				case 6:
 					ipRouteSNMP.IpRouteMask = array2d[i][y].(string)
-				case 7:
-					ipRouteSNMP.IpRouteInfo = array2d[i][y].(string)
 				}
 
 			}
@@ -815,4 +848,127 @@ func GetNetworkIPRoute(sshConnectionId int) ([]IpRouteSNMP, error) {
 
 	return ipRouteSNMPList, err
 
+}
+
+// Test network ping
+func TestPingNetworkDevices(networkJson NetworkJson) ([]string, error) {
+	var (
+		outputList []string
+		err        error
+	)
+	// Get Hostname from Id
+	for _, id := range networkJson.SshConnectionId {
+		sshConnection, err := GetSSHConnectionFromId(id)
+		if err != nil {
+			return outputList, errors.New("fail to parse id")
+		}
+
+		networkJson.Host = sshConnection.HostNameSSH
+
+		// Marshal and run playbook
+		ciscoJsonMarshal, err := json.Marshal(networkJson)
+		if err != nil {
+			return outputList, err
+		}
+		var filepath string
+		if sshConnection.NetworkOS == "ios" {
+			filepath = "./yamls/network_client/cisco/cisco_test_ping.yml"
+		} else if sshConnection.NetworkOS == "vyos" {
+			filepath = "./yamls/network_client/vyos/vyos_test_ping.yml"
+		} else if sshConnection.NetworkOS == "junos" {
+			filepath = "./yamls/network_client/juniper/juniper_test_ping.yml"
+		}
+		output, err := RunAnsiblePlaybookWithjson(filepath, string(ciscoJsonMarshal))
+		if err != nil {
+			return outputList, errors.New("fail to load yaml file")
+		}
+		outputList = append(outputList, output)
+	}
+	return outputList, err
+}
+
+// Get Network Log
+func GetNetworkLog(sshConnectionId int) ([]NetworkLogs, error) {
+	var (
+		networkLogsList []NetworkLogs
+		err             error
+	)
+	// Get Hostname from Id
+
+	sshConnection, err := GetSSHConnectionFromId(sshConnectionId)
+	if err != nil {
+		return networkLogsList, errors.New("fail to parse id")
+	}
+	networkJson := NetworkJson{
+		Host: sshConnection.HostNameSSH,
+	}
+
+	// Marshal and run playbook
+	ciscoJsonMarshal, err := json.Marshal(networkJson)
+	if err != nil {
+		return networkLogsList, err
+	}
+	var filepath string
+	if sshConnection.NetworkOS == "ios" {
+		filepath = "./yamls/network_client/cisco/cisco_getlog.yml"
+	} else if sshConnection.NetworkOS == "vyos" {
+		filepath = "./yamls/network_client/vyos/vyos_getlog.yml"
+	} else if sshConnection.NetworkOS == "junos" {
+		filepath = "./yamls/network_client/juniper/juniper_getlog.yml"
+	}
+	output, err := RunAnsiblePlaybookWithjson(filepath, string(ciscoJsonMarshal))
+	if err != nil {
+		return networkLogsList, errors.New("fail to load yaml file")
+	}
+
+	switch sshConnection.NetworkOS {
+	case "ios":
+		networkLogsList, err = ParseLogsCisco(output)
+	case "vyos":
+		networkLogsList, err = ParseLogsVyos(output)
+	case "junos":
+		networkLogsList, err = ParseLogsJuniper(output)
+	}
+	if err != nil {
+		return networkLogsList, errors.New("fail to get network device logs")
+	}
+
+	return networkLogsList, err
+}
+
+// Config network syslog
+func ConfigNetworkSyslog(networkJson NetworkJson) ([]string, error) {
+	var (
+		outputList []string
+		err        error
+	)
+	// Get Hostname from Id
+	for _, id := range networkJson.SshConnectionId {
+		sshConnection, err := GetSSHConnectionFromId(id)
+		if err != nil {
+			return outputList, errors.New("fail to parse id")
+		}
+
+		networkJson.Host = sshConnection.HostNameSSH
+
+		// Marshal and run playbook
+		networkJsonMarshal, err := json.Marshal(networkJson)
+		if err != nil {
+			return outputList, err
+		}
+		var filepath string
+		if sshConnection.NetworkOS == "ios" {
+			filepath = "./yamls/network_client/cisco/cisco_config_syslog.yml"
+		} else if sshConnection.NetworkOS == "vyos" {
+			filepath = "./yamls/network_client/vyos/vyos_config_syslog.yml"
+		} else if sshConnection.NetworkOS == "junos" {
+			filepath = "./yamls/network_client/juniper/juniper_config_syslog.yml"
+		}
+		output, err := RunAnsiblePlaybookWithjson(filepath, string(networkJsonMarshal))
+		if err != nil {
+			return outputList, errors.New("fail to load yaml file")
+		}
+		outputList = append(outputList, output)
+	}
+	return outputList, err
 }

@@ -1,0 +1,8 @@
+- name: Test ping reachability
+  connection: network_cli
+  gather_facts: false
+  hosts: "{{ host }}"
+  tasks:
+  - name: Test ping reachability
+    vyos_ping:
+     dest: "{{ dest }}"

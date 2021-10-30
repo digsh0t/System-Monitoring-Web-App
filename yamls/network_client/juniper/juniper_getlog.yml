@@ -1,12 +1,11 @@
-- name: Get Information Cisco
+- name: Get log
   connection: network_cli
   hosts: "{{ host }}"
   gather_facts: false
   tasks:
-  - name: show log of vyos
-    vyos_command:
-      commands:
-      - show log tail 200
+  - name: Get log
+    junos_command:
+     commands:  show log messages | last 200
     register: output
-    
+
   - debug: msg="{{ output.stdout_lines }}"

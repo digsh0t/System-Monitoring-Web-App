@@ -45,10 +45,9 @@ type VyOsJson struct {
 }
 
 type VyosLog struct {
-	TimeStamp  string `json:"timestamp"`
-	OperSystem string `json:"operSystem"`
-	Service    string `json:"service"`
-	Message    string `json:"message"`
+	TimeStamp   string `json:"timestamp"`
+	Service     string `json:"service"`
+	Description string `json:"description"`
 }
 
 func GetInfoVyos(sshConnectionId int) (VyosInfo, error) {
@@ -250,31 +249,11 @@ func GetInfoConfigVyos(sshConnectionId int) ([]string, error) {
 }
 
 // Get Log Vyos
-func ListLogsVyos(sshConnectionId int) ([]VyosLog, error) {
+func ParseLogsVyos(output string) ([]NetworkLogs, error) {
 	var (
-		vyosLogsList []VyosLog
-		err          error
+		networkLogsList []NetworkLogs
+		err             error
 	)
-	// Get Hostname
-	hostname, err := GetSshHostnameFromId(sshConnectionId)
-	if err != nil {
-		return vyosLogsList, errors.New("fail to get ssh connection")
-	}
-
-	// Create Json
-	vyosJson := VyOsJson{
-		HosrString: []string{hostname},
-	}
-
-	// Marshal and run playbook
-	vyosJsonMarshal, err := json.Marshal(vyosJson)
-	if err != nil {
-		return vyosLogsList, errors.New("fail to marshal json")
-	}
-	output, err := RunAnsiblePlaybookWithjson("./yamls/network_client/vyos/vyos_getlog.yml", string(vyosJsonMarshal))
-	if err != nil {
-		return vyosLogsList, errors.New("fail to get log")
-	}
 
 	// Get substring from ansible output
 	data := utils.ExtractSubString(output, " => ", "PLAY RECAP")
@@ -282,19 +261,19 @@ func ListLogsVyos(sshConnectionId int) ([]VyosLog, error) {
 	// Parse Json format
 	jsonParsed, err := gabs.ParseJSON([]byte(data))
 	if err != nil {
-		return vyosLogsList, errors.New("fail to parse json output")
+		return networkLogsList, errors.New("fail to parse json output")
 	}
 
 	// Get List Arrays
 	tmpList, err := jsonParsed.Search("msg").Children()
 	if err != nil {
-		return vyosLogsList, errors.New("fail to parse json output")
+		return networkLogsList, errors.New("fail to parse json output")
 	}
 
 	// Get Specific Array
 	lines, err := tmpList[0].Children()
 	if err != nil {
-		return vyosLogsList, errors.New("fail to parse json output")
+		return networkLogsList, errors.New("fail to parse json output")
 	}
 
 	// Line: "Oct  6 02:57:34 vyos systemd-logind[813]: Session 16 logged out. Waiting for processes to exit.\u001b[m"
@@ -302,7 +281,7 @@ func ListLogsVyos(sshConnectionId int) ([]VyosLog, error) {
 
 		// Check if existing log, case no returns empty list
 		if line.String() == "\"\"" {
-			return vyosLogsList, nil
+			return networkLogsList, nil
 		}
 
 		// Trim each line
@@ -310,26 +289,23 @@ func ListLogsVyos(sshConnectionId int) ([]VyosLog, error) {
 		trimLine = strings.TrimRight(trimLine, "m[b10u\\")
 
 		// Get TimeStamp
-		var vyosLog VyosLog
-		vyosLog.TimeStamp = trimLine[:15]
+		var networkLogs NetworkLogs
+		networkLogs.TimeStamp = trimLine[:15]
 
-		// Get OperSystem
-		vyosLog.OperSystem = trimLine[16:20]
-
-		// Get Service and Message
+		// Get Service and Description
 		tmpLine := trimLine[21:]
 		re := regexp.MustCompile(":")
 		spilit := re.Split(tmpLine, 2)
 
-		vyosLog.Service = spilit[0]
+		networkLogs.Service = spilit[0]
 
-		vyosLog.Message = strings.TrimSpace(spilit[1])
+		networkLogs.Description = strings.TrimSpace(spilit[1])
 
 		// Append
-		vyosLogsList = append(vyosLogsList, vyosLog)
+		networkLogsList = append(networkLogsList, networkLogs)
 
 	}
 
-	return vyosLogsList, err
+	return networkLogsList, err
 
 }

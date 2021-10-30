@@ -34,6 +34,11 @@ type SshConnectionInfo struct {
 	NetworkOS       string `json:"networkOS"`
 }
 
+type Os_version struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+}
+
 //Test SSH connection using username and password
 func (sshConnection *SshConnectionInfo) TestConnectionPassword() (bool, error) {
 	sshConfig := &ssh.ClientConfig{
@@ -125,7 +130,7 @@ func (sshConnection SshConnectionInfo) CheckSSHConnectionExist() (bool, error) {
 	}
 	for _, curConnection := range sshConnectionList {
 		if curConnection.HostSSH == sshConnection.HostSSH && curConnection.PortSSH == sshConnection.PortSSH {
-			return true, errors.New("This SSH Connection is already exists")
+			return true, errors.New("this SSH Connection is already exists")
 		}
 	}
 	return false, nil
@@ -285,16 +290,67 @@ func GetAllSSHConnectionFromGroupId(groupId int) ([]SshConnectionInfo, error) {
 }
 
 func GetAllOSSSHConnection(osType string) ([]SshConnectionInfo, error) {
+	var (
+		connectionInfos []SshConnectionInfo
+		err             error
+	)
 	db := database.ConnectDB()
 	defer db.Close()
 	var query string
 
 	if osType == "Linux" {
-		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos FROM ssh_connections WHERE sc_ostype='Ubuntu' or sc_ostype LIKE '%CentOS%' or sc_ostype LIKE '%Kali%'`
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_ostype='Ubuntu' or sc_ostype LIKE '%CentOS%' or sc_ostype LIKE '%Kali%'`
+	} else if osType == "ios" {
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networkos='ios'`
+	} else if osType == "vyos" {
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networkos='vyos'`
+	} else if osType == "junos" {
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networkos='junos'`
+	} else if osType == "Windows" {
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_ostype LIKE '%Windows%'`
 	} else {
-		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networkos FROM ssh_connections WHERE sc_ostype LIKE '%Windows%'`
+		return connectionInfos, err
 	}
 	selDB, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var connectionInfo SshConnectionInfo
+
+	for selDB.Next() {
+		var networkOS sql.NullString
+		var password sql.NullString
+		var keyId sql.NullInt32
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &password, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &keyId, &connectionInfo.IsNetwork, &connectionInfo.NetworkType, &networkOS)
+		if err != nil {
+			return nil, err
+		}
+		connectionInfo.NetworkOS = networkOS.String
+
+		// Decrypted Password if exist
+		var decryptedPassword string
+		if password.String != "" {
+			decryptedPassword, err = AESDecryptKey(password.String)
+			if err != nil {
+				return nil, err
+			}
+
+		}
+		connectionInfo.PasswordSSH = decryptedPassword
+		connectionInfo.SSHKeyId = int(keyId.Int32)
+		connectionInfos = append(connectionInfos, connectionInfo)
+	}
+	return connectionInfos, err
+}
+
+func GetAllSSHConnectionByNetworkType(networkType string) ([]SshConnectionInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+	var query string
+
+	query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networktype = ?`
+	selDB, err := db.Query(query, networkType)
 	if err != nil {
 		return nil, err
 	}
@@ -305,7 +361,7 @@ func GetAllOSSSHConnection(osType string) ([]SshConnectionInfo, error) {
 		var networkOS sql.NullString
 		var password sql.NullString
 		var keyId sql.NullInt32
-		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &password, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &keyId, &connectionInfo.IsNetwork, &networkOS)
+		err = selDB.Scan(&connectionInfo.SSHConnectionId, &connectionInfo.UserSSH, &password, &connectionInfo.HostSSH, &connectionInfo.HostNameSSH, &connectionInfo.PortSSH, &connectionInfo.CreatorId, &keyId, &connectionInfo.IsNetwork, &connectionInfo.NetworkType, &networkOS)
 		if err != nil {
 			return nil, err
 		}
@@ -498,6 +554,67 @@ func DeleteSSHConnection(id int) (bool, error) {
 	return true, err
 }
 
+func AddSNMPToNetworkDevice(sshConnectionInfo SshConnectionInfo, lastId int64) (bool, error) {
+	var (
+		result bool
+		err    error
+	)
+	snmpInfo := SNMPInfo{
+		AuthUsername:    utils.RandomString(8),
+		AuthPassword:    utils.RandomString(12),
+		PrivPassword:    utils.RandomString(12),
+		SSHConnectionID: int(lastId),
+	}
+	result, err = snmpInfo.AddSNMPConnectionToDB()
+	if err != nil {
+		return result, errors.New("fail to add snmp credential to DB")
+	}
+
+	type SNMPJson struct {
+		Host          string `json:"host"`
+		Auth_Username string `json:"auth_username"`
+		Auth_Password string `json:"auth_password"`
+		Priv_Password string `json:"priv_password"`
+	}
+
+	// Create Json
+	snmpJson := SNMPJson{
+		Host:          sshConnectionInfo.HostNameSSH,
+		Auth_Username: snmpInfo.AuthUsername,
+		Auth_Password: snmpInfo.AuthPassword,
+		Priv_Password: snmpInfo.PrivPassword,
+	}
+
+	// Marshal and run playbook
+	snmpJsonMarshal, err := json.Marshal(snmpJson)
+	if err != nil {
+		return false, errors.New("fail to marshal json")
+	}
+
+	// Enable NETCONF connection on Juniper device
+	if sshConnectionInfo.NetworkOS == "junos" {
+		_, err := RunAnsiblePlaybookWithjson("./yamls/network_client/juniper/juniper_enable_netconf.yml", string(snmpJsonMarshal))
+		if err != nil {
+			return false, errors.New("fail to enable NETCONF on juniper device")
+		}
+	}
+	var filepath string
+	switch sshConnectionInfo.NetworkOS {
+	case "ios":
+		filepath = "./yamls/network_client/cisco/cisco_config_snmp.yml"
+	case "vyos":
+		filepath = "./yamls/network_client/vyos/vyos_config_snmp.yml"
+	case "junos":
+		filepath = "./yamls/network_client/juniper/juniper_config_snmp.yml"
+	}
+
+	_, err = RunAnsiblePlaybookWithjson(filepath, string(snmpJsonMarshal))
+	if err != nil {
+		return false, errors.New("fail to enable snmp on network device")
+	}
+	return result, err
+}
+
 func GenerateInventory() error {
 	var inventory string
 	// Get sshConnection No Group
@@ -581,6 +698,9 @@ func (sshConnection *SshConnectionInfo) ConnectSSHWithSSHKeys() (*ssh.Client, er
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
+	cipherOrder := sshConfig.Ciphers
+	sshConfig.Ciphers = append(cipherOrder, "aes128-ctr", "aes192-ctr", "aes256-ctr", "arcfour256", "arcfour128", "arcfour", "aes128-cbc")
+
 	addr := fmt.Sprintf("%s:%d", sshConnection.HostSSH, sshConnection.PortSSH)
 
 	sshClient, err := ssh.Dial("tcp", addr, sshConfig)
@@ -644,6 +764,8 @@ func (sshConnection *SshConnectionInfo) ConnectSSHWithPassword() (*ssh.Client, e
 		Timeout:         30 * time.Second,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
+	cipherOrder := clientConfig.Ciphers
+	clientConfig.Ciphers = append(cipherOrder, "aes128-ctr", "aes192-ctr", "aes256-ctr", "arcfour256", "arcfour128", "arcfour", "aes128-cbc")
 
 	// connect to ssh
 
@@ -689,15 +811,13 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithPassword(cmd string) (str
 func (sshConnection *SshConnectionInfo) GetOsType() string {
 
 	var osType string
-	type OsJson struct {
-		Name string `json:"name"`
-	}
+
 	if sshConnection.IsNetwork {
 		return "Unknown"
 	}
 
 	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT name FROM os_version"`)
-	var osJson []OsJson
+	var osJson []Os_version
 	if err != nil {
 		osType = "Unknown"
 	} else {

@@ -3,11 +3,11 @@
   gather_facts: no
   hosts: "{{ host }}"
   tasks:
-  - name: Configure Static Route
-    ios_static_route:
-     prefix: "{{ prefix }}"
-     mask: "{{ mask }}"
-     next_hop: "{{ next_hop }}"
+  - name: configure host logging
+    ios_logging:
+     dest: host
+     name: "{{ ipSysLog }}"
+     state: present
 
   - name: save running to startup when modified
     ios_config:

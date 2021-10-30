@@ -137,13 +137,13 @@ func main() {
 	router.HandleFunc("/webapp/report", func(w http.ResponseWriter, r *http.Request) {
 		routes.GetReport(w, r, start)
 	}).Methods("GET")
+	router.HandleFunc("/webapp/report/detail", routes.GetDetailOSReport).Methods("GET")
 
 	// Network Automation: Vyos
 	//router.HandleFunc("/vyos/listconfig/{id}", routes.GetInfoConfigVyos).Methods("GET")
 	router.HandleFunc("/vyos/list/{id}", routes.GetInfoVyos).Methods("GET")
 	router.HandleFunc("/vyos/config/ip", routes.ConfigIPVyos).Methods("POST")
 	router.HandleFunc("/vyos/list", routes.ListAllVyOS).Methods("GET")
-	router.HandleFunc("/vyos/logs", routes.ListLogsVyos).Methods("GET")
 
 	// Network Automation: Cisco
 	router.HandleFunc("/cisco/list", routes.ListAllCisco).Methods("GET")
@@ -152,7 +152,6 @@ func main() {
 	router.HandleFunc("/cisco/config/ip", routes.ConfigIPCisco).Methods("POST")
 	router.HandleFunc("/cisco/config/staticroute", routes.ConfigStaticRouteCisco).Methods("POST")
 	router.HandleFunc("/cisco/testping", routes.TestPingCisco).Methods("POST")
-	router.HandleFunc("/cisco/logs", routes.ListLogsCisco).Methods("GET")
 	router.HandleFunc("/cisco/traffic", routes.GetTrafficCisco).Methods("GET")
 
 	// Network Get Information
@@ -161,9 +160,21 @@ func main() {
 	router.HandleFunc("/network/ipaddr", routes.GetNetworkIPAddr).Methods("GET")
 	router.HandleFunc("/network/iptomedia", routes.GetNetworkIPNetToMedia).Methods("GET")
 	router.HandleFunc("/network/iproute", routes.GetNetworkIPRoute).Methods("GET")
+	router.HandleFunc("/network/list", routes.ListNetworkDevices).Methods("GET")
+	router.HandleFunc("/network/testping", routes.TestPingNetworkDevices).Methods("POST")
+	router.HandleFunc("/network/log", routes.GetNetworkLog).Methods("GET")
+	router.HandleFunc("/network/config/syslog", routes.ConfigNetworkSyslog).Methods("POST")
 
 	// Network Router Configuration
 	router.HandleFunc("/network/router/config/ip", routes.ConfigIPRouter).Methods("POST")
+	router.HandleFunc("/network/router/config/staticroute", routes.ConfigStaticRouteRouter).Methods("POST")
+
+	// Network Switch Configuration
+	router.HandleFunc("/network/switch/get/vlan", routes.GetVlanSwitch).Methods("GET")
+	router.HandleFunc("/network/switch/get/interface", routes.GetInterfaceSwitch).Methods("GET")
+	router.HandleFunc("/network/switch/config/createvlan", routes.CreateVlanSwitch).Methods("POST")
+	router.HandleFunc("/network/switch/config/interfacetovlan", routes.AddInterfaceToVlanSwitch).Methods("POST")
+	router.HandleFunc("/network/switch/config/deletevlan", routes.DeleteVlanSwitch).Methods("DELETE")
 
 	//Windows Firewall Settings
 	router.HandleFunc("/{id}/firewall/{direction}", routes.GetWindowsFirewall).Methods("OPTIONS", "GET")

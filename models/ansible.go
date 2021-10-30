@@ -61,10 +61,10 @@ func RunAnsiblePlaybookWithjson(filepath string, extraVars string) (string, erro
 
 func ProcessingAnsibleOutputList(ansible_output_list []string) (map[string]bool, []string, error) {
 	var (
-		statusList map[string]bool
-		fatalList  []string
-		err        error
+		fatalList []string
+		err       error
 	)
+	statusList := make(map[string]bool)
 	for _, output := range ansible_output_list {
 		status, fatal, err := ProcessingAnsibleOutput(output)
 		if err != nil {
