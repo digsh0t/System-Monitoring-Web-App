@@ -81,7 +81,6 @@ CREATE TABLE ssh_connections_information (
     sc_info_osname varchar(60),
     sc_info_osversion varchar(60),
     sc_info_installdate DATETIME,
-    sc_info_signature varchar(60),
     sc_info_serial varchar(60),
     sc_info_connection_id int,
     FOREIGN KEY (sc_info_connection_id) references ssh_connections(sc_connection_id)
