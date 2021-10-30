@@ -1,0 +1,10 @@
+- name: Add new Windows Program
+  hosts: "{{ host }}"
+  gather_facts: no
+  tasks:
+
+  - name: Install NXLOG from msi
+    win_package:
+      path: https://nxlog.co/system/files/products/files/348/nxlog-ce-2.11.2190.msi
+      product_id: '{ED063EDC-B0AC-4A45-8A3D-8D5C1A0B83BD}'
+      state: present

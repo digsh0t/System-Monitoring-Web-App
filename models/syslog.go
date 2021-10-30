@@ -175,7 +175,6 @@ func GetClientSyslog(logBasePath string, sshConnectionId int, date string) ([]Sy
 	if err != nil {
 		return nil, err
 	}
-	sshConnection.HostSSH = "192.168.163.139"
 	logPath := logBasePath + "/" + sshConnection.HostSSH + "/" + date + ".log"
 	dat, err := os.ReadFile(logPath)
 	if err != nil {
@@ -276,7 +275,7 @@ func GetAllClientSyslog(logBasePath string, date string) ([]Syslog, error) {
 		return nil, err
 	}
 	for _, sshConnection := range sshConnectionList {
-		tmpRows, err = GetClientSyslog("/var/log/remotelogs", sshConnection.SSHConnectionId, date)
+		tmpRows, err = GetClientSyslog(logBasePath, sshConnection.SSHConnectionId, date)
 		if err != nil {
 			return nil, err
 		}

@@ -1,0 +1,770 @@
+6,3,Oct 22 01:20:38,wintltr,systemd[1]:, rsyslog.service: Succeeded.
+6,5,Oct 22 01:20:38,wintltr,rsyslogd:, [origin software="rsyslogd" swVersion="8.2108.0" x-pid="2102" x-info="https://www.rsyslog.com"] exiting on signal 15.
+6,3,Oct 22 01:20:38,wintltr,systemd[1]:, Stopped System Logging Service.
+6,3,Oct 22 01:20:38,wintltr,systemd[1]:, Starting System Logging Service...
+6,3,Oct 22 01:20:38,wintltr,systemd[1]:, Started System Logging Service.
+6,5,Oct 22 01:20:38,wintltr,rsyslogd:, imuxsock: Acquired UNIX socket '/run/systemd/journal/syslog' (fd 3) from systemd.  [v8.2108.0]
+6,5,Oct 22 01:20:38,wintltr,rsyslogd:, [origin software="rsyslogd" swVersion="8.2108.0" x-pid="3249" x-info="https://www.rsyslog.com"] start
+6,10,Oct 22 01:25:01,wintltr,CRON[3290]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 01:25:01,wintltr,CRON[3291]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 01:25:01,wintltr,CRON[3290]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 01:27:42,wintltr,NetworkManager[571]:, <info>  [1634880462.6804] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 01:27:42,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 01:27:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 01:27:42,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 01:27:42,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 01:27:53,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 01:35:01,wintltr,CRON[3383]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 01:35:01,wintltr,CRON[3384]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 01:35:01,wintltr,CRON[3383]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 01:39:01,wintltr,CRON[3397]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 01:39:01,wintltr,CRON[3398]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 01:39:01,wintltr,CRON[3397]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 01:39:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 01:39:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 01:39:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 01:42:42,wintltr,NetworkManager[571]:, <info>  [1634881362.6754] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 01:42:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 01:42:42,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 01:42:42,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 01:42:42,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 01:42:53,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 01:45:01,wintltr,CRON[3500]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 01:45:01,wintltr,CRON[3501]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 01:45:01,wintltr,CRON[3500]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 01:55:01,wintltr,CRON[3559]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 01:55:01,wintltr,CRON[3560]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 01:55:01,wintltr,CRON[3559]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 01:57:42,wintltr,NetworkManager[571]:, <info>  [1634882262.6804] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 01:57:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 01:57:42,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 01:57:42,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 01:57:42,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 01:57:53,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 02:05:01,wintltr,CRON[3614]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 02:05:01,wintltr,CRON[3615]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 02:05:01,wintltr,CRON[3614]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 02:09:01,wintltr,CRON[3628]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 02:09:01,wintltr,CRON[3629]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 02:09:01,wintltr,CRON[3628]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 02:09:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 02:09:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 02:09:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 02:12:42,wintltr,NetworkManager[571]:, <info>  [1634883162.6758] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 02:12:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 02:12:42,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 02:12:42,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 02:12:42,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 02:12:53,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 02:15:01,wintltr,CRON[3710]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 02:15:01,wintltr,CRON[3711]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 02:15:01,wintltr,CRON[3710]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 02:17:01,wintltr,CRON[3729]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 02:17:01,wintltr,CRON[3730]:, (root) CMD (   cd / && run-parts --report /etc/cron.hourly)
+6,10,Oct 22 02:17:01,wintltr,CRON[3729]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 02:25:01,wintltr,CRON[3793]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 02:25:01,wintltr,CRON[3794]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 02:25:01,wintltr,CRON[3793]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 02:27:42,wintltr,NetworkManager[571]:, <info>  [1634884062.6761] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 02:27:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 02:27:42,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 02:27:42,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 02:27:42,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 02:27:53,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 02:35:01,wintltr,CRON[3852]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 02:35:01,wintltr,CRON[3853]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 02:35:01,wintltr,CRON[3852]:, pam_unix(cron:session): session closed for user root
+6,0,Oct 22 02:38:24,wintltr,kernel:, [ 9490.485771] perf: interrupt took too long (16101 > 16037), lowering kernel.perf_event_max_sample_rate to 12250
+6,10,Oct 22 02:39:01,wintltr,CRON[3901]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 02:39:01,wintltr,CRON[3902]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 02:39:01,wintltr,CRON[3901]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 02:39:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 02:39:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 02:39:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 02:42:42,wintltr,NetworkManager[571]:, <info>  [1634884962.6852] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 02:42:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 02:42:42,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 02:42:42,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 02:42:42,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 02:42:53,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 02:45:01,wintltr,CRON[3956]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 02:45:01,wintltr,CRON[3957]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 02:45:01,wintltr,CRON[3956]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 02:55:01,wintltr,CRON[4036]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 02:55:01,wintltr,CRON[4037]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 02:55:01,wintltr,CRON[4036]:, pam_unix(cron:session): session closed for user root
+6,0,Oct 22 02:57:37,wintltr,kernel:, [10643.538273] e1000: eth1 NIC Link is Down
+6,3,Oct 22 02:57:43,wintltr,NetworkManager[571]:, <info>  [1634885863.8468] device (eth1): state change: activated -> unavailable (reason 'carrier-changed', sys-iface-state: 'managed')
+6,3,Oct 22 02:57:43,wintltr,NetworkManager[571]:, <info>  [1634885863.8494] dhcp4 (eth1): canceled DHCP transaction
+6,3,Oct 22 02:57:43,wintltr,NetworkManager[571]:, <info>  [1634885863.8495] dhcp4 (eth1): state changed extended -> done
+6,0,Oct 22 02:57:43,wintltr,kernel:, [10649.585720] e1000: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+6,3,Oct 22 02:57:43,wintltr,NetworkManager[571]:, <info>  [1634885863.9068] manager: NetworkManager state is now DISCONNECTED
+6,3,Oct 22 02:57:43,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 02:57:43,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 02:57:43,wintltr,NetworkManager[571]:, <info>  [1634885863.9878] device (eth1): carrier: link connected
+6,3,Oct 22 02:57:43,wintltr,NetworkManager[571]:, <info>  [1634885863.9964] device (eth1): state change: unavailable -> disconnected (reason 'carrier-changed', sys-iface-state: 'managed')
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.0637] policy: auto-activating connection 'Wired connection 1' (422f8499-e2a4-4dc8-a7f9-3348cca7a782)
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.0878] device (eth1): Activation: starting connection 'Wired connection 1' (422f8499-e2a4-4dc8-a7f9-3348cca7a782)
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.0907] device (eth1): state change: disconnected -> prepare (reason 'none', sys-iface-state: 'managed')
+6,3,Oct 22 02:57:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 02:57:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.1213] manager: NetworkManager state is now CONNECTING
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.1341] device (eth1): state change: prepare -> config (reason 'none', sys-iface-state: 'managed')
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.1600] device (eth1): state change: config -> ip-config (reason 'none', sys-iface-state: 'managed')
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.1659] dhcp4 (eth1): activation: beginning transaction (timeout in 45 seconds)
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.2308] dhcp4 (eth1): state changed unknown -> bound, address=192.168.163.132
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.2621] device (eth1): state change: ip-config -> ip-check (reason 'none', sys-iface-state: 'managed')
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.2818] device (eth1): state change: ip-check -> secondaries (reason 'none', sys-iface-state: 'managed')
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.2857] device (eth1): state change: secondaries -> activated (reason 'none', sys-iface-state: 'managed')
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.2968] manager: NetworkManager state is now CONNECTED_LOCAL
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.3235] manager: NetworkManager state is now CONNECTED_SITE
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.3279] policy: set 'Wired connection 1' (eth1) as default for IPv4 routing and DNS
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.3422] device (eth1): Activation: successful, device activated.
+6,3,Oct 22 02:57:44,wintltr,NetworkManager[571]:, <info>  [1634885864.3471] manager: NetworkManager state is now CONNECTED_GLOBAL
+6,3,Oct 22 02:57:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,0,Oct 22 03:00:07,wintltr,kernel:, [10793.000103] perf: interrupt took too long (20228 > 20126), lowering kernel.perf_event_max_sample_rate to 9750
+6,10,Oct 22 03:05:01,wintltr,CRON[4176]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 03:05:01,wintltr,CRON[4177]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 03:05:01,wintltr,CRON[4176]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 03:09:01,wintltr,CRON[4198]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 03:09:01,wintltr,CRON[4199]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 03:09:01,wintltr,CRON[4198]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 03:09:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 03:09:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 03:09:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,10,Oct 22 03:10:01,wintltr,CRON[4242]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 03:10:01,wintltr,CRON[4243]:, (root) CMD (test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r)
+6,10,Oct 22 03:10:01,wintltr,CRON[4242]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 03:12:44,wintltr,NetworkManager[571]:, <info>  [1634886764.2257] dhcp4 (eth1): state changed bound -> extended, address=192.168.163.132
+6,3,Oct 22 03:12:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 03:12:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 03:12:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 03:12:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 03:12:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 03:15:01,wintltr,CRON[4282]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 03:15:01,wintltr,CRON[4283]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 03:15:01,wintltr,CRON[4282]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 03:17:01,wintltr,CRON[4287]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 03:17:01,wintltr,CRON[4288]:, (root) CMD (   cd / && run-parts --report /etc/cron.hourly)
+6,10,Oct 22 03:17:01,wintltr,CRON[4287]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 03:25:01,wintltr,CRON[4355]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 03:25:01,wintltr,CRON[4356]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 03:25:01,wintltr,CRON[4355]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 03:27:44,wintltr,NetworkManager[571]:, <info>  [1634887664.2238] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 03:27:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 03:27:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 03:27:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 03:27:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 03:27:54,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 03:35:02,wintltr,CRON[4438]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 03:35:02,wintltr,CRON[4439]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 03:35:02,wintltr,CRON[4438]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 03:39:01,wintltr,CRON[4444]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 03:39:01,wintltr,CRON[4445]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 03:39:01,wintltr,CRON[4444]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 03:39:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 03:39:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 03:39:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 03:42:44,wintltr,NetworkManager[571]:, <info>  [1634888564.2274] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 03:42:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 03:42:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 03:42:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 03:42:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 03:42:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 03:45:01,wintltr,CRON[4500]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 03:45:01,wintltr,CRON[4501]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 03:45:01,wintltr,CRON[4500]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 03:55:01,wintltr,CRON[4527]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 03:55:01,wintltr,CRON[4528]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 03:55:01,wintltr,CRON[4527]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 03:57:44,wintltr,NetworkManager[571]:, <info>  [1634889464.2253] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 03:57:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 03:57:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 03:57:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 03:57:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 03:57:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 04:05:01,wintltr,CRON[4583]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 04:05:01,wintltr,CRON[4584]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 04:05:01,wintltr,CRON[4583]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 04:09:01,wintltr,CRON[4598]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 04:09:01,wintltr,CRON[4599]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 04:09:01,wintltr,CRON[4598]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 04:09:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 04:09:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 04:09:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 04:12:44,wintltr,NetworkManager[571]:, <info>  [1634890364.2298] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 04:12:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 04:12:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 04:12:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 04:12:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 04:12:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 04:15:01,wintltr,CRON[4694]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 04:15:01,wintltr,CRON[4695]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 04:15:01,wintltr,CRON[4694]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 04:17:01,wintltr,CRON[4700]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 04:17:01,wintltr,CRON[4701]:, (root) CMD (   cd / && run-parts --report /etc/cron.hourly)
+6,10,Oct 22 04:17:01,wintltr,CRON[4700]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 04:25:01,wintltr,CRON[4740]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 04:25:01,wintltr,CRON[4741]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 04:25:01,wintltr,CRON[4740]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 04:27:44,wintltr,NetworkManager[571]:, <info>  [1634891264.2248] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 04:27:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 04:27:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 04:27:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 04:27:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 04:27:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 04:35:01,wintltr,CRON[4822]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 04:35:01,wintltr,CRON[4823]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 04:35:01,wintltr,CRON[4822]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 04:39:01,wintltr,CRON[4871]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 04:39:01,wintltr,CRON[4872]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 04:39:01,wintltr,CRON[4871]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 04:39:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 04:39:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 04:39:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 04:42:44,wintltr,NetworkManager[571]:, <info>  [1634892164.2286] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 04:42:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 04:42:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 04:42:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 04:42:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 04:42:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 04:45:01,wintltr,CRON[4950]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 04:45:01,wintltr,CRON[4951]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 04:45:01,wintltr,CRON[4950]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 04:55:01,wintltr,CRON[4987]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 04:55:01,wintltr,CRON[4988]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 04:55:01,wintltr,CRON[4987]:, pam_unix(cron:session): session closed for user root
+6,0,Oct 22 04:57:36,wintltr,kernel:, [17842.655228] e1000: eth1 NIC Link is Down
+6,3,Oct 22 04:57:42,wintltr,NetworkManager[571]:, <info>  [1634893062.9939] device (eth1): state change: activated -> unavailable (reason 'carrier-changed', sys-iface-state: 'managed')
+6,0,Oct 22 04:57:43,wintltr,kernel:, [17848.703515] e1000: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893062.9997] dhcp4 (eth1): canceled DHCP transaction
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893062.9997] dhcp4 (eth1): state changed extended -> done
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.0767] manager: NetworkManager state is now DISCONNECTED
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.1267] device (eth1): carrier: link connected
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.1334] device (eth1): state change: unavailable -> disconnected (reason 'carrier-changed', sys-iface-state: 'managed')
+6,3,Oct 22 04:57:43,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.1638] policy: auto-activating connection 'Wired connection 1' (422f8499-e2a4-4dc8-a7f9-3348cca7a782)
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.1760] device (eth1): Activation: starting connection 'Wired connection 1' (422f8499-e2a4-4dc8-a7f9-3348cca7a782)
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.1762] device (eth1): state change: disconnected -> prepare (reason 'none', sys-iface-state: 'managed')
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.2038] manager: NetworkManager state is now CONNECTING
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.2042] device (eth1): state change: prepare -> config (reason 'none', sys-iface-state: 'managed')
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.2143] device (eth1): state change: config -> ip-config (reason 'none', sys-iface-state: 'managed')
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.2147] dhcp4 (eth1): activation: beginning transaction (timeout in 45 seconds)
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.3934] dhcp4 (eth1): state changed unknown -> bound, address=192.168.163.132
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.4170] device (eth1): state change: ip-config -> ip-check (reason 'none', sys-iface-state: 'managed')
+6,3,Oct 22 04:57:43,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 04:57:43,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 04:57:43,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.7804] device (eth1): state change: ip-check -> secondaries (reason 'none', sys-iface-state: 'managed')
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.7807] device (eth1): state change: secondaries -> activated (reason 'none', sys-iface-state: 'managed')
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.7812] manager: NetworkManager state is now CONNECTED_LOCAL
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.7853] manager: NetworkManager state is now CONNECTED_SITE
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.7860] policy: set 'Wired connection 1' (eth1) as default for IPv4 routing and DNS
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.7932] device (eth1): Activation: successful, device activated.
+6,3,Oct 22 04:57:43,wintltr,NetworkManager[571]:, <info>  [1634893063.7965] manager: NetworkManager state is now CONNECTED_GLOBAL
+6,3,Oct 22 04:57:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 05:05:01,wintltr,CRON[5121]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 05:05:01,wintltr,CRON[5122]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 05:05:01,wintltr,CRON[5121]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 05:09:01,wintltr,CRON[5135]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 05:09:01,wintltr,CRON[5136]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 05:09:01,wintltr,CRON[5135]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 05:09:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 05:09:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 05:09:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 05:12:43,wintltr,NetworkManager[571]:, <info>  [1634893963.4017] dhcp4 (eth1): state changed bound -> extended, address=192.168.163.132
+6,3,Oct 22 05:12:43,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 05:12:43,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 05:12:43,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 05:12:43,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 05:12:54,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 05:15:01,wintltr,CRON[5228]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 05:15:01,wintltr,CRON[5229]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 05:15:01,wintltr,CRON[5228]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 05:17:02,wintltr,CRON[5233]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 05:17:02,wintltr,CRON[5234]:, (root) CMD (   cd / && run-parts --report /etc/cron.hourly)
+6,10,Oct 22 05:17:02,wintltr,CRON[5233]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 05:25:01,wintltr,CRON[5279]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 05:25:01,wintltr,CRON[5280]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 05:25:01,wintltr,CRON[5279]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 05:27:43,wintltr,NetworkManager[571]:, <info>  [1634894863.4188] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 05:27:43,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 05:27:43,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 05:27:43,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 05:27:43,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 05:27:54,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 05:35:01,wintltr,CRON[5343]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 05:35:01,wintltr,CRON[5344]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 05:35:01,wintltr,CRON[5343]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 05:39:01,wintltr,CRON[5358]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 05:39:01,wintltr,CRON[5359]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 05:39:01,wintltr,CRON[5358]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 05:39:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 05:39:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 05:39:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 05:42:43,wintltr,NetworkManager[571]:, <info>  [1634895763.4234] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 05:42:43,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 05:42:43,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 05:42:43,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 05:42:43,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 05:42:54,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 05:45:01,wintltr,CRON[5415]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 05:45:01,wintltr,CRON[5416]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 05:45:01,wintltr,CRON[5415]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 05:55:01,wintltr,CRON[5436]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 05:55:01,wintltr,CRON[5437]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 05:55:01,wintltr,CRON[5436]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 05:57:43,wintltr,NetworkManager[571]:, <info>  [1634896663.4442] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 05:57:43,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 05:57:43,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 05:57:43,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 05:57:43,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 05:57:54,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 06:05:02,wintltr,CRON[5465]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 06:05:02,wintltr,CRON[5466]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 06:05:02,wintltr,CRON[5465]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 06:08:37,wintltr,/usr/libexec/gdm-x-session[1896], [Child 1896, MediaDecoderStateMachine #1] WARNING: Decoder=7f593b0e3000 state=DECODING_METADATA Decode metadata failed, shutting down decoder: file ./dom/media/MediaDecoderStateMachine.cpp, line 376
+4,1,Oct 22 06:08:37,wintltr,/usr/libexec/gdm-x-session[1896], [Child 1896, MediaDecoderStateMachine #1] WARNING: Decoder=7f593b0e3000 Decode error: NS_ERROR_DOM_MEDIA_METADATA_ERR (0x806e0006) - static mozilla::MP4Metadata::ResultAndByteBuffer mozilla::MP4Metadata::Metadata(mozilla::ByteStream*): Cannot parse metadata: file ./dom/media/MediaDecoderStateMachine.cpp, line 3470
+6,10,Oct 22 06:09:01,wintltr,CRON[5482]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 06:09:01,wintltr,CRON[5483]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 06:09:01,wintltr,CRON[5482]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 06:09:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 06:09:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 06:09:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 06:12:43,wintltr,NetworkManager[571]:, <info>  [1634897563.4286] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 06:12:43,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 06:12:43,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 06:12:43,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 06:12:43,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 06:12:54,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 06:15:01,wintltr,CRON[5548]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 06:15:01,wintltr,CRON[5549]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 06:15:01,wintltr,CRON[5548]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 06:17:01,wintltr,CRON[5554]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 06:17:01,wintltr,CRON[5555]:, (root) CMD (   cd / && run-parts --report /etc/cron.hourly)
+6,10,Oct 22 06:17:01,wintltr,CRON[5554]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 06:25:01,wintltr,CRON[5564]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,10,Oct 22 06:25:01,wintltr,CRON[5563]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 06:25:01,wintltr,CRON[5565]:, (root) CMD (test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily ))
+6,9,Oct 22 06:25:01,wintltr,CRON[5566]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 06:25:01,wintltr,CRON[5564]:, pam_unix(cron:session): session closed for user root
+6,9,Oct 22 06:25:02,wintltr,cracklib:, no dictionary update necessary.
+6,10,Oct 22 06:25:13,wintltr,CRON[5563]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 06:25:26,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 06:25:26,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 06:25:26,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 06:25:26,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 06:26:35,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 06:26:35,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,3,Oct 22 06:27:43,wintltr,NetworkManager[571]:, <info>  [1634898463.4494] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 06:27:43,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 06:27:43,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 06:27:43,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 06:27:43,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 06:27:54,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 06:35:01,wintltr,CRON[5732]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 06:35:01,wintltr,CRON[5733]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 06:35:01,wintltr,CRON[5732]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 06:39:01,wintltr,CRON[5747]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 06:39:01,wintltr,CRON[5748]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 06:39:01,wintltr,CRON[5747]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 06:39:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 06:39:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 06:39:26,wintltr,systemd[1]:, Finished Clean php session files.
+4,1,Oct 22 06:42:04,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 06:42:04,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,3,Oct 22 06:42:43,wintltr,NetworkManager[571]:, <info>  [1634899363.4363] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 06:42:43,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 06:42:43,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 06:42:43,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 06:42:43,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 06:42:54,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+4,1,Oct 22 06:44:05,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 06:44:05,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 06:44:05,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 06:44:05,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 06:44:05,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 06:44:05,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 06:45:01,wintltr,CRON[5806]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 06:45:01,wintltr,CRON[5807]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 06:45:01,wintltr,CRON[5806]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 06:45:08,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 06:45:08,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 06:55:01,wintltr,CRON[5818]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 06:55:01,wintltr,CRON[5819]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 06:55:01,wintltr,CRON[5818]:, pam_unix(cron:session): session closed for user root
+6,0,Oct 22 06:57:38,wintltr,kernel:, [25044.238083] e1000: eth1 NIC Link is Down
+6,0,Oct 22 06:57:42,wintltr,kernel:, [25048.270535] e1000: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+6,3,Oct 22 06:57:42,wintltr,NetworkManager[571]:, <info>  [1634900262.6091] device (eth1): carrier: link connected
+6,3,Oct 22 06:57:42,wintltr,NetworkManager[571]:, <info>  [1634900262.6147] device (eth1): DHCPv4 lease renewal requested
+6,3,Oct 22 06:57:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 06:57:42,wintltr,NetworkManager[571]:, <info>  [1634900262.6216] dhcp4 (eth1): canceled DHCP transaction
+6,3,Oct 22 06:57:42,wintltr,NetworkManager[571]:, <info>  [1634900262.6219] dhcp4 (eth1): state changed extended -> done
+6,3,Oct 22 06:57:42,wintltr,NetworkManager[571]:, <info>  [1634900262.6300] dhcp4 (eth1): activation: beginning transaction (timeout in 45 seconds)
+6,3,Oct 22 06:57:42,wintltr,NetworkManager[571]:, <info>  [1634900262.6485] dhcp4 (eth1): state changed unknown -> bound, address=192.168.163.132
+6,3,Oct 22 06:57:42,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 06:57:42,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 06:57:42,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 06:57:53,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,3,Oct 22 06:59:40,wintltr,systemd[1]:, Starting Daily apt upgrade and clean activities...
+6,3,Oct 22 06:59:42,wintltr,systemd[1]:, apt-daily-upgrade.service: Succeeded.
+6,3,Oct 22 06:59:42,wintltr,systemd[1]:, Finished Daily apt upgrade and clean activities.
+6,10,Oct 22 07:05:01,wintltr,CRON[5895]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 07:05:01,wintltr,CRON[5896]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 07:05:01,wintltr,CRON[5895]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 07:05:02,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:05:02,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 07:09:01,wintltr,CRON[5910]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 07:09:01,wintltr,CRON[5911]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 07:09:01,wintltr,CRON[5910]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 07:09:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 07:09:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 07:09:26,wintltr,systemd[1]:, Finished Clean php session files.
+4,1,Oct 22 07:10:50,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:10:50,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 07:10:50,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:10:50,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 07:12:26,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:12:26,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,3,Oct 22 07:12:42,wintltr,NetworkManager[571]:, <info>  [1634901162.6665] dhcp4 (eth1): state changed bound -> extended, address=192.168.163.132
+6,3,Oct 22 07:12:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 07:12:42,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 07:12:42,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 07:12:42,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 07:12:53,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+4,1,Oct 22 07:13:30,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:13:30,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 07:15:01,wintltr,CRON[5974]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 07:15:01,wintltr,CRON[5975]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 07:15:01,wintltr,CRON[5974]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 07:15:04,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:15:04,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 07:17:01,wintltr,CRON[5985]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 07:17:01,wintltr,CRON[5986]:, (root) CMD (   cd / && run-parts --report /etc/cron.hourly)
+6,10,Oct 22 07:17:01,wintltr,CRON[5985]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 07:20:03,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:20:03,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 07:20:03,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:20:03,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 07:20:03,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:20:03,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 07:21:42,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:21:42,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 07:25:01,wintltr,CRON[6000]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 07:25:01,wintltr,CRON[6001]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 07:25:01,wintltr,CRON[6000]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 07:27:42,wintltr,NetworkManager[571]:, <info>  [1634902062.6851] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 07:27:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 07:27:42,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 07:27:42,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 07:27:42,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 07:27:53,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+4,1,Oct 22 07:27:54,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:27:54,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 07:35:01,wintltr,CRON[6030]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 07:35:01,wintltr,CRON[6031]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 07:35:01,wintltr,CRON[6030]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 07:35:43,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:35:43,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 07:37:01,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:37:01,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 07:37:01,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:37:01,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 07:37:01,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:37:01,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 07:39:01,wintltr,CRON[6041]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 07:39:01,wintltr,CRON[6042]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 07:39:01,wintltr,CRON[6041]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 07:39:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 07:39:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 07:39:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 07:42:42,wintltr,NetworkManager[571]:, <info>  [1634902962.6808] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 07:42:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 07:42:42,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 07:42:42,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 07:42:42,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 07:42:53,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+4,1,Oct 22 07:43:33,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:43:33,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 07:44:58,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:44:58,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 07:45:01,wintltr,CRON[6106]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 07:45:01,wintltr,CRON[6107]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 07:45:01,wintltr,CRON[6106]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 07:47:27,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:47:27,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 07:48:40,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:48:40,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 07:55:01,wintltr,CRON[6138]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 07:55:01,wintltr,CRON[6139]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 07:55:01,wintltr,CRON[6138]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 07:55:30,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:55:30,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 07:55:30,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:55:30,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 07:56:09,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 07:56:10,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,3,Oct 22 07:57:42,wintltr,NetworkManager[571]:, <info>  [1634903862.6975] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 07:57:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 07:57:43,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 07:57:43,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 07:57:43,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 07:57:54,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+4,1,Oct 22 08:00:29,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:00:29,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:00:29,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:00:29,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:00:29,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:00:29,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:00:29,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:00:29,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 08:05:02,wintltr,CRON[6177]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 08:05:02,wintltr,CRON[6178]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 08:05:02,wintltr,CRON[6177]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 08:05:48,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:05:48,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:05:48,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:05:48,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:06:34,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:06:35,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:06:35,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:06:35,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:07:18,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:07:18,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 08:09:01,wintltr,CRON[6189]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 08:09:01,wintltr,CRON[6190]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 08:09:01,wintltr,CRON[6189]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 08:09:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 08:09:28,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 08:09:28,wintltr,systemd[1]:, Finished Clean php session files.
+4,1,Oct 22 08:10:52,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:10:52,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:10:52,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:10:52,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,3,Oct 22 08:12:42,wintltr,NetworkManager[571]:, <info>  [1634904762.6945] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 08:12:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 08:12:42,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 08:12:42,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 08:12:42,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 08:12:53,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 08:15:01,wintltr,CRON[6254]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 08:15:01,wintltr,CRON[6255]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 08:15:01,wintltr,CRON[6254]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 08:17:01,wintltr,CRON[6263]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 08:17:01,wintltr,CRON[6264]:, (root) CMD (   cd / && run-parts --report /etc/cron.hourly)
+6,10,Oct 22 08:17:01,wintltr,CRON[6263]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 08:17:52,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:17:52,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:18:32,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:18:32,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:18:32,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:18:32,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:18:32,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:18:32,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:21:18,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:21:18,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:21:18,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:21:18,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:21:18,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:21:18,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:22:37,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:22:37,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:22:37,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:22:37,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:22:37,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:22:37,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:23:56,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:23:56,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 08:25:01,wintltr,CRON[6281]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 08:25:01,wintltr,CRON[6282]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 08:25:01,wintltr,CRON[6281]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 08:26:41,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:26:41,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,3,Oct 22 08:27:42,wintltr,NetworkManager[571]:, <info>  [1634905662.7041] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 08:27:42,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 08:27:42,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 08:27:42,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 08:27:42,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 08:27:53,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 08:35:01,wintltr,CRON[6310]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 08:35:01,wintltr,CRON[6311]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 08:35:01,wintltr,CRON[6310]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 08:39:01,wintltr,CRON[6323]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 08:39:01,wintltr,CRON[6324]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 08:39:01,wintltr,CRON[6323]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 08:39:03,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:39:03,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:39:03,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:39:03,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,3,Oct 22 08:39:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 08:39:27,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 08:39:27,wintltr,systemd[1]:, Finished Clean php session files.
+4,1,Oct 22 08:40:52,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:40:52,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:40:52,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:40:52,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:40:53,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:40:53,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,3,Oct 22 08:42:42,wintltr,NetworkManager[571]:, <info>  [1634906562.7492] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 08:42:43,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 08:42:43,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 08:42:43,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 08:42:43,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 08:42:54,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+4,1,Oct 22 08:44:25,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:44:25,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 08:44:25,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:44:25,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 08:45:01,wintltr,CRON[6390]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 08:45:01,wintltr,CRON[6391]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 08:45:01,wintltr,CRON[6390]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 08:53:08,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:53:08,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 08:55:01,wintltr,CRON[6418]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 08:55:01,wintltr,CRON[6419]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 08:55:01,wintltr,CRON[6418]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 08:55:20,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 08:55:20,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,0,Oct 22 08:57:37,wintltr,kernel:, [32243.397124] e1000: eth1 NIC Link is Down
+6,0,Oct 22 08:57:43,wintltr,kernel:, [32249.445641] e1000: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+6,3,Oct 22 08:57:43,wintltr,NetworkManager[571]:, <info>  [1634907463.8416] device (eth1): carrier: link connected
+6,3,Oct 22 08:57:43,wintltr,NetworkManager[571]:, <info>  [1634907463.8612] device (eth1): DHCPv4 lease renewal requested
+6,3,Oct 22 08:57:43,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 08:57:44,wintltr,NetworkManager[571]:, <info>  [1634907463.8652] dhcp4 (eth1): canceled DHCP transaction
+6,3,Oct 22 08:57:44,wintltr,NetworkManager[571]:, <info>  [1634907463.8657] dhcp4 (eth1): state changed extended -> done
+6,3,Oct 22 08:57:44,wintltr,NetworkManager[571]:, <info>  [1634907463.8845] dhcp4 (eth1): activation: beginning transaction (timeout in 45 seconds)
+6,3,Oct 22 08:57:44,wintltr,NetworkManager[571]:, <info>  [1634907463.9110] dhcp4 (eth1): state changed unknown -> bound, address=192.168.163.132
+6,3,Oct 22 08:57:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 08:57:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 08:57:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 08:57:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 09:05:01,wintltr,CRON[6452]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 09:05:01,wintltr,CRON[6453]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 09:05:01,wintltr,CRON[6452]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 09:09:01,wintltr,CRON[6471]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 09:09:01,wintltr,CRON[6472]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 09:09:01,wintltr,CRON[6471]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 09:09:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 09:09:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 09:09:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 09:12:43,wintltr,NetworkManager[571]:, <info>  [1634908363.9206] dhcp4 (eth1): state changed bound -> extended, address=192.168.163.132
+6,3,Oct 22 09:12:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 09:12:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 09:12:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 09:12:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 09:12:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+7,3,Oct 22 09:14:01,wintltr,rtkit-daemon[867]:, Supervising 1 threads of 1 processes of 1 users.
+7,3,Oct 22 09:14:01,wintltr,rtkit-daemon[867]:, Supervising 1 threads of 1 processes of 1 users.
+7,3,Oct 22 09:14:01,wintltr,rtkit-daemon[867]:, Supervising 1 threads of 1 processes of 1 users.
+7,3,Oct 22 09:14:01,wintltr,rtkit-daemon[867]:, Supervising 1 threads of 1 processes of 1 users.
+6,3,Oct 22 09:14:01,wintltr,rtkit-daemon[867]:, Successfully made thread 6553 of process 1896 owned by '0' RT at priority 10.
+7,3,Oct 22 09:14:01,wintltr,rtkit-daemon[867]:, Supervising 2 threads of 2 processes of 1 users.
+6,10,Oct 22 09:15:01,wintltr,CRON[6557]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 09:15:01,wintltr,CRON[6558]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 09:15:01,wintltr,CRON[6557]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 09:17:02,wintltr,CRON[6573]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 09:17:02,wintltr,CRON[6574]:, (root) CMD (   cd / && run-parts --report /etc/cron.hourly)
+6,10,Oct 22 09:17:02,wintltr,CRON[6573]:, pam_unix(cron:session): session closed for user root
+3,1,Oct 22 09:18:09,wintltr,pulseaudio[1318]:, ALSA woke us up to write new data to the device, but there was actually nothing to write.
+3,1,Oct 22 09:18:10,wintltr,pulseaudio[1318]:, Most likely this is a bug in the ALSA driver 'snd_ens1371'. Please report this issue to the ALSA developers.
+3,1,Oct 22 09:18:10,wintltr,pulseaudio[1318]:, We were woken up with POLLOUT set -- however a subsequent snd_pcm_avail() returned 0 or another value < min_avail.
+6,3,Oct 22 09:19:26,wintltr,systemd[1]:, Starting Daily apt download activities...
+6,3,Oct 22 09:19:37,wintltr,systemd[1]:, apt-daily.service: Succeeded.
+6,3,Oct 22 09:19:37,wintltr,systemd[1]:, Finished Daily apt download activities.
+5,3,Oct 22 09:19:37,wintltr,systemd[1]:, apt-daily.service: Consumed 1.402s CPU time.
+6,10,Oct 22 09:25:01,wintltr,CRON[6680]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 09:25:01,wintltr,CRON[6681]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 09:25:01,wintltr,CRON[6680]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 09:27:43,wintltr,NetworkManager[571]:, <info>  [1634909263.9280] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 09:27:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 09:27:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 09:27:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 09:27:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 09:27:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 09:35:01,wintltr,CRON[6721]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 09:35:01,wintltr,CRON[6722]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 09:35:01,wintltr,CRON[6721]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 09:39:02,wintltr,CRON[6738]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 09:39:02,wintltr,CRON[6739]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 09:39:02,wintltr,CRON[6738]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 09:39:04,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 09:39:04,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,3,Oct 22 09:39:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 09:39:27,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 09:39:27,wintltr,systemd[1]:, Finished Clean php session files.
+4,1,Oct 22 09:40:11,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 09:40:11,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,3,Oct 22 09:42:43,wintltr,NetworkManager[571]:, <info>  [1634910163.9526] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 09:42:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 09:42:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 09:42:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 09:42:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+4,1,Oct 22 09:42:45,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 09:42:45,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+4,1,Oct 22 09:42:45,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 09:42:45,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,3,Oct 22 09:42:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 09:45:01,wintltr,CRON[6803]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 09:45:01,wintltr,CRON[6804]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 09:45:01,wintltr,CRON[6803]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 09:49:58,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 09:49:58,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 09:55:01,wintltr,CRON[6835]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 09:55:01,wintltr,CRON[6836]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 09:55:01,wintltr,CRON[6835]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 09:57:43,wintltr,NetworkManager[571]:, <info>  [1634911063.9439] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 09:57:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 09:57:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 09:57:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 09:57:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 09:57:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 10:05:01,wintltr,CRON[6871]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 10:05:01,wintltr,CRON[6872]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 10:05:01,wintltr,CRON[6871]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 10:09:01,wintltr,CRON[6883]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 10:09:01,wintltr,CRON[6884]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 10:09:01,wintltr,CRON[6883]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 10:09:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 10:09:26,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 10:09:26,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 10:12:43,wintltr,NetworkManager[571]:, <info>  [1634911963.9444] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 10:12:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 10:12:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 10:12:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 10:12:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 10:12:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 10:15:01,wintltr,CRON[6954]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 10:15:01,wintltr,CRON[6955]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 10:15:01,wintltr,CRON[6954]:, pam_unix(cron:session): session closed for user root
+4,1,Oct 22 10:15:46,wintltr,/usr/libexec/gdm-x-session[1740], IPDL protocol error: Handler returned error code!
+4,1,Oct 22 10:15:46,wintltr,/usr/libexec/gdm-x-session[1740], ###!!! [Parent][DispatchAsyncMessage] Error: PMessagePort::Msg_PostMessages Processing error: message was deserialized, but the handler returned false (indicating failure)
+6,10,Oct 22 10:17:01,wintltr,CRON[6961]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 10:17:02,wintltr,CRON[6962]:, (root) CMD (   cd / && run-parts --report /etc/cron.hourly)
+6,10,Oct 22 10:17:02,wintltr,CRON[6961]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 10:25:01,wintltr,CRON[6987]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 10:25:01,wintltr,CRON[6988]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 10:25:01,wintltr,CRON[6987]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 10:27:43,wintltr,NetworkManager[571]:, <info>  [1634912863.9811] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 10:27:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 10:27:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 10:27:44,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 10:27:44,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 10:27:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 10:35:01,wintltr,CRON[7033]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 10:35:02,wintltr,CRON[7034]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 10:35:02,wintltr,CRON[7033]:, pam_unix(cron:session): session closed for user root
+6,10,Oct 22 10:39:01,wintltr,CRON[7051]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 10:39:01,wintltr,CRON[7052]:, (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+6,10,Oct 22 10:39:01,wintltr,CRON[7051]:, pam_unix(cron:session): session closed for user root
+6,3,Oct 22 10:39:26,wintltr,systemd[1]:, Starting Clean php session files...
+6,3,Oct 22 10:39:27,wintltr,systemd[1]:, phpsessionclean.service: Succeeded.
+6,3,Oct 22 10:39:27,wintltr,systemd[1]:, Finished Clean php session files.
+6,3,Oct 22 10:42:43,wintltr,NetworkManager[571]:, <info>  [1634913763.9541] dhcp4 (eth1): state changed extended -> extended, address=192.168.163.132
+6,3,Oct 22 10:42:44,wintltr,dbus-daemon[570]:, [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.3' (uid=0 pid=571 comm="/usr/sbin/NetworkManager --no-daemon ")
+6,3,Oct 22 10:42:44,wintltr,systemd[1]:, Starting Network Manager Script Dispatcher Service...
+6,3,Oct 22 10:42:45,wintltr,dbus-daemon[570]:, [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+6,3,Oct 22 10:42:45,wintltr,systemd[1]:, Started Network Manager Script Dispatcher Service.
+6,3,Oct 22 10:42:55,wintltr,systemd[1]:, NetworkManager-dispatcher.service: Succeeded.
+6,10,Oct 22 10:45:01,wintltr,CRON[7129]:, pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+6,9,Oct 22 10:45:01,wintltr,CRON[7130]:, (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+6,10,Oct 22 10:45:01,wintltr,CRON[7129]:, pam_unix(cron:session): session closed for user root
