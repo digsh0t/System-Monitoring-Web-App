@@ -3,7 +3,7 @@ package models
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
+	"log"
 	"strings"
 	"time"
 
@@ -18,6 +18,7 @@ type SshConnectionInformation struct {
 	OsVersion       string `json:"osVersion"`
 	InstallDate     string `json:"installDate"`
 	Serial          string `json:"serial"`
+	Hostname        string `json:"hostname"`
 	SshConnectionId int    `json:"sshConnectionId"`
 }
 
@@ -34,25 +35,31 @@ func AddSSHConnectionInformation(sshConnection SshConnectionInfo, lastId int64) 
 		// Get os version
 		os, err := sshConnection.GetOSVersion()
 		if err != nil {
-			return false, errors.New("fail to get os version")
+			log.Println("fail to get os version")
+		} else {
+			// Get Name
+			sshConnectionInformation.OsName = os.Name
+
+			// Get Version
+			sshConnectionInformation.OsVersion = os.Version
 		}
-
-		// Get Name
-		sshConnectionInformation.OsName = os.Name
-
-		// Get Version
-		sshConnectionInformation.OsVersion = os.Version
 
 		// Get install date
 		sshConnectionInformation.InstallDate, err = GetInstallDate(sshConnection)
 		if err != nil {
-			return false, errors.New("fail to get install date")
+			log.Println("fail to get install date")
 		}
 
 		// Get Serial
 		sshConnectionInformation.Serial, err = GetClientSerial(sshConnection)
 		if err != nil {
-			return false, errors.New("fail to get serial")
+			log.Println("fail to get serial")
+		}
+
+		// Get Hostname
+		sshConnectionInformation.Hostname, err = GetHostname(sshConnection)
+		if err != nil {
+			log.Println("fail to get hostname")
 		}
 
 	} else {
@@ -67,7 +74,7 @@ func AddSSHConnectionInformation(sshConnection SshConnectionInfo, lastId int64) 
 
 		tmpJsonMarshal, err := json.Marshal(tmp)
 		if err != nil {
-			return false, errors.New("fail to marshal json")
+			log.Println("fail to unmarshal json")
 		}
 		var filepath string
 		if sshConnection.NetworkOS == "ios" {
@@ -79,7 +86,7 @@ func AddSSHConnectionInformation(sshConnection SshConnectionInfo, lastId int64) 
 		}
 		output, err := RunAnsiblePlaybookWithjson(filepath, string(tmpJsonMarshal))
 		if err != nil {
-			return false, errors.New("fail to run playbook")
+			log.Println("fail to run playbook")
 		}
 		// Get substring from ansible output
 		data := utils.ExtractSubString(output, " => ", "PLAY RECAP")
@@ -87,7 +94,7 @@ func AddSSHConnectionInformation(sshConnection SshConnectionInfo, lastId int64) 
 		// Parse Json format
 		jsonParsed, err := gabs.ParseJSON([]byte(data))
 		if err != nil {
-			return false, errors.New("fail to parse json")
+			log.Println("fail to parse json")
 		}
 
 		// Serial num
@@ -107,15 +114,43 @@ func AddSSHConnectionInformation(sshConnection SshConnectionInfo, lastId int64) 
 			sshConnectionInformation.OsVersion = strings.TrimRight(sshConnectionInformation.OsVersion, "m[b10u\\")
 		}
 
+		// Get Hostname
+		sshConnectionInformation.Hostname = strings.Trim(strings.TrimSpace(jsonParsed.Search("msg", "ansible_facts", "ansible_net_hostname").String()), "\"")
+		if sshConnection.NetworkOS == "vyos" {
+			sshConnectionInformation.Hostname = strings.TrimRight(sshConnectionInformation.Hostname, "m[b10u\\")
+		}
+
 	}
 
 	// Insert to DB
 	_, err = sshConnectionInformation.AddSSHConnectionInformationToDB()
 	if err != nil {
-		return false, errors.New("fail to insert sshConnection Information to DB")
+		log.Println("fail to insert sshConnection Information to DB")
 	}
 
 	return result, err
+}
+
+func GetHostname(sshConnection SshConnectionInfo) (string, error) {
+	var (
+		hostname string
+		err      error
+	)
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT hostname FROM system_info"`)
+	if err != nil {
+		return hostname, err
+	}
+
+	type HostnameStruct struct {
+		Hostname string `json:"hostname"`
+	}
+	var hostnameList []HostnameStruct
+	err = json.Unmarshal([]byte(output), &hostnameList)
+	if err != nil {
+		return hostname, err
+	}
+	hostname = hostnameList[0].Hostname
+	return hostname, err
 }
 
 func GetInstallDate(sshConnection SshConnectionInfo) (string, error) {
@@ -155,7 +190,7 @@ func (sshConnectionInformation *SshConnectionInformation) AddSSHConnectionInform
 
 	// Use key-base Authentication
 
-	query = "INSERT INTO ssh_connections_information (sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_connection_id) VALUES (?,?,?,?,?)"
+	query = "INSERT INTO ssh_connections_information (sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_hostname, sc_info_connection_id) VALUES (?,?,?,?,?,?)"
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		return lastId, err
@@ -164,7 +199,7 @@ func (sshConnectionInformation *SshConnectionInformation) AddSSHConnectionInform
 
 	var res sql.Result
 
-	res, err = stmt.Exec(sshConnectionInformation.OsName, sshConnectionInformation.OsVersion, sshConnectionInformation.InstallDate, sshConnectionInformation.Serial, sshConnectionInformation.SshConnectionId)
+	res, err = stmt.Exec(sshConnectionInformation.OsName, sshConnectionInformation.OsVersion, sshConnectionInformation.InstallDate, sshConnectionInformation.Serial, sshConnectionInformation.Hostname, sshConnectionInformation.SshConnectionId)
 
 	if err != nil {
 		return lastId, err
