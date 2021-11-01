@@ -1,5 +1,0 @@
----
-- hosts: '{{ host }}'
-  tasks:
-  - debug:
-      var: ansible_date_time

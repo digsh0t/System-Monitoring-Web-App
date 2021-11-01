@@ -192,7 +192,6 @@ func GetClientSyslogByPri(logBasePath string, sshConnectionId int, date string, 
 	if err != nil {
 		return nil, err
 	}
-	sshConnection.HostSSH = "192.168.163.139"
 	logPath := logBasePath + "/" + sshConnection.HostSSH + "/" + date + ".log"
 	dat, err := os.ReadFile(logPath)
 	if err != nil {
@@ -210,7 +209,6 @@ func GetTotalSyslogRows(logBasePath string, sshConnectionId int, date string) ([
 	if err != nil {
 		return nil, err
 	}
-	sshConnection.HostSSH = "192.168.163.139"
 	logPath := logBasePath + "/" + sshConnection.HostSSH + "/" + date + ".log"
 	dat, err := os.ReadFile(logPath)
 	if err != nil {
@@ -228,7 +226,6 @@ func GetClientSyslogPriStat(logBasePath string, sshConnectionId int, date string
 	if err != nil {
 		return SyslogPriStat{}, err
 	}
-	sshConnection.HostSSH = "192.168.163.139"
 	logPath := logBasePath + "/" + sshConnection.HostSSH + "/" + date + ".log"
 	dat, err := os.ReadFile(logPath)
 	if err != nil {
@@ -276,9 +273,9 @@ func GetAllClientSyslog(logBasePath string, date string) ([]Syslog, error) {
 	}
 	for _, sshConnection := range sshConnectionList {
 		tmpRows, err = GetClientSyslog(logBasePath, sshConnection.SSHConnectionId, date)
-		if err != nil {
-			return nil, err
-		}
+		// if err != nil {
+		// 	return nil, err
+		// }
 		syslogRows = append(syslogRows, tmpRows...)
 		tmpRows = nil
 	}
