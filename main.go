@@ -29,7 +29,7 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	key, err := sshConnection.GetWindowsLicenseKey()
+	key, err := sshConnection.GetWindowsVmwareProductKey()
 	if err != nil {
 		log.Println(err)
 	}

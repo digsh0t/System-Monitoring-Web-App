@@ -4,7 +4,14 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"strings"
 )
+
+type windowsLicense struct {
+	productName string `json:"product_name"`
+	productKey  string `json:"product_key"`
+	productId   string `json:"product_id"`
+}
 
 func rev(b []byte) {
 	for i := len(b)/2 - 1; i >= 0; i-- {
@@ -43,7 +50,7 @@ func (sshConnection SshConnectionInfo) GetWindowsLicenseKey() (string, error) {
 	var productKeyOffset = 52
 
 	var regKeyList []RegistryKey
-	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM registry WHERE key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' AND name = 'DigitalProductId4'";`)
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM registry WHERE key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' AND name = 'DigitalProductId'";`)
 	if err != nil {
 		return "", err
 	}
@@ -60,4 +67,46 @@ func (sshConnection SshConnectionInfo) GetWindowsLicenseKey() (string, error) {
 	}
 	binaryKey := digitalProductID[productKeyOffset:]
 	return fmt.Sprint(binaryKeyToASCII(binaryKey)), err
+}
+
+func (sshConnection SshConnectionInfo) GetWindowsVmwareProductKey() (windowsLicense, error) {
+	var regKeyList []RegistryKey
+	var license windowsLicense
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT name,path FROM registry WHERE key = 'HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\VMware, Inc.\VMware Workstation';`)
+	if err != nil {
+		return license, err
+	}
+	regKeyList, err = parseKeyList(result)
+	if err != nil {
+		return license, err
+	}
+	if regKeyList == nil {
+		return license, nil
+	}
+	for _, key := range regKeyList {
+		if strings.Contains(key.Name, "License.") {
+			result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT name,path,data FROM registry WHERE key = 'HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\VMware, Inc.\VMware Workstation\` + key.Name + `';`)
+			if err != nil {
+				return license, err
+			}
+			regKeyList = nil
+			regKeyList, err = parseKeyList(result)
+			if err != nil {
+				return license, err
+			}
+			if regKeyList == nil {
+				return license, nil
+			}
+			for _, key := range regKeyList {
+				if key.Name == "ProductID" {
+					license.productName = key.Data
+				}
+				if key.Name == "Serial" {
+					license.productKey = key.Data
+				}
+			}
+			return license, err
+		}
+	}
+	return license, err
 }
