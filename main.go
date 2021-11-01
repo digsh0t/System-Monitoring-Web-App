@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -24,14 +25,15 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	// sshConnection, err := models.GetSSHConnectionFromId(54)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// err = sshConnection.InstallNxlogWindows()
-	// if err != nil {
-	// 	log.Println(err)
-	// }
+	sshConnection, err := models.GetSSHConnectionFromId(58)
+	if err != nil {
+		log.Println(err)
+	}
+	key, err := sshConnection.GetWindowsLicenseKey()
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(key)
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
