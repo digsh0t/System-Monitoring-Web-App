@@ -106,6 +106,10 @@ func GetAllClientSysLogRoute(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	if logs == nil {
+		utils.JSON(w, http.StatusOK, logs)
+		return
+	}
 	utils.JSON(w, http.StatusOK, logs[:10])
 }
 

@@ -11,6 +11,7 @@ import (
 type RegistryKey struct {
 	Data string `json:"data"`
 	Path string `json:"path"`
+	Name string `json:"name"`
 }
 
 type PasswordPolicy struct {
