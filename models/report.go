@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Jeffail/gabs"
+	"github.com/jung-kurt/gofpdf"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/utils"
 )
@@ -216,4 +217,35 @@ func GetClientSerial(sshConnection SshConnectionInfo) (string, error) {
 
 	return serial, err
 
+}
+
+func ExportReport(filename string) error {
+
+	type recType struct {
+		align, txt string
+	}
+
+	recList := []recType{
+		{"CM", "Web Application Report"},
+		{"BC", utils.GetCurrentDateTime()},
+	}
+
+	var formatRect = func(pdf *gofpdf.Fpdf, recList []recType) {
+		pdf.AddPage()
+		pdf.SetMargins(10, 10, 10)
+		pdf.SetAutoPageBreak(false, 0)
+		borderStr := "1"
+		pdf.CellFormat(190, 257, "Version 1.0", "", 1, "BC", false, 0, "")
+		for _, rec := range recList {
+			pdf.SetXY(20, 20)
+			pdf.CellFormat(170, 257, rec.txt, borderStr, 0, rec.align, false, 0, "")
+			borderStr = ""
+		}
+	}
+
+	pdf := gofpdf.New("P", "mm", "A4", "") // A4 210.0 x 297.0
+	pdf.SetFont("Arial", "B", 16)
+	formatRect(pdf, recList)
+
+	return pdf.OutputFileAndClose(filename)
 }

@@ -17,6 +17,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/gosnmp/gosnmp v1.32.0
 	github.com/joho/godotenv v1.3.0
+	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/pusher/pusher-http-go v4.0.1+incompatible
 	github.com/robfig/cron/v3 v3.0.1
