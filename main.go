@@ -29,7 +29,7 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	key, err := sshConnection.GetWindowsPhysicalDiskInfo()
+	key, err := sshConnection.GetWindowsLogicalDriveInfo()
 	if err != nil {
 		log.Println(err)
 	}
