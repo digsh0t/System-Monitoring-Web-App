@@ -29,11 +29,16 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	key, err := sshConnection.GetWindowsVmwareProductKey()
+	key, err := sshConnection.GetWindowsPhysicalDiskInfo()
 	if err != nil {
 		log.Println(err)
 	}
 	fmt.Println(key)
+	// key, err = sshConnection.GetWindowsVmwareProductKey()
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// fmt.Println(key)
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)

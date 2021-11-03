@@ -8,9 +8,9 @@ import (
 )
 
 type windowsLicense struct {
-	productName string `json:"product_name"`
-	productKey  string `json:"product_key"`
-	productId   string `json:"product_id"`
+	ProductName string `json:"product_name"`
+	ProductKey  string `json:"product_key"`
+	ProductId   string `json:"product_id"`
 }
 
 func rev(b []byte) {
@@ -99,12 +99,36 @@ func (sshConnection SshConnectionInfo) GetWindowsVmwareProductKey() (windowsLice
 			}
 			for _, key := range regKeyList {
 				if key.Name == "ProductID" {
-					license.productName = key.Data
+					license.ProductName = key.Data
 				}
 				if key.Name == "Serial" {
-					license.productKey = key.Data
+					license.ProductKey = key.Data
 				}
 			}
+			return license, err
+		}
+	}
+	return license, err
+}
+
+func (sshConnection SshConnectionInfo) GetWindowsProductKey() (windowsLicense, error) {
+	var regKeyList []RegistryKey
+	var license windowsLicense
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM registry WHERE key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform';"`)
+	if err != nil {
+		return license, err
+	}
+	regKeyList, err = parseKeyList(result)
+	if err != nil {
+		return license, err
+	}
+	if regKeyList == nil {
+		return license, nil
+	}
+	for _, key := range regKeyList {
+		if key.Name == "BackupProductKeyDefault" {
+			license.ProductName = key.Name
+			license.ProductKey = key.Data
 			return license, err
 		}
 	}
