@@ -1,0 +1,10 @@
+- name: Get client setup
+  hosts: "{{ host }}"
+  gather_facts: no
+  tasks:
+  - name: Run setup module
+    setup:
+    register: output
+
+  - debug: msg="{{ output }}"
+

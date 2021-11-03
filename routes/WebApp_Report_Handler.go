@@ -48,10 +48,6 @@ func GetDetailOSReport(w http.ResponseWriter, r *http.Request) {
 	// Get Id parameter
 	query := r.URL.Query()
 	ostype := query.Get("ostype")
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
-		return
-	}
 
 	report, err := models.GetDetailOSReport(ostype)
 	if err != nil {

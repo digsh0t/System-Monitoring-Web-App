@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -24,17 +23,19 @@ func main() {
 	// if err != nil {
 	// 	log.Println(err)
 	// }
+	/*
+		sshConnection, err := models.GetSSHConnectionFromId(58)
+		if err != nil {
+			log.Println(err)
+		}
+		key, err := sshConnection.GetWindowsVmwareProductKey()
+		if err != nil {
+			log.Println(err)
+		}
+		fmt.Println(key)
+	*/
 
-	sshConnection, err := models.GetSSHConnectionFromId(58)
-	if err != nil {
-		log.Println(err)
-	}
-	key, err := sshConnection.GetWindowsVmwareProductKey()
-	if err != nil {
-		log.Println(err)
-	}
-	fmt.Println(key)
-
+	models.ExportReport("hello.pdf")
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})

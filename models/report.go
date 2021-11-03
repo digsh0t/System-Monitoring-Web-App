@@ -3,8 +3,10 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -221,6 +223,7 @@ func GetClientSerial(sshConnection SshConnectionInfo) (string, error) {
 
 func ExportReport(filename string) error {
 
+	// Cover Page
 	type recType struct {
 		align, txt string
 	}
@@ -236,6 +239,16 @@ func ExportReport(filename string) error {
 		pdf.SetAutoPageBreak(false, 0)
 		borderStr := "1"
 		pdf.CellFormat(190, 257, "Version 1.0", "", 1, "BC", false, 0, "")
+
+		pdf.ImageOptions(
+			"./pictures/fpt.png",
+			25, 70,
+			0, 0,
+			false,
+			gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true},
+			0,
+			"",
+		)
 		for _, rec := range recList {
 			pdf.SetXY(20, 20)
 			pdf.CellFormat(170, 257, rec.txt, borderStr, 0, rec.align, false, 0, "")
@@ -244,8 +257,213 @@ func ExportReport(filename string) error {
 	}
 
 	pdf := gofpdf.New("P", "mm", "A4", "") // A4 210.0 x 297.0
+	pdf.SetHeaderFuncMode(func() {
+		pdf.ImageOptions(
+			"./pictures/logo4.png",
+			4, 4,
+			0, 0,
+			false,
+			gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true},
+			0,
+			"",
+		)
+		pdf.WriteAligned(190, 4, "Asset Detail Report", "R")
+		pdf.Ln(20)
+	}, true)
+	pdf.SetFooterFunc(func() {
+		pdf.SetY(-15)
+		pdf.SetFont("Arial", "I", 8)
+		pdf.CellFormat(0, 10, fmt.Sprintf("Page %d/{nb}", pdf.PageNo()),
+			"", 0, "C", false, 0, "")
+	})
+	pdf.AliasNbPages("")
 	pdf.SetFont("Arial", "B", 16)
 	formatRect(pdf, recList)
+
+	// Second Page
+	pdf.AddPage()
+	pdf.CellFormat(60, 30, "Table of Contents ", "", 0, "C", false, 0, "")
+	pdf.Ln(20)
+	pdf.WriteAligned(90, 20, "1. Computer devices", "L")
+	pdf.Ln(10)
+	pdf.WriteAligned(70, 20, "   1.1. Windows devices", "L")
+	pdf.Ln(10)
+
+	// Get Windows
+	sshConnectionList, err := GetAllOSSSHConnection("Windows")
+	if err != nil {
+		return err
+	}
+	for index, sshConnection := range sshConnectionList {
+		pdf.WriteAligned(100, 20, "          1.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+	}
+
+	pdf.Ln(10)
+	pdf.WriteAligned(70, 20, "   1.2. Linux devices", "L")
+	pdf.Ln(10)
+
+	// Get Linux
+	sshConnectionList, err = GetAllOSSSHConnection("Linux")
+	if err != nil {
+		return err
+	}
+	for index, sshConnection := range sshConnectionList {
+		pdf.WriteAligned(100, 20, "          1.2."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+		pdf.Ln(8)
+	}
+
+	pdf.Ln(2)
+	pdf.WriteAligned(70, 20, "2. Network devices", "L")
+	pdf.Ln(10)
+	pdf.WriteAligned(70, 20, "   2.1. Router devices", "L")
+	pdf.Ln(10)
+
+	// Get Router
+	sshConnectionList, err = GetAllOSSSHConnection("Router")
+	if err != nil {
+		return err
+	}
+	for index, sshConnection := range sshConnectionList {
+		pdf.WriteAligned(100, 20, "          2.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+		pdf.Ln(8)
+	}
+
+	pdf.Ln(2)
+	pdf.WriteAligned(70, 20, "   2.2. Switch devices", "L")
+	pdf.Ln(10)
+
+	// Get Switch
+	sshConnectionList, err = GetAllOSSSHConnection("Switch")
+	if err != nil {
+		return err
+	}
+	for index, sshConnection := range sshConnectionList {
+		pdf.WriteAligned(100, 20, "          2.2."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+		pdf.Ln(8)
+	}
+	pdf.Ln(10)
+
+	// Content
+
+	var DrawTable = func(pdf *gofpdf.Fpdf, sshConnectionList []SshConnectionInfo) error {
+		for index, sshConnection := range sshConnectionList {
+			pdf.SetFont("Arial", "B", 16)
+			if index > 0 {
+				pdf.AddPage()
+			}
+			sshConnectionInfo, err := GetSSHConnectionInformationBySSH_Id(sshConnection.SSHConnectionId)
+			if err != nil {
+				return err
+			}
+			pdf.WriteAligned(100, 20, "          1.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+			pdf.SetY(80)
+			pdf.CellFormat(180, 7, "Profile", "1", 0, "", false, 0, "")
+			pdf.Ln(-1)
+			for i := 0; i < 7; i++ {
+				pdf.SetFont("", "B", 12)
+				switch i {
+				case 0:
+					pdf.CellFormat(60, 6, "OS Name", "1", 0, "", false, 0, "")
+					pdf.CellFormat(120, 6, sshConnectionInfo.OsName, "1", 0, "", false, 0, "")
+					pdf.Ln(-1)
+				case 1:
+					pdf.CellFormat(60, 6, "OS Version", "1", 0, "", false, 0, "")
+					pdf.CellFormat(120, 6, sshConnectionInfo.OsVersion, "1", 0, "", false, 0, "")
+					pdf.Ln(-1)
+				case 2:
+					pdf.CellFormat(60, 6, "OS Install Date", "1", 0, "", false, 0, "")
+					pdf.CellFormat(120, 6, sshConnectionInfo.InstallDate, "1", 0, "", false, 0, "")
+					pdf.Ln(-1)
+				case 3:
+					pdf.CellFormat(60, 6, "Serial Number", "1", 0, "", false, 0, "")
+					pdf.CellFormat(120, 6, sshConnectionInfo.Serial, "1", 0, "", false, 0, "")
+					pdf.Ln(-1)
+				case 4:
+					pdf.CellFormat(60, 6, "OS Host Name", "1", 0, "", false, 0, "")
+					pdf.CellFormat(120, 6, sshConnectionInfo.Hostname, "1", 0, "", false, 0, "")
+					pdf.Ln(-1)
+				case 5:
+					pdf.CellFormat(60, 6, "Manufacturer", "1", 0, "", false, 0, "")
+					pdf.CellFormat(120, 6, sshConnectionInfo.Manufacturer, "1", 0, "", false, 0, "")
+					pdf.Ln(-1)
+				case 6:
+					pdf.CellFormat(60, 6, "OS Model", "1", 0, "", false, 0, "")
+					pdf.CellFormat(120, 6, sshConnectionInfo.Model, "1", 0, "", false, 0, "")
+					pdf.Ln(-1)
+				case 7:
+					pdf.CellFormat(60, 6, "Architecture", "1", 0, "", false, 0, "")
+					pdf.CellFormat(120, 6, sshConnectionInfo.Architecture, "1", 0, "", false, 0, "")
+
+				}
+			}
+
+		}
+		return err
+	}
+	pdf.AddPage()
+	pdf.SetFont("", "B", 15)
+	pdf.Ln(10)
+	pdf.WriteAligned(90, 20, "Contents", "L")
+	pdf.Ln(20)
+	pdf.WriteAligned(90, 20, "1. Computer devices", "L")
+	pdf.Ln(10)
+	pdf.WriteAligned(70, 20, "   1.1. Windows devices", "L")
+	pdf.Ln(10)
+
+	// Get Windows
+	sshConnectionList, err = GetAllOSSSHConnection("Windows")
+	if err != nil {
+		return err
+	}
+	err = DrawTable(pdf, sshConnectionList)
+	if err != nil {
+		return err
+	}
+
+	// Get Linux
+	pdf.AddPage()
+	pdf.Ln(20)
+	pdf.SetFont("", "B", 15)
+	pdf.WriteAligned(70, 20, "   1.2. Linux devices", "L")
+	pdf.Ln(10)
+	sshConnectionList, err = GetAllOSSSHConnection("Linux")
+	if err != nil {
+		return err
+	}
+	err = DrawTable(pdf, sshConnectionList)
+	if err != nil {
+		return err
+	}
+
+	// Get Router
+	pdf.AddPage()
+	pdf.SetFont("", "B", 15)
+	pdf.WriteAligned(90, 20, "2. Network devices", "L")
+	pdf.Ln(10)
+	pdf.WriteAligned(70, 20, "   2.1. Router devices", "L")
+	pdf.Ln(10)
+	sshConnectionList, err = GetAllOSSSHConnection("Router")
+	if err != nil {
+		return err
+	}
+	err = DrawTable(pdf, sshConnectionList)
+	if err != nil {
+		return err
+	}
+
+	// Get Switch
+	pdf.AddPage()
+	pdf.SetFont("", "B", 15)
+	pdf.WriteAligned(70, 20, "   2.2. Switch devices", "L")
+	pdf.Ln(10)
+	sshConnectionList, err = GetAllOSSSHConnection("Switch")
+	if err != nil {
+		return err
+	}
+	err = DrawTable(pdf, sshConnectionList)
+	if err != nil {
+		return err
+	}
 
 	return pdf.OutputFileAndClose(filename)
 }
