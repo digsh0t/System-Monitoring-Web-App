@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -25,20 +24,21 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	sshConnection, err := models.GetSSHConnectionFromId(58)
-	if err != nil {
-		log.Println(err)
-	}
-	key, err := sshConnection.GetLocalUsers()
-	if err != nil {
-		log.Println(err)
-	}
-	for _, index := range key {
-		fmt.Print(index.Username + " ")
-		fmt.Print(index.IsEnabled)
-		fmt.Print(" " + index.LastLogon)
-		fmt.Println(index.Type)
-	}
+	// sshConnection, err := models.GetSSHConnectionFromId(58)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// key, err := sshConnection.GetWindowsDefenderInfo()
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// log.Println(key)
+	// for _, index := range key {
+	// 	fmt.Print(index.Username + " ")
+	// 	fmt.Print(index.IsEnabled)
+	// 	fmt.Print(" " + index.LastLogon)
+	// 	fmt.Println(index.Type)
+	// }
 	// key, err = sshConnection.GetWindowsVmwareProductKey()
 	// if err != nil {
 	// 	log.Println(err)
