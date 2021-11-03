@@ -29,11 +29,16 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	key, err := sshConnection.GetWindowsLogicalDriveInfo()
+	key, err := sshConnection.GetLocalUsers()
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println(key)
+	for _, index := range key {
+		fmt.Print(index.Username + " ")
+		fmt.Print(index.IsEnabled)
+		fmt.Print(" " + index.LastLogon)
+		fmt.Println(index.Type)
+	}
 	// key, err = sshConnection.GetWindowsVmwareProductKey()
 	// if err != nil {
 	// 	log.Println(err)
