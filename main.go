@@ -23,19 +23,28 @@ func main() {
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	/*
-		sshConnection, err := models.GetSSHConnectionFromId(58)
-		if err != nil {
-			log.Println(err)
-		}
-		key, err := sshConnection.GetWindowsVmwareProductKey()
-		if err != nil {
-			log.Println(err)
-		}
-		fmt.Println(key)
-	*/
 
-	models.ExportReport("hello.pdf")
+	// sshConnection, err := models.GetSSHConnectionFromId(58)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// key, err := sshConnection.GetWindowsDefenderInfo()
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// log.Println(key)
+	// for _, index := range key {
+	// 	fmt.Print(index.Username + " ")
+	// 	fmt.Print(index.IsEnabled)
+	// 	fmt.Print(" " + index.LastLogon)
+	// 	fmt.Println(index.Type)
+	// }
+	// key, err = sshConnection.GetWindowsVmwareProductKey()
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// fmt.Println(key)
+
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})

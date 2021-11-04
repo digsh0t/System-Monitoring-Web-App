@@ -248,6 +248,10 @@ func GetAllClientSyslogPriStat(logBasePath string, date string) (SyslogPriStat, 
 	for _, sshConnection := range sshConnectionList {
 		tmpStat, err = GetClientSyslogPriStat("/var/log/remotelogs", sshConnection.SSHConnectionId, date)
 		if err != nil {
+			if strings.Contains(err.Error(), "no such file or directory") {
+				err = nil
+				continue
+			}
 			return SyslogPriStat{}, err
 		}
 		syslogPriStat.Pri0 += tmpStat.Pri0
