@@ -24,11 +24,11 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	sshConnection, err := models.GetSSHConnectionFromId(59)
+	sshConnection, err := models.GetSSHConnectionFromId(58)
 	if err != nil {
 		log.Println(err)
 	}
-	key, err := sshConnection.GetLinuxInterfaceInfo()
+	key, err := sshConnection.GetAllWindowsLicense()
 	if err != nil {
 		log.Println(err)
 	}

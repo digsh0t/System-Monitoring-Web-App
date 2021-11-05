@@ -85,6 +85,7 @@ func (sshConnection SshConnectionInfo) GetWindowsVmwareProductKey() (windowsLice
 	}
 	for _, key := range regKeyList {
 		if strings.Contains(key.Name, "License.") {
+			tmpString := key.Name
 			result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT name,path,data FROM registry WHERE key = 'HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\VMware, Inc.\VMware Workstation\` + key.Name + `';`)
 			if err != nil {
 				return license, err
@@ -99,7 +100,7 @@ func (sshConnection SshConnectionInfo) GetWindowsVmwareProductKey() (windowsLice
 			}
 			for _, key := range regKeyList {
 				if key.Name == "ProductID" {
-					license.ProductName = key.Data
+					license.ProductName = key.Data + " " + tmpString
 				}
 				if key.Name == "Serial" {
 					license.ProductKey = key.Data
@@ -114,6 +115,7 @@ func (sshConnection SshConnectionInfo) GetWindowsVmwareProductKey() (windowsLice
 func (sshConnection SshConnectionInfo) GetWindowsProductKey() (windowsLicense, error) {
 	var regKeyList []RegistryKey
 	var license windowsLicense
+	tmpInfo, _ := sshConnection.GetDetailSSHConInfo()
 	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM registry WHERE key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform';"`)
 	if err != nil {
 		return license, err
@@ -127,10 +129,27 @@ func (sshConnection SshConnectionInfo) GetWindowsProductKey() (windowsLicense, e
 	}
 	for _, key := range regKeyList {
 		if key.Name == "BackupProductKeyDefault" {
-			license.ProductName = key.Name
+			license.ProductName = tmpInfo.OsName
 			license.ProductKey = key.Data
 			return license, err
 		}
 	}
 	return license, err
+}
+
+func (sshConnection SshConnectionInfo) GetAllWindowsLicense() ([]windowsLicense, error) {
+	var tmpLicense windowsLicense
+	var licenseList []windowsLicense
+	var err error
+	tmpLicense, err = sshConnection.GetWindowsProductKey()
+	if err != nil {
+		return nil, err
+	}
+	licenseList = append(licenseList, tmpLicense)
+	tmpLicense, err = sshConnection.GetWindowsVmwareProductKey()
+	if err != nil {
+		return nil, err
+	}
+	licenseList = append(licenseList, tmpLicense)
+	return licenseList, err
 }
