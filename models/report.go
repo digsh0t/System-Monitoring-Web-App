@@ -238,11 +238,10 @@ func ExportReport(filename string) error {
 		pdf.SetMargins(10, 10, 10)
 		pdf.SetAutoPageBreak(false, 0)
 		borderStr := "1"
-		pdf.CellFormat(190, 257, "Version 1.0", "", 1, "BC", false, 0, "")
-
+		pdf.CellFormat(280, 360, "Version 1.0", "", 1, "BC", false, 0, "")
 		pdf.ImageOptions(
 			"./pictures/fpt.png",
-			25, 70,
+			70, 70,
 			0, 0,
 			false,
 			gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true},
@@ -251,13 +250,14 @@ func ExportReport(filename string) error {
 		)
 		for _, rec := range recList {
 			pdf.SetXY(20, 20)
-			pdf.CellFormat(170, 257, rec.txt, borderStr, 0, rec.align, false, 0, "")
+			pdf.CellFormat(258, 365, rec.txt, borderStr, 0, rec.align, false, 0, "")
 			borderStr = ""
 		}
 	}
 
-	pdf := gofpdf.New("P", "mm", "A4", "") // A4 210.0 x 297.0
+	pdf := gofpdf.New("P", "mm", "A3", "") // A4 210.0 x 297.0
 	pdf.SetHeaderFuncMode(func() {
+		pdf.SetFont("", "B", 12)
 		pdf.ImageOptions(
 			"./pictures/logo4.png",
 			4, 4,
@@ -267,7 +267,7 @@ func ExportReport(filename string) error {
 			0,
 			"",
 		)
-		pdf.WriteAligned(190, 4, "Asset Detail Report", "R")
+		pdf.WriteAligned(270, 4, "Asset Detail Report", "R")
 		pdf.Ln(20)
 	}, true)
 	pdf.SetFooterFunc(func() {
@@ -345,61 +345,185 @@ func ExportReport(filename string) error {
 
 	// Content
 
-	var DrawTable = func(pdf *gofpdf.Fpdf, sshConnectionList []SshConnectionInfo) error {
-		for index, sshConnection := range sshConnectionList {
-			pdf.SetFont("Arial", "B", 16)
-			if index > 0 {
-				pdf.AddPage()
-			}
-			sshConnectionInfo, err := GetSSHConnectionInformationBySSH_Id(sshConnection.SSHConnectionId)
-			if err != nil {
-				return err
-			}
-			pdf.WriteAligned(100, 20, "          1.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
-			pdf.SetY(80)
-			pdf.CellFormat(180, 7, "Profile", "1", 0, "", false, 0, "")
-			pdf.Ln(-1)
-			for i := 0; i < 7; i++ {
-				pdf.SetFont("", "B", 12)
-				switch i {
-				case 0:
-					pdf.CellFormat(60, 6, "OS Name", "1", 0, "", false, 0, "")
-					pdf.CellFormat(120, 6, sshConnectionInfo.OsName, "1", 0, "", false, 0, "")
-					pdf.Ln(-1)
-				case 1:
-					pdf.CellFormat(60, 6, "OS Version", "1", 0, "", false, 0, "")
-					pdf.CellFormat(120, 6, sshConnectionInfo.OsVersion, "1", 0, "", false, 0, "")
-					pdf.Ln(-1)
-				case 2:
-					pdf.CellFormat(60, 6, "OS Install Date", "1", 0, "", false, 0, "")
-					pdf.CellFormat(120, 6, sshConnectionInfo.InstallDate, "1", 0, "", false, 0, "")
-					pdf.Ln(-1)
-				case 3:
-					pdf.CellFormat(60, 6, "Serial Number", "1", 0, "", false, 0, "")
-					pdf.CellFormat(120, 6, sshConnectionInfo.Serial, "1", 0, "", false, 0, "")
-					pdf.Ln(-1)
-				case 4:
-					pdf.CellFormat(60, 6, "OS Host Name", "1", 0, "", false, 0, "")
-					pdf.CellFormat(120, 6, sshConnectionInfo.Hostname, "1", 0, "", false, 0, "")
-					pdf.Ln(-1)
-				case 5:
-					pdf.CellFormat(60, 6, "Manufacturer", "1", 0, "", false, 0, "")
-					pdf.CellFormat(120, 6, sshConnectionInfo.Manufacturer, "1", 0, "", false, 0, "")
-					pdf.Ln(-1)
-				case 6:
-					pdf.CellFormat(60, 6, "OS Model", "1", 0, "", false, 0, "")
-					pdf.CellFormat(120, 6, sshConnectionInfo.Model, "1", 0, "", false, 0, "")
-					pdf.Ln(-1)
-				case 7:
-					pdf.CellFormat(60, 6, "Architecture", "1", 0, "", false, 0, "")
-					pdf.CellFormat(120, 6, sshConnectionInfo.Architecture, "1", 0, "", false, 0, "")
+	var DrawSystemInfoTable = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) error {
 
-				}
-			}
+		// Draw System info
+		if index > 0 {
+			pdf.AddPage()
+		}
+		pdf.SetFont("Arial", "B", 16)
+		sshConnectionInfo, err := GetSSHConnectionInformationBySSH_Id(sshConnection.SSHConnectionId)
+		if err != nil {
+			return err
+		}
+		pdf.WriteAligned(100, 20, "          1.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+		pdf.SetY(80)
+		pdf.SetFillColor(141, 151, 173)
+		pdf.SetTextColor(255, 255, 255)
+		pdf.SetLineWidth(.3)
+		pdf.SetFont("", "B", 0)
+		pdf.CellFormat(180, 7, "Profile", "1", 0, "", true, 0, "")
+		pdf.Ln(-1)
 
+		// Color and font restoration
+		pdf.SetFillColor(224, 235, 255)
+		pdf.SetTextColor(0, 0, 0)
+		pdf.SetFont("", "", 0)
+		// 	Data
+		fill := false
+		for i := 0; i < 7; i++ {
+			pdf.SetFont("", "B", 12)
+			switch i {
+			case 0:
+				pdf.CellFormat(60, 6, "OS Name", "1", 0, "", fill, 0, "")
+				pdf.SetFont("", "", 12)
+				pdf.CellFormat(120, 6, sshConnectionInfo.OsName, "1", 0, "", fill, 0, "")
+				pdf.Ln(-1)
+			case 1:
+				pdf.CellFormat(60, 6, "OS Version", "1", 0, "", fill, 0, "")
+				pdf.SetFont("", "", 12)
+				pdf.CellFormat(120, 6, sshConnectionInfo.OsVersion, "1", 0, "", fill, 0, "")
+				pdf.Ln(-1)
+			case 2:
+				pdf.CellFormat(60, 6, "OS Install Date", "1", 0, "", fill, 0, "")
+				pdf.SetFont("", "", 12)
+				pdf.CellFormat(120, 6, sshConnectionInfo.InstallDate, "1", 0, "", fill, 0, "")
+				pdf.Ln(-1)
+			case 3:
+				pdf.CellFormat(60, 6, "Serial Number", "1", 0, "", fill, 0, "")
+				pdf.SetFont("", "", 12)
+				pdf.CellFormat(120, 6, sshConnectionInfo.Serial, "1", 0, "", fill, 0, "")
+				pdf.Ln(-1)
+			case 4:
+				pdf.CellFormat(60, 6, "OS Host Name", "1", 0, "", fill, 0, "")
+				pdf.SetFont("", "", 12)
+				pdf.CellFormat(120, 6, sshConnectionInfo.Hostname, "1", 0, "", fill, 0, "")
+				pdf.Ln(-1)
+			case 5:
+				pdf.CellFormat(60, 6, "Manufacturer", "1", 0, "", fill, 0, "")
+				pdf.SetFont("", "", 12)
+				pdf.CellFormat(120, 6, sshConnectionInfo.Manufacturer, "1", 0, "", fill, 0, "")
+				pdf.Ln(-1)
+			case 6:
+				pdf.CellFormat(60, 6, "OS Model", "1", 0, "", fill, 0, "")
+				pdf.SetFont("", "", 12)
+				pdf.CellFormat(120, 6, sshConnectionInfo.Model, "1", 0, "", fill, 0, "")
+				pdf.Ln(-1)
+			case 7:
+				pdf.CellFormat(60, 6, "Architecture", "1", 0, "", fill, 0, "")
+				pdf.SetFont("", "", 12)
+				pdf.CellFormat(120, 6, sshConnectionInfo.Architecture, "1", 0, "", fill, 0, "")
+
+			}
+			fill = !fill
 		}
 		return err
 	}
+
+	var DrawPhysDriveTable = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) error {
+
+		// Draw System info
+		header := []string{"Name", "Serial", "Manufacturer", "Model", "Description", "Type", "Partition", "DiskSize"}
+
+		pdf.Ln(20)
+		pdf.WriteAligned(100, 20, "Windows Physical Disk", "L")
+		pdf.Ln(20)
+		pdf.SetFillColor(141, 151, 173)
+		pdf.SetTextColor(255, 255, 255)
+		pdf.SetLineWidth(.3)
+		pdf.SetFont("", "B", 0)
+		w := []float64{45.0, 45.0, 50.0, 25.0, 25.0, 25.0, 25.0, 30.0}
+		for j, str := range header {
+			pdf.CellFormat(w[j], 7, str, "1", 0, "C", true, 0, "")
+		}
+		pdf.Ln(-1)
+
+		// Color and font restoration
+		pdf.SetFillColor(224, 235, 255)
+		pdf.SetTextColor(0, 0, 0)
+		pdf.SetFont("", "", 0)
+		// 	Data
+		fill := false
+		physDiskInfoList, err := sshConnection.GetWindowsPhysicalDiskInfo()
+		if err != nil {
+			return err
+		}
+
+		for _, physDisk := range physDiskInfoList {
+
+			// Get height of Model column
+			marginCell := 2.
+			_, lineHt := pdf.GetFontSize()
+			height := 0.
+			lines := pdf.SplitLines([]byte(physDisk.Model), w[3])
+			h := float64(len(lines))*lineHt + marginCell*float64(len(lines))
+			if h > height {
+				height = h
+			}
+
+			pdf.CellFormat(w[0], height, physDisk.Name, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[1], height, physDisk.Serial, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[2], height, physDisk.Manufacturer, "1", 0, "", fill, 0, "")
+			// Get current position
+			curx, y := pdf.GetXY()
+			pdf.MultiCell(w[3], lineHt+marginCell, physDisk.Model, "1", "", fill)
+			// Restore position
+			pdf.SetXY(curx+w[3], y)
+			pdf.CellFormat(w[4], height, physDisk.Description, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[5], height, physDisk.Type, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[6], height, physDisk.Partition, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[7], height, physDisk.DiskSize, "1", 0, "", fill, 0, "")
+			pdf.Ln(-1)
+			fill = !fill
+		}
+
+		return err
+	}
+
+	var DrawLogicDriveTable = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) error {
+
+		// Draw System info
+		header := []string{"Name", "Description", "Type", "FileSystem", "Size", "FreeSpace"}
+
+		pdf.Ln(20)
+		pdf.WriteAligned(100, 20, "Windows Logical Disk", "L")
+		pdf.Ln(20)
+		pdf.SetFillColor(141, 151, 173)
+		pdf.SetTextColor(255, 255, 255)
+		pdf.SetLineWidth(.3)
+		pdf.SetFont("", "B", 0)
+		w := []float64{45.0, 45.0, 50.0, 25.0, 45.0, 45.0}
+		for j, str := range header {
+			pdf.CellFormat(w[j], 7, str, "1", 0, "C", true, 0, "")
+		}
+		pdf.Ln(-1)
+
+		// Color and font restoration
+		pdf.SetFillColor(224, 235, 255)
+		pdf.SetTextColor(0, 0, 0)
+		pdf.SetFont("", "", 0)
+		// 	Data
+		fill := false
+		logicalDiskInfoList, err := sshConnection.GetWindowsLogicalDriveInfo()
+		if err != nil {
+			return err
+		}
+
+		for _, logicalDisk := range logicalDiskInfoList {
+			var height float64 = 6
+			pdf.CellFormat(w[0], height, logicalDisk.Name, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[1], height, logicalDisk.Description, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[2], height, logicalDisk.Type, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[3], height, logicalDisk.FileSystem, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[4], height, logicalDisk.Size, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[5], height, logicalDisk.FreeSpace, "1", 0, "", fill, 0, "")
+			pdf.Ln(-1)
+			fill = !fill
+		}
+
+		return err
+	}
+
 	pdf.AddPage()
 	pdf.SetFont("", "B", 15)
 	pdf.Ln(10)
@@ -415,9 +539,21 @@ func ExportReport(filename string) error {
 	if err != nil {
 		return err
 	}
-	err = DrawTable(pdf, sshConnectionList)
-	if err != nil {
-		return err
+	for index, sshConnection := range sshConnectionList {
+		err = DrawSystemInfoTable(pdf, index, sshConnection)
+		if err != nil {
+			return err
+		}
+
+		err = DrawPhysDriveTable(pdf, index, sshConnection)
+		if err != nil {
+			return err
+		}
+
+		err = DrawLogicDriveTable(pdf, index, sshConnection)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Get Linux
@@ -430,9 +566,11 @@ func ExportReport(filename string) error {
 	if err != nil {
 		return err
 	}
-	err = DrawTable(pdf, sshConnectionList)
-	if err != nil {
-		return err
+	for index, sshConnection := range sshConnectionList {
+		err = DrawSystemInfoTable(pdf, index, sshConnection)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Get Router
@@ -446,9 +584,11 @@ func ExportReport(filename string) error {
 	if err != nil {
 		return err
 	}
-	err = DrawTable(pdf, sshConnectionList)
-	if err != nil {
-		return err
+	for index, sshConnection := range sshConnectionList {
+		err = DrawSystemInfoTable(pdf, index, sshConnection)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Get Switch
@@ -460,9 +600,11 @@ func ExportReport(filename string) error {
 	if err != nil {
 		return err
 	}
-	err = DrawTable(pdf, sshConnectionList)
-	if err != nil {
-		return err
+	for index, sshConnection := range sshConnectionList {
+		err = DrawSystemInfoTable(pdf, index, sshConnection)
+		if err != nil {
+			return err
+		}
 	}
 
 	return pdf.OutputFileAndClose(filename)

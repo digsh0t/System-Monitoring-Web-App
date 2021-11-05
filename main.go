@@ -44,6 +44,7 @@ func main() {
 	// 	log.Println(err)
 	// }
 	// fmt.Println(key)
+	models.ExportReport("hello.pdf")
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
