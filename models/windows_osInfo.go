@@ -74,6 +74,30 @@ type ansibleWindowsInterfaceInfo struct {
 	DNSDomain      string `json:"dns_domain"`
 }
 
+type ansibleLinuxInterfaceInfo struct {
+	Active        bool        `json:"active"`
+	InterfaceName string      `json:"device"`
+	IPv4          addressV4   `json:"ipv4"`
+	IPV6          []addressV6 `json:"ipv6"`
+	Mac           string      `json:"macaddress"`
+	InterfaceType string      `json:"type"`
+}
+
+type addressV4 struct {
+	Address       string `json:"address"`
+	Broadcast     string `json:"broadcast"`
+	Netmask       string `json:"netmask"`
+	Network       string `json:"network"`
+	DefautGateway string `json:"gateway"`
+	Interface     string `json:"interface"`
+}
+
+type addressV6 struct {
+	Address string `json:"address"`
+	Prefix  string `json:"prefix"`
+	Scope   string `json:"scope"`
+}
+
 var InterfaceTypes = map[string]string{
 	"6":  "ethernet-csmacd",
 	"24": "softwareLoopback",
@@ -185,7 +209,7 @@ func (sshConnection SshConnectionInfo) GetWindowsInterfaceInfo() ([]ansibleWindo
 	if err != nil {
 		return nil, err
 	}
-	tmpList, err = parseAnsibleInterfaceInfoOutput(output)
+	tmpList, err = parseAnsibleWindowsInterfaceInfoOutput(output)
 	for i := 0; i < len(interfaceList); i++ {
 		for _, tmp := range tmpList {
 			if tmp.ConnectionName == interfaceList[i].ConnectionName {
@@ -198,7 +222,17 @@ func (sshConnection SshConnectionInfo) GetWindowsInterfaceInfo() ([]ansibleWindo
 	return interfaceList, err
 }
 
-func parseAnsibleInterfaceInfoOutput(input string) ([]ansibleWindowsInterfaceInfo, error) {
+func (sshConnection SshConnectionInfo) GetLinuxInterfaceInfo() ([]ansibleLinuxInterfaceInfo, error) {
+	var interfaceList []ansibleLinuxInterfaceInfo
+	output, err := sshConnection.RunAnsiblePlaybookWithjson("./yamls/get_interface_info.yml", `{"host":"`+sshConnection.HostNameSSH+`"}`)
+	if err != nil {
+		return nil, err
+	}
+	interfaceList, err = parseAnsibleLinuxInterfaceInfoOutput(output)
+	return interfaceList, err
+}
+
+func parseAnsibleWindowsInterfaceInfoOutput(input string) ([]ansibleWindowsInterfaceInfo, error) {
 
 	var interfaceList []ansibleWindowsInterfaceInfo
 
@@ -225,5 +259,48 @@ func (sshConnection SshConnectionInfo) getWindowsInterfaceIPInfo() ([]ansibleWin
 		return nil, err
 	}
 	err = json.Unmarshal([]byte(output), &interfaceList)
+	return interfaceList, err
+}
+
+func parseAnsibleLinuxInterfaceInfoOutput(input string) ([]ansibleLinuxInterfaceInfo, error) {
+
+	var interfaceList []ansibleLinuxInterfaceInfo
+	var interfaceNameList []string
+	var tmpInterface ansibleLinuxInterfaceInfo
+	var tmpIPv4 addressV4
+	var jsonPath string
+
+	re, err := regexp.Compile(`\{[\s\S]*\}`)
+	if err != nil {
+		return nil, err
+	}
+
+	input = re.FindString(input)
+	jsonParsed, err := gabs.ParseJSON([]byte(input))
+	if err != nil {
+		return nil, err
+	}
+	tmpGaps, _ := jsonParsed.Search("ansible_facts", "interfaces").Children()
+	for _, child := range tmpGaps {
+		interfaceNameList = append(interfaceNameList, strings.ReplaceAll(child.String(), `"`, ""))
+	}
+	for _, name := range interfaceNameList {
+		jsonPath = "ansible_facts." + name
+		err = json.Unmarshal([]byte(jsonParsed.Path(jsonPath).String()), &tmpInterface)
+		if err != nil {
+			return nil, err
+		}
+		interfaceList = append(interfaceList, tmpInterface)
+		tmpInterface = ansibleLinuxInterfaceInfo{}
+	}
+	err = json.Unmarshal([]byte(jsonParsed.Path("ansible_facts.default_ipv4").String()), &tmpIPv4)
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < len(interfaceList); i++ {
+		if interfaceList[i].InterfaceName == tmpIPv4.Interface {
+			interfaceList[i].IPv4 = tmpIPv4
+		}
+	}
 	return interfaceList, err
 }
