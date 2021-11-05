@@ -24,15 +24,15 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	// sshConnection, err := models.GetSSHConnectionFromId(58)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// key, err := sshConnection.GetWindowsDefenderInfo()
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// log.Println(key)
+	sshConnection, err := models.GetSSHConnectionFromId(58)
+	if err != nil {
+		log.Println(err)
+	}
+	key, err := sshConnection.GetAllWindowsLicense()
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(key)
 	// for _, index := range key {
 	// 	fmt.Print(index.Username + " ")
 	// 	fmt.Print(index.IsEnabled)

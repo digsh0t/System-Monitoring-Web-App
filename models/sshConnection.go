@@ -952,19 +952,22 @@ func (sshConnection SshConnectionInfo) RunAnsiblePlaybookWithjson(filepath strin
 		out, errbuf bytes.Buffer
 		err         error
 		output      string
+		args        []string
 	)
 
-	sshKey, err := GetSSHKeyFromId(sshConnection.SSHKeyId)
-	if err != nil {
-		return "", err
-	}
-	err = sshKey.WriteKeyToFile("./tmp/private_key_" + strconv.Itoa(sshConnection.SSHKeyId))
-	if err != nil {
-		return "", err
+	//If this client use ssh key to connect
+	if sshConnection.SSHKeyId > 0 {
+		sshKey, err := GetSSHKeyFromId(sshConnection.SSHKeyId)
+		if err != nil {
+			return "", err
+		}
+		err = sshKey.WriteKeyToFile("./tmp/private_key_" + strconv.Itoa(sshConnection.SSHKeyId))
+		if err != nil {
+			return "", err
+		}
+		args = append(args, "--private-key", "./tmp/private_key_"+strconv.Itoa(sshConnection.SSHKeyId))
 	}
 
-	var args []string
-	args = append(args, "--private-key", "./tmp/private_key_"+strconv.Itoa(sshConnection.SSHKeyId))
 	if extraVars != "" {
 		args = append(args, "--extra-vars", extraVars, filepath)
 	} else {
