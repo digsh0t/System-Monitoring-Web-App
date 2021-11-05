@@ -2,7 +2,10 @@ package models
 
 import (
 	"encoding/json"
+	"regexp"
 	"strings"
+
+	"github.com/Jeffail/gabs"
 )
 
 type osProfile struct {
@@ -56,6 +59,24 @@ type windowsDefenderStatus struct {
 	OnAccessProtectionEnabled       bool
 	LastQuickScan                   string
 	RealTimeProtectionEnabled       bool
+}
+
+type ansibleWindowsInterfaceInfo struct {
+	ConnectionName string `json:"connection_name"`
+	Description    string `json:"description"`
+	IP             string `json:"ipv4_address"`
+	Mac            string `json:"mac"`
+	DHCPServer     string `json:"dhcp_server"`
+	Subnet         string `json:"mask"`
+	InterfaceType  string `json:"type"`
+	Manufacturer   string `json:"manufacturer"`
+	DefaultGateway string `json:"default_gateway"`
+	DNSDomain      string `json:"dns_domain"`
+}
+
+var InterfaceTypes = map[string]string{
+	"6":  "ethernet-csmacd",
+	"24": "softwareLoopback",
 }
 
 func (sshConnection SshConnectionInfo) GetWindowsPhysicalDiskInfo() ([]physicalDrive, error) {
@@ -152,4 +173,57 @@ func parseWindowsDefenderInfoOutput(input string) windowsDefenderStatus {
 		defenderStatus.RealTimeProtectionEnabled = true
 	}
 	return defenderStatus
+}
+
+func (sshConnection SshConnectionInfo) GetWindowsInterfaceInfo() ([]ansibleWindowsInterfaceInfo, error) {
+	var tmpList []ansibleWindowsInterfaceInfo
+	interfaceList, err := sshConnection.getWindowsInterfaceIPInfo()
+	if err != nil {
+		return nil, err
+	}
+	output, err := sshConnection.RunAnsiblePlaybookWithjson("./yamls/get_interface_info.yml", `{"host":"`+sshConnection.HostNameSSH+`"}`)
+	if err != nil {
+		return nil, err
+	}
+	tmpList, err = parseAnsibleInterfaceInfoOutput(output)
+	for i := 0; i < len(interfaceList); i++ {
+		for _, tmp := range tmpList {
+			if tmp.ConnectionName == interfaceList[i].ConnectionName {
+				interfaceList[i].DNSDomain = tmp.DNSDomain
+				interfaceList[i].DefaultGateway = tmp.DefaultGateway
+			}
+		}
+		interfaceList[i].InterfaceType = InterfaceTypes[interfaceList[i].InterfaceType]
+	}
+	return interfaceList, err
+}
+
+func parseAnsibleInterfaceInfoOutput(input string) ([]ansibleWindowsInterfaceInfo, error) {
+
+	var interfaceList []ansibleWindowsInterfaceInfo
+
+	re, err := regexp.Compile(`\{[\s\S]*\}`)
+	if err != nil {
+		return nil, err
+	}
+
+	input = re.FindString(input)
+	jsonParsed, err := gabs.ParseJSON([]byte(input))
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal([]byte(jsonParsed.Path("ansible_facts.interfaces").String()), &interfaceList)
+	return interfaceList, err
+}
+
+func (sshConnection SshConnectionInfo) getWindowsInterfaceIPInfo() ([]ansibleWindowsInterfaceInfo, error) {
+
+	var interfaceList []ansibleWindowsInterfaceInfo
+
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT IA.friendly_name AS 'connection_name',IA.address AS 'ipv4_address',ID.mac,ID.dhcp_server,IA.mask,ID.type,ID.manufacturer,ID.description FROM interface_addresses AS IA LEFT JOIN interface_details AS ID ON IA.interface = ID.interface  WHERE IA.address NOT LIKE '%::%'`)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal([]byte(output), &interfaceList)
+	return interfaceList, err
 }
