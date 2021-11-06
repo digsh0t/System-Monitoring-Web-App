@@ -12,4 +12,4 @@
      dest: host
      facility: any
      level: any
-     name: "{{ ipSysLog }}"
+     name: "{{ server_ip }}"

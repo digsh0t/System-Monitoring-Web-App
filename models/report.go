@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -255,7 +256,9 @@ func ExportReport(filename string) error {
 		}
 	}
 
-	pdf := gofpdf.New("P", "mm", "A3", "") // A4 210.0 x 297.0
+	// Initialize
+	pdf := gofpdf.New("P", "mm", "A3", "") // A4 210.0 x 297.
+	pdf.SetAutoPageBreak(true, 20.0)
 	pdf.SetHeaderFuncMode(func() {
 		pdf.SetFont("", "B", 12)
 		pdf.ImageOptions(
@@ -344,8 +347,8 @@ func ExportReport(filename string) error {
 	pdf.Ln(10)
 
 	// Content
-
 	var DrawSystemInfoTable = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) error {
+		pdf.SetAutoPageBreak(true, 20.0)
 
 		// Draw System info
 		if index > 0 {
@@ -421,6 +424,7 @@ func ExportReport(filename string) error {
 	}
 
 	var DrawPhysDriveTable = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) error {
+		pdf.SetAutoPageBreak(true, 20.0)
 
 		// Draw System info
 		header := []string{"Name", "Serial", "Manufacturer", "Model", "Description", "Type", "Partition", "DiskSize"}
@@ -481,6 +485,7 @@ func ExportReport(filename string) error {
 	}
 
 	var DrawLogicDriveTable = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) error {
+		pdf.SetAutoPageBreak(true, 20.0)
 
 		// Draw System info
 		header := []string{"Name", "Description", "Type", "FileSystem", "Size", "FreeSpace"}
@@ -515,8 +520,16 @@ func ExportReport(filename string) error {
 			pdf.CellFormat(w[1], height, logicalDisk.Description, "1", 0, "", fill, 0, "")
 			pdf.CellFormat(w[2], height, logicalDisk.Type, "1", 0, "", fill, 0, "")
 			pdf.CellFormat(w[3], height, logicalDisk.FileSystem, "1", 0, "", fill, 0, "")
-			pdf.CellFormat(w[4], height, logicalDisk.Size, "1", 0, "", fill, 0, "")
-			pdf.CellFormat(w[5], height, logicalDisk.FreeSpace, "1", 0, "", fill, 0, "")
+			if logicalDisk.Size == "-1" {
+				pdf.CellFormat(w[4], height, "N/A", "1", 0, "", fill, 0, "")
+			} else {
+				pdf.CellFormat(w[4], height, logicalDisk.Size, "1", 0, "", fill, 0, "")
+			}
+			if logicalDisk.FreeSpace == "-1" {
+				pdf.CellFormat(w[4], height, "N/A", "1", 0, "", fill, 0, "")
+			} else {
+				pdf.CellFormat(w[4], height, logicalDisk.FreeSpace, "1", 0, "", fill, 0, "")
+			}
 			pdf.Ln(-1)
 			fill = !fill
 		}
@@ -524,6 +537,187 @@ func ExportReport(filename string) error {
 		return err
 	}
 
+	var DrawLocalUserTable = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) error {
+		pdf.SetAutoPageBreak(true, 20.0)
+		pdf.Ln(20)
+		pdf.WriteAligned(100, 20, "Local Users", "L")
+		pdf.Ln(20)
+		localUserList, err := sshConnection.GetLocalUsers()
+		if err != nil {
+			return err
+		}
+
+		pdf.SetFillColor(141, 151, 173)
+		pdf.SetTextColor(255, 255, 255)
+		pdf.SetLineWidth(.3)
+		pdf.SetFont("", "B", 0)
+		pdf.SetX(45)
+		pdf.CellFormat(200, 10, "Users", "1", 0, "C", true, 0, "")
+		pdf.Ln(-1)
+		// Color and font restoration
+		pdf.SetFillColor(224, 235, 255)
+		pdf.SetTextColor(0, 0, 0)
+		pdf.SetFont("", "B", 0)
+
+		// Draw header
+		pdf.SetX(45)
+		pdf.CellFormat(80, 10, "local user accounts", "", 0, "C", true, 0, "")
+		pdf.CellFormat(120, 10, "last logon", "", 0, "C", true, 0, "")
+		pdf.SetFont("", "", 0)
+		pdf.Ln(-1)
+		for _, localUser := range localUserList {
+			pdf.SetX(53)
+			if !localUser.IsEnabled {
+				pdf.CellFormat(20, 10, "X", "", 0, "", false, 0, "")
+			}
+			pdf.SetX(62)
+			pdf.CellFormat(100, 10, localUser.Username, "", 0, "", false, 0, "")
+			pdf.CellFormat(150, 10, localUser.LastLogon, "", 0, "", false, 0, "")
+			pdf.Ln(-1)
+		}
+		pdf.SetX(80)
+		pdf.CellFormat(100, 10, "X Marks a disabled account;", "", 0, "", false, 0, "")
+
+		return err
+	}
+
+	//var WriteError = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) {
+	//	pdf.CellFormat(100, 10, "Error while connecting "+sshConnection.HostNameSSH+", please check again to see this report information", "", 0, "", false, 0, "")
+	//}
+
+	var DrawWindowsInterfaceTable = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) error {
+		pdf.SetAutoPageBreak(true, 20.0)
+
+		// Draw System info
+		header := []string{"ConnectionName", "Description", "IP", "Mac", "DHCPServer", "Subnet", "InterfaceType", "Manufacturer", "DefaultGateway", "DNSDomain"}
+
+		pdf.Ln(20)
+		pdf.WriteAligned(100, 20, "Windows Interfaces Information", "L")
+		pdf.Ln(20)
+		pdf.SetFillColor(141, 151, 173)
+		pdf.SetTextColor(255, 255, 255)
+		pdf.SetLineWidth(.3)
+		pdf.SetFont("", "B", 0)
+		w := []float64{45.0, 45.0, 50.0, 25.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0}
+		for j, str := range header {
+			pdf.CellFormat(w[j], 7, str, "1", 0, "C", true, 0, "")
+		}
+		pdf.Ln(-1)
+
+		// Color and font restoration
+		pdf.SetFillColor(224, 235, 255)
+		pdf.SetTextColor(0, 0, 0)
+		pdf.SetFont("", "", 0)
+		// 	Data
+		fill := false
+		interfacesList, err := sshConnection.GetWindowsInterfaceInfo()
+		if err != nil {
+			return err
+		}
+
+		for _, interfaces := range interfacesList {
+			var height float64 = 6
+			pdf.CellFormat(w[0], height, interfaces.ConnectionName, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[1], height, interfaces.Description, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[2], height, interfaces.IP, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[3], height, interfaces.Mac, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[4], height, interfaces.DHCPServer, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[5], height, interfaces.Subnet, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[6], height, interfaces.InterfaceType, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[7], height, interfaces.Manufacturer, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[8], height, interfaces.DefaultGateway, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[9], height, interfaces.DNSDomain, "1", 0, "", fill, 0, "")
+			pdf.Ln(-1)
+			fill = !fill
+		}
+
+		return err
+	}
+
+	/*var DrawLinuxInterfaceTable = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) error {
+		pdf.SetAutoPageBreak(true, 20.0)
+
+		// Draw System info
+		header := []string{"Active", "InterfaceName", "IPv4", "IPV6", "Mac", "InterfaceType"}
+
+		pdf.Ln(20)
+		pdf.WriteAligned(100, 20, "Windows Interfaces Information", "L")
+		pdf.Ln(20)
+		pdf.SetFillColor(141, 151, 173)
+		pdf.SetTextColor(255, 255, 255)
+		pdf.SetLineWidth(.3)
+		pdf.SetFont("", "B", 0)
+		w := []float64{45.0, 45.0, 50.0, 25.0, 45.0, 45.0}
+		for j, str := range header {
+			pdf.CellFormat(w[j], 7, str, "1", 0, "C", true, 0, "")
+		}
+		pdf.Ln(-1)
+
+		// Color and font restoration
+		pdf.SetFillColor(224, 235, 255)
+		pdf.SetTextColor(0, 0, 0)
+		pdf.SetFont("", "", 0)
+		// 	Data
+		fill := false
+		interfacesList, err := sshConnection.GetLinuxInterfaceInfo()
+		if err != nil {
+			return err
+		}
+
+		for _, interfaces := range interfacesList {
+			var height float64 = 6
+			pdf.CellFormat(w[0], height, strconv.FormatBool(interfaces.Active), "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[1], height, interfaces.InterfaceName, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[2], height, interfaces.IPv4, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[3], height, interfaces.Mac, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[4], height, interfaces.DHCPServer, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[5], height, interfaces.Subnet, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[6], height, interfaces.InterfaceType, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[7], height, interfaces.Manufacturer, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[8], height, interfaces.DefaultGateway, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[9], height, interfaces.DNSDomain, "1", 0, "", fill, 0, "")
+			pdf.Ln(-1)
+			fill = !fill
+		}
+
+		return err
+	}*/
+
+	/*var DrawWindowsProgramTable = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) error {
+		pdf.SetAutoPageBreak(true, 20.0)
+		pdf.Ln(20)
+		pdf.WriteAligned(100, 20, "Windows Program", "L")
+		pdf.Ln(20)
+		programList, err := sshConnection.GetInstalledProgram()
+		if err != nil {
+			return err
+		}
+
+		pdf.SetFillColor(141, 151, 173)
+		pdf.SetTextColor(255, 255, 255)
+		pdf.SetLineWidth(.3)
+		pdf.SetFont("", "B", 0)
+		pdf.SetX(45)
+		pdf.CellFormat(200, 10, "Software Versions and Usage", "1", 0, "C", true, 0, "")
+		pdf.Ln(-1)
+		// Color and font restoration
+		pdf.SetFillColor(224, 235, 255)
+		pdf.SetTextColor(0, 0, 0)
+		pdf.SetFont("", "B", 0)
+
+		for _, program := range programList {
+			pdf.SetX(53)
+			pdf.CellFormat(100, 10, program.Name, "", 0, "", false, 0, "")
+			pdf.CellFormat(150, 10, "version "+program.Version, "", 0, "", false, 0, "")
+			pdf.Ln(-1)
+		}
+		pdf.SetX(80)
+		pdf.CellFormat(100, 10, "X Marks a disabled account;", "", 0, "", false, 0, "")
+
+		return err
+	}*/
+
+	// Call function
 	pdf.AddPage()
 	pdf.SetFont("", "B", 15)
 	pdf.Ln(10)
@@ -540,6 +734,8 @@ func ExportReport(filename string) error {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
+		list, err := sshConnection.GetWindowsInterfaceInfo()
+		fmt.Println(list)
 		err = DrawSystemInfoTable(pdf, index, sshConnection)
 		if err != nil {
 			return err
@@ -547,13 +743,24 @@ func ExportReport(filename string) error {
 
 		err = DrawPhysDriveTable(pdf, index, sshConnection)
 		if err != nil {
-			return err
+			log.Println("fail to excute function DrawPhysDriveTable =>", err.Error())
 		}
 
 		err = DrawLogicDriveTable(pdf, index, sshConnection)
 		if err != nil {
-			return err
+			log.Println("fail to excute function DrawLogicDriveTable =>", err.Error())
 		}
+
+		err = DrawLocalUserTable(pdf, index, sshConnection)
+		if err != nil {
+			log.Println("fail to excute function DrawLocalUserTable =>", err.Error())
+		}
+
+		err = DrawWindowsInterfaceTable(pdf, index, sshConnection)
+		if err != nil {
+			log.Println("fail to excute function DrawWindowsInterfaceTable =>", err.Error())
+		}
+
 	}
 
 	// Get Linux
@@ -571,6 +778,7 @@ func ExportReport(filename string) error {
 		if err != nil {
 			return err
 		}
+
 	}
 
 	// Get Router

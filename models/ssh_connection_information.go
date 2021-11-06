@@ -131,6 +131,8 @@ func AddSSHConnectionInformation(sshConnection SshConnectionInfo, lastId int64) 
 		rawSerial := strings.Trim(strings.TrimSpace(jsonParsed.Search("msg", "ansible_facts", "ansible_net_serialnum").String()), "\"")
 		if rawSerial == "null" {
 			sshConnectionInformation.Serial = ""
+		} else if rawSerial == "{}" {
+			sshConnectionInformation.Serial = ""
 		} else {
 			sshConnectionInformation.Serial = rawSerial
 		}

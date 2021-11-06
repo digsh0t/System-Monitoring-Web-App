@@ -23,6 +23,11 @@ type Syslog struct {
 	Message        string
 }
 
+type SyslogConnectionInfo struct {
+	ID       int    `json:"id"`
+	Hostname string `json:"host"`
+	ServerIP string `json:"server_ip"`
+}
 type SyslogPriStat struct {
 	Pri0  int `json:"pri_0"`
 	Pri1  int `json:"pri_1"`

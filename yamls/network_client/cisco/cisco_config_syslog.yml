@@ -6,7 +6,7 @@
   - name: configure host logging
     ios_logging:
      dest: host
-     name: "{{ ipSysLog }}"
+     name: "{{ server_ip }}"
      state: present
 
   - name: save running to startup when modified

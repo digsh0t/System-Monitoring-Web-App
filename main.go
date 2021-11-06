@@ -24,15 +24,15 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	sshConnection, err := models.GetSSHConnectionFromId(58)
+	/*sshConnection, err := models.GetSSHConnectionFromId(307)
 	if err != nil {
 		log.Println(err)
 	}
-	key, err := sshConnection.GetAllWindowsLicense()
+	key, err := sshConnection.GetLocalUsers()
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(key)
+	log.Println(key)*/
 	// for _, index := range key {
 	// 	fmt.Print(index.Username + " ")
 	// 	fmt.Print(index.IsEnabled)
@@ -44,7 +44,10 @@ func main() {
 	// 	log.Println(err)
 	// }
 	// fmt.Println(key)
-	models.ExportReport("hello.pdf")
+	err := models.ExportReport("hello.pdf")
+	if err != nil {
+		log.Println(err.Error())
+	}
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
@@ -177,7 +180,6 @@ func main() {
 	router.HandleFunc("/network/list", routes.ListNetworkDevices).Methods("GET")
 	router.HandleFunc("/network/testping", routes.TestPingNetworkDevices).Methods("POST")
 	router.HandleFunc("/network/log", routes.GetNetworkLog).Methods("GET")
-	router.HandleFunc("/network/config/syslog", routes.ConfigNetworkSyslog).Methods("POST")
 
 	// Network Router Configuration
 	router.HandleFunc("/network/router/config/ip", routes.ConfigIPRouter).Methods("POST")
