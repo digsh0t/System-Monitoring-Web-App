@@ -46,27 +46,30 @@ func binaryKeyToASCII(buf []byte) string {
 	return string(outBytes)
 }
 
-func (sshConnection SshConnectionInfo) GetWindowsLicenseKey() (string, error) {
+func (sshConnection SshConnectionInfo) GetWindowsLicenseKey() (windowsLicense, error) {
 	var productKeyOffset = 52
+	var license windowsLicense
 
 	var regKeyList []RegistryKey
 	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM registry WHERE key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion' AND name = 'DigitalProductId'";`)
 	if err != nil {
-		return "", err
+		return license, err
 	}
 	regKeyList, err = parseKeyList(result)
 	if err != nil {
-		return "", err
+		return license, err
 	}
 	if regKeyList == nil {
-		return "", nil
+		return license, nil
 	}
 	digitalProductID, err := hex.DecodeString(regKeyList[0].Data)
 	if err != nil {
-		return "", err
+		return license, err
 	}
 	binaryKey := digitalProductID[productKeyOffset:]
-	return fmt.Sprint(binaryKeyToASCII(binaryKey)), err
+	license.ProductName = "Windows 10 Pro"
+	license.ProductKey = fmt.Sprint(binaryKeyToASCII(binaryKey))
+	return license, err
 }
 
 func (sshConnection SshConnectionInfo) GetWindowsVmwareProductKey() (windowsLicense, error) {
@@ -141,7 +144,7 @@ func (sshConnection SshConnectionInfo) GetAllWindowsLicense() ([]windowsLicense,
 	var tmpLicense windowsLicense
 	var licenseList []windowsLicense
 	var err error
-	tmpLicense, err = sshConnection.GetWindowsProductKey()
+	tmpLicense, err = sshConnection.GetWindowsLicenseKey()
 	if err != nil {
 		return nil, err
 	}
