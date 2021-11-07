@@ -430,7 +430,9 @@ func ExportReport(filename string) error {
 		header := []string{"Name", "Serial", "Manufacturer", "Model", "Description", "Type", "Partition", "DiskSize"}
 
 		pdf.Ln(20)
+		pdf.SetFont("", "B", 15)
 		pdf.WriteAligned(100, 20, "Windows Physical Disk", "L")
+		pdf.SetFont("", "", 12)
 		pdf.Ln(20)
 		pdf.SetFillColor(141, 151, 173)
 		pdf.SetTextColor(255, 255, 255)
@@ -491,7 +493,9 @@ func ExportReport(filename string) error {
 		header := []string{"Name", "Description", "Type", "FileSystem", "Size", "FreeSpace"}
 
 		pdf.Ln(20)
+		pdf.SetFont("", "B", 15)
 		pdf.WriteAligned(100, 20, "Windows Logical Disk", "L")
+		pdf.SetFont("", "", 12)
 		pdf.Ln(20)
 		pdf.SetFillColor(141, 151, 173)
 		pdf.SetTextColor(255, 255, 255)
@@ -540,7 +544,9 @@ func ExportReport(filename string) error {
 	var DrawLocalUserTable = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) error {
 		pdf.SetAutoPageBreak(true, 20.0)
 		pdf.Ln(20)
+		pdf.SetFont("", "B", 15)
 		pdf.WriteAligned(100, 20, "Local Users", "L")
+		pdf.SetFont("", "", 12)
 		pdf.Ln(20)
 		localUserList, err := sshConnection.GetLocalUsers()
 		if err != nil {
@@ -589,16 +595,18 @@ func ExportReport(filename string) error {
 		pdf.SetAutoPageBreak(true, 20.0)
 
 		// Draw System info
-		header := []string{"ConnectionName", "Description", "IP", "Mac", "DHCPServer", "Subnet", "InterfaceType", "Manufacturer", "DefaultGateway", "DNSDomain"}
+		header := []string{"Name", "Description", "IP", "Mac", "Subnet", "InterfaceType", "Manufacturer", "DefaultGateway"}
 
 		pdf.Ln(20)
+		pdf.SetFont("", "B", 15)
 		pdf.WriteAligned(100, 20, "Windows Interfaces Information", "L")
+		pdf.SetFont("", "", 12)
 		pdf.Ln(20)
 		pdf.SetFillColor(141, 151, 173)
 		pdf.SetTextColor(255, 255, 255)
 		pdf.SetLineWidth(.3)
 		pdf.SetFont("", "B", 0)
-		w := []float64{45.0, 45.0, 50.0, 25.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0}
+		w := []float64{35.0, 45.0, 32.0, 35.0, 30.0, 35.0, 30.0, 35.0}
 		for j, str := range header {
 			pdf.CellFormat(w[j], 7, str, "1", 0, "C", true, 0, "")
 		}
@@ -607,7 +615,7 @@ func ExportReport(filename string) error {
 		// Color and font restoration
 		pdf.SetFillColor(224, 235, 255)
 		pdf.SetTextColor(0, 0, 0)
-		pdf.SetFont("", "", 0)
+		pdf.SetFont("", "", 10)
 		// 	Data
 		fill := false
 		interfacesList, err := sshConnection.GetWindowsInterfaceInfo()
@@ -616,17 +624,24 @@ func ExportReport(filename string) error {
 		}
 
 		for _, interfaces := range interfacesList {
-			var height float64 = 6
-			pdf.CellFormat(w[0], height, interfaces.ConnectionName, "1", 0, "", fill, 0, "")
-			pdf.CellFormat(w[1], height, interfaces.Description, "1", 0, "", fill, 0, "")
+			var height float64 = 20
+			// Get Current XY
+			curx, y := pdf.GetXY()
+			pdf.Rect(curx, y, w[0], height, "")
+			pdf.MultiCell(w[0], height/2, interfaces.ConnectionName, "", "", fill)
+			// Restore position
+			pdf.SetXY(curx+w[0], y)
+			// Get Current XY
+			curx, y = pdf.GetXY()
+			pdf.MultiCell(w[1], height/2, interfaces.Description, "1", "", fill)
+			// Restore position
+			pdf.SetXY(curx+w[1], y)
 			pdf.CellFormat(w[2], height, interfaces.IP, "1", 0, "", fill, 0, "")
 			pdf.CellFormat(w[3], height, interfaces.Mac, "1", 0, "", fill, 0, "")
-			pdf.CellFormat(w[4], height, interfaces.DHCPServer, "1", 0, "", fill, 0, "")
-			pdf.CellFormat(w[5], height, interfaces.Subnet, "1", 0, "", fill, 0, "")
-			pdf.CellFormat(w[6], height, interfaces.InterfaceType, "1", 0, "", fill, 0, "")
-			pdf.CellFormat(w[7], height, interfaces.Manufacturer, "1", 0, "", fill, 0, "")
-			pdf.CellFormat(w[8], height, interfaces.DefaultGateway, "1", 0, "", fill, 0, "")
-			pdf.CellFormat(w[9], height, interfaces.DNSDomain, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[4], height, interfaces.Subnet, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[5], height, interfaces.InterfaceType, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[6], height, interfaces.Manufacturer, "1", 0, "", fill, 0, "")
+			pdf.CellFormat(w[7], height, interfaces.DefaultGateway, "1", 0, "", fill, 0, "")
 			pdf.Ln(-1)
 			fill = !fill
 		}
@@ -734,11 +749,9 @@ func ExportReport(filename string) error {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
-		list, err := sshConnection.GetWindowsInterfaceInfo()
-		fmt.Println(list)
 		err = DrawSystemInfoTable(pdf, index, sshConnection)
 		if err != nil {
-			return err
+			log.Println("fail to excute function DrawSystemInfoTable =>", err.Error())
 		}
 
 		err = DrawPhysDriveTable(pdf, index, sshConnection)

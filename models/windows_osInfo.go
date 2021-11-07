@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -248,7 +247,6 @@ func parseAnsibleWindowsInterfaceInfoOutput(input string) ([]ansibleWindowsInter
 		panic(err)
 	}
 	err = json.Unmarshal([]byte(jsonParsed.Path("ansible_facts.interfaces").String()), &interfaceList)
-	fmt.Println(jsonParsed.Path("ansible_facts.interfaces").String())
 	return interfaceList, err
 }
 
