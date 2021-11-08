@@ -1,9 +1,7 @@
 package models
 
 import (
-	"bytes"
 	"encoding/hex"
-	"fmt"
 	"strings"
 )
 
@@ -13,41 +11,7 @@ type windowsLicense struct {
 	ProductId   string `json:"product_id"`
 }
 
-func rev(b []byte) {
-	for i := len(b)/2 - 1; i >= 0; i-- {
-		j := len(b) - 1 - i
-		b[i], b[j] = b[j], b[i]
-	}
-}
-
-func decodeByte(buf []byte) byte {
-	const chars = "BCDFGHJKMPQRTVWXY2346789"
-	acc := 0
-	for j := 14; j >= 0; j-- {
-		acc *= 256
-		acc += int(buf[j])
-		buf[j] = byte((acc / len(chars)) & 0xFF)
-		acc %= len(chars)
-	}
-	return chars[acc]
-}
-
-func binaryKeyToASCII(buf []byte) string {
-	var out bytes.Buffer
-	for i := 28; i >= 0; i-- {
-		if (29-i)%6 == 0 {
-			out.WriteByte('-')
-			i--
-		}
-		out.WriteByte(decodeByte(buf))
-	}
-	outBytes := out.Bytes()
-	rev(outBytes)
-	return string(outBytes)
-}
-
 func (sshConnection SshConnectionInfo) GetWindowsLicenseKey() (windowsLicense, error) {
-	var productKeyOffset = 52
 	var license windowsLicense
 
 	var regKeyList []RegistryKey
@@ -66,10 +30,39 @@ func (sshConnection SshConnectionInfo) GetWindowsLicenseKey() (windowsLicense, e
 	if err != nil {
 		return license, err
 	}
-	binaryKey := digitalProductID[productKeyOffset:]
 	license.ProductName = "Windows 10 Pro"
-	license.ProductKey = fmt.Sprint(binaryKeyToASCII(binaryKey))
+	license.ProductKey = DecodeProductKey(digitalProductID)
 	return license, err
+}
+
+func DecodeProductKey(digitalProductID []byte) string {
+	var key string
+	var keyOffset = 52
+	var isWin8 = (digitalProductID[66] / 6) & 1
+	digitalProductID[66] = (digitalProductID[66] & 0xf7) | (isWin8&2)*4
+	var digits = "BCDFGHJKMPQRTVWXY2346789"
+	var last = 0
+	for i := 24; i >= 0; i-- {
+		var current = 0
+		for j := 14; j >= 0; j-- {
+			current = current * 256
+			current = int(digitalProductID[j+keyOffset]) + current
+			digitalProductID[j+keyOffset] = byte(current / 24)
+			current = current % 24
+			last = current
+		}
+		key = string(digits[current]) + key
+	}
+	var keypart1 = key[1 : last+1]
+	var keypart2 = key[last+1:]
+	key = keypart1 + "N" + keypart2
+
+	for i := 5; i < len(key); i += 6 {
+		keypart1 = key[:i]
+		keypart2 = key[i:]
+		key = keypart1 + "-" + keypart2
+	}
+	return key
 }
 
 func (sshConnection SshConnectionInfo) GetWindowsVmwareProductKey() (windowsLicense, error) {
