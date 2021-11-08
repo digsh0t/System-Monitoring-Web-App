@@ -44,10 +44,10 @@ func main() {
 	// 	log.Println(err)
 	// }
 	// fmt.Println(key)
-	err := models.ExportReport("hello.pdf")
-	if err != nil {
-		log.Println(err.Error())
-	}
+	//err := models.ExportReport("hello.pdf")
+	//if err != nil {
+	//	log.Println(err.Error())
+	//}
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)

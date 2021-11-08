@@ -2,6 +2,7 @@ package routes
 
 import (
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -71,15 +72,20 @@ func ExportReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get Id parameter
-	query := r.URL.Query()
-	filename := query.Get("filename")
-
+	// Get current date time
+	datetime := utils.GetCurrentDateTime()
+	filename := "./reports/report-" + datetime + ".pdf"
 	err = models.ExportReport(filename)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 	} else {
-		utils.JSON(w, http.StatusOK, err)
+		file, err := ioutil.ReadFile(filename)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
+		} else {
+			utils.JSON(w, http.StatusOK, file)
+		}
+
 	}
 
 }

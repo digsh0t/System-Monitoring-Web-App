@@ -152,6 +152,11 @@ func AddSSHConnectionInformation(sshConnection SshConnectionInfo, lastId int64) 
 			sshConnectionInformation.Hostname = strings.TrimRight(sshConnectionInformation.Hostname, "m[b10u\\")
 		}
 
+		sshConnectionInformation.Model = strings.Trim(strings.TrimSpace(jsonParsed.Search("msg", "ansible_facts", "ansible_net_model").String()), "\"")
+		if sshConnection.NetworkOS == "vyos" {
+			sshConnectionInformation.Model = strings.TrimRight(sshConnectionInformation.Hostname, "m[b10u\\")
+		}
+
 	}
 
 	// Insert to DB
