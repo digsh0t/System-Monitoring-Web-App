@@ -7,7 +7,7 @@
     ansible_python_interpreter: /usr/bin/python3
 
   tasks:
-  - name: Delete JUNOS L3 logical interface
+  - name: get juniper facts
     junos_facts:
      gather_subset: all
     register: output

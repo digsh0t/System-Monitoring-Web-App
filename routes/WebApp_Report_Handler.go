@@ -2,6 +2,7 @@ package routes
 
 import (
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -48,16 +49,43 @@ func GetDetailOSReport(w http.ResponseWriter, r *http.Request) {
 	// Get Id parameter
 	query := r.URL.Query()
 	ostype := query.Get("ostype")
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to convert id").Error())
-		return
-	}
 
 	report, err := models.GetDetailOSReport(ostype)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 	} else {
 		utils.JSON(w, http.StatusOK, report)
+	}
+
+}
+
+func ExportReport(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+
+	// Get current date time
+	datetime := utils.GetCurrentDateTime()
+	filename := "./reports/report-" + datetime + ".pdf"
+	err = models.ExportReport(filename)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+	} else {
+		file, err := ioutil.ReadFile(filename)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
+		} else {
+			utils.JSON(w, http.StatusOK, file)
+		}
+
 	}
 
 }

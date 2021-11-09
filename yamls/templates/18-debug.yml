@@ -1,0 +1,5 @@
+---
+- hosts: '{{ host }}'
+  tasks:
+  - debug:
+      var: ansible_facts

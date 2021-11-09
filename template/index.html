@@ -68,17 +68,20 @@
         term.onKey(e => {
             const printable = !e.domEvent.altKey && !e.domEvent.altGraphKey && !e.domEvent.ctrlKey && !e.domEvent.metaKey;
 
-            socket.send(e.key)
+            // socket.send(e.key)
 
             if (e.domEvent.keyCode === 13) {
                 prompt(term);
 
             } else if (e.domEvent.keyCode === 8) {
                 // Do not delete the prompt
+                console.log(e.key);
+                term.write('\b');
                 if (term._core.buffer.x > header.length) {
                     term.write('\b \b');
                 }
             } else if (printable) {
+                console.log(e.key, e.domEvent);
                 term.write(e.key);
             }
         });

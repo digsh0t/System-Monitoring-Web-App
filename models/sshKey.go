@@ -230,14 +230,14 @@ func GetKeyIdFromPublicKey(pubKey string) (int, error) {
 }
 
 func (sshKey SSHKey) WriteKeyToFile(filepath string) error {
-	_, err := os.Stat(filepath)
+	/*_, err := os.Stat(filepath)
 	if err != nil {
 		err = nil
 		_, err := os.Create(filepath)
 		if err != nil {
 			return err
 		}
-	}
+	}*/
 	secret, err := AESDecryptKey(sshKey.PrivateKey)
 	if err != nil {
 		return err

@@ -115,11 +115,7 @@ func GetAllClientSysLogRoute(w http.ResponseWriter, r *http.Request) {
 
 func SetupSyslogRoute(w http.ResponseWriter, r *http.Request) {
 
-	type receivedStruct struct {
-		ID       int    `json:"id"`
-		ServerIP string `json:"server_ip"`
-	}
-	var received receivedStruct
+	var received models.SyslogConnectionInfo
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
@@ -150,6 +146,12 @@ func SetupSyslogRoute(w http.ResponseWriter, r *http.Request) {
 		// 	return
 		// }
 		_, err = sshConnection.SetupSyslogRsyslog(received.ServerIP, `/etc/rsyslog.conf`)
+	} else if sshConnection.IsNetwork {
+		_, err := sshConnection.ConfigNetworkSyslog(received)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
+			return
+		}
 	}
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())

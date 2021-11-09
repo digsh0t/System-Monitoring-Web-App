@@ -937,38 +937,32 @@ func GetNetworkLog(sshConnectionId int) ([]NetworkLogs, error) {
 }
 
 // Config network syslog
-func ConfigNetworkSyslog(networkJson NetworkJson) ([]string, error) {
+func (sshConnection SshConnectionInfo) ConfigNetworkSyslog(syslog SyslogConnectionInfo) ([]string, error) {
 	var (
 		outputList []string
 		err        error
 	)
 	// Get Hostname from Id
-	for _, id := range networkJson.SshConnectionId {
-		sshConnection, err := GetSSHConnectionFromId(id)
-		if err != nil {
-			return outputList, errors.New("fail to parse id")
-		}
+	syslog.Hostname = sshConnection.HostNameSSH
 
-		networkJson.Host = sshConnection.HostNameSSH
-
-		// Marshal and run playbook
-		networkJsonMarshal, err := json.Marshal(networkJson)
-		if err != nil {
-			return outputList, err
-		}
-		var filepath string
-		if sshConnection.NetworkOS == "ios" {
-			filepath = "./yamls/network_client/cisco/cisco_config_syslog.yml"
-		} else if sshConnection.NetworkOS == "vyos" {
-			filepath = "./yamls/network_client/vyos/vyos_config_syslog.yml"
-		} else if sshConnection.NetworkOS == "junos" {
-			filepath = "./yamls/network_client/juniper/juniper_config_syslog.yml"
-		}
-		output, err := RunAnsiblePlaybookWithjson(filepath, string(networkJsonMarshal))
-		if err != nil {
-			return outputList, errors.New("fail to load yaml file")
-		}
-		outputList = append(outputList, output)
+	// Marshal and run playbook
+	networkJsonMarshal, err := json.Marshal(syslog)
+	if err != nil {
+		return outputList, err
 	}
+	var filepath string
+	if sshConnection.NetworkOS == "ios" {
+		filepath = "./yamls/network_client/cisco/cisco_config_syslog.yml"
+	} else if sshConnection.NetworkOS == "vyos" {
+		filepath = "./yamls/network_client/vyos/vyos_config_syslog.yml"
+	} else if sshConnection.NetworkOS == "junos" {
+		filepath = "./yamls/network_client/juniper/juniper_config_syslog.yml"
+	}
+	output, err := RunAnsiblePlaybookWithjson(filepath, string(networkJsonMarshal))
+	if err != nil {
+		return outputList, errors.New("fail to load yaml file")
+	}
+	outputList = append(outputList, output)
+
 	return outputList, err
 }

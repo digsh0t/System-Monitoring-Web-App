@@ -8,7 +8,7 @@
      dest: host
      facility: all
      level: all
-     name: "{{ ipSysLog }}"
+     name: "{{ server_ip }}"
  
   - name: Save configuaration to starup file
     vyos_config:

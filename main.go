@@ -44,6 +44,10 @@ func main() {
 	// 	log.Println(err)
 	// }
 	// fmt.Println(key)
+	//err := models.ExportReport("hello.pdf")
+	//if err != nil {
+	//	log.Println(err.Error())
+	//}
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
@@ -151,6 +155,7 @@ func main() {
 		routes.GetReport(w, r, start)
 	}).Methods("GET")
 	router.HandleFunc("/webapp/report/detail", routes.GetDetailOSReport).Methods("GET")
+	router.HandleFunc("/webapp/report/export", routes.ExportReport).Methods("GET")
 
 	// Network Automation: Vyos
 	//router.HandleFunc("/vyos/listconfig/{id}", routes.GetInfoConfigVyos).Methods("GET")
@@ -176,7 +181,6 @@ func main() {
 	router.HandleFunc("/network/list", routes.ListNetworkDevices).Methods("GET")
 	router.HandleFunc("/network/testping", routes.TestPingNetworkDevices).Methods("POST")
 	router.HandleFunc("/network/log", routes.GetNetworkLog).Methods("GET")
-	router.HandleFunc("/network/config/syslog", routes.ConfigNetworkSyslog).Methods("POST")
 
 	// Network Router Configuration
 	router.HandleFunc("/network/router/config/ip", routes.ConfigIPRouter).Methods("POST")

@@ -57,7 +57,6 @@ func (sshConnection *SshConnectionInfo) TestConnectionPassword() (bool, error) {
 
 	_, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
-		fmt.Println(err.Error())
 		return false, err
 	} else {
 		return true, err
@@ -300,12 +299,10 @@ func GetAllOSSSHConnection(osType string) ([]SshConnectionInfo, error) {
 
 	if osType == "Linux" {
 		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_ostype='Ubuntu' or sc_ostype LIKE '%CentOS%' or sc_ostype LIKE '%Kali%'`
-	} else if osType == "ios" {
-		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networkos='ios'`
-	} else if osType == "vyos" {
-		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networkos='vyos'`
-	} else if osType == "junos" {
-		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networkos='junos'`
+	} else if osType == "Router" {
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networktype='router'`
+	} else if osType == "Switch" {
+		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_networktype='switch'`
 	} else if osType == "Windows" {
 		query = `SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_ostype LIKE '%Windows%'`
 	} else {
@@ -453,10 +450,10 @@ func GetSSHConnectionFromId(sshConnectionId int) (*SshConnectionInfo, error) {
 	defer db.Close()
 
 	var sshConnection SshConnectionInfo
-	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
+	row := db.QueryRow("SELECT sc_connection_id, sc_username, sc_password, sc_host, sc_hostname, sc_port, creator_id, ssh_key_id, sc_ostype, sc_isnetwork, sc_networktype, sc_networkos FROM ssh_connections WHERE sc_connection_id = ?", sshConnectionId)
 	var password sql.NullString
 	var keyId sql.NullInt32
-	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &password, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &keyId, &sshConnection.OsType, &sshConnection.NetworkType, &sshConnection.NetworkOS)
+	err := row.Scan(&sshConnection.SSHConnectionId, &sshConnection.UserSSH, &password, &sshConnection.HostSSH, &sshConnection.HostNameSSH, &sshConnection.PortSSH, &sshConnection.CreatorId, &keyId, &sshConnection.OsType, &sshConnection.IsNetwork, &sshConnection.NetworkType, &sshConnection.NetworkOS)
 	if row == nil {
 		return nil, errors.New("ssh connection doesn't exist")
 	}
@@ -766,7 +763,7 @@ func (sshConnection *SshConnectionInfo) ConnectSSHWithPassword() (*ssh.Client, e
 	}
 	cipherOrder := clientConfig.Ciphers
 	clientConfig.Ciphers = append(cipherOrder, "aes128-ctr", "aes192-ctr", "aes256-ctr", "arcfour256", "arcfour128", "arcfour", "aes128-cbc")
-
+	clientConfig.KeyExchanges = append(clientConfig.KeyExchanges, "diffie-hellman-group1-sha1")
 	// connect to ssh
 
 	addr = fmt.Sprintf("%s:%d", sshConnection.HostSSH, sshConnection.PortSSH)
