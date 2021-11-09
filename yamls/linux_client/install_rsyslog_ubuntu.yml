@@ -1,0 +1,9 @@
+- name: Install Linux package
+  hosts: "{{ host }}"
+  gather_facts: no
+  tasks:
+  - name: Install rsyslog if OS is Ubuntu or Kali
+    apt:
+     name: rsyslog
+     state: latest
+#Example: ansible-playbook -e '{"host":"ubuntu"}' yamls/linux_client/install_rsyslog_ubuntu.yml

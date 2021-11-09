@@ -175,7 +175,6 @@ func GetClientSyslog(logBasePath string, sshConnectionId int, date string) ([]Sy
 	if err != nil {
 		return nil, err
 	}
-	sshConnection.HostSSH = "192.168.163.139"
 	logPath := logBasePath + "/" + sshConnection.HostSSH + "/" + date + ".log"
 	dat, err := os.ReadFile(logPath)
 	if err != nil {
@@ -193,7 +192,6 @@ func GetClientSyslogByPri(logBasePath string, sshConnectionId int, date string, 
 	if err != nil {
 		return nil, err
 	}
-	sshConnection.HostSSH = "192.168.163.139"
 	logPath := logBasePath + "/" + sshConnection.HostSSH + "/" + date + ".log"
 	dat, err := os.ReadFile(logPath)
 	if err != nil {
@@ -211,7 +209,6 @@ func GetTotalSyslogRows(logBasePath string, sshConnectionId int, date string) ([
 	if err != nil {
 		return nil, err
 	}
-	sshConnection.HostSSH = "192.168.163.139"
 	logPath := logBasePath + "/" + sshConnection.HostSSH + "/" + date + ".log"
 	dat, err := os.ReadFile(logPath)
 	if err != nil {
@@ -229,7 +226,6 @@ func GetClientSyslogPriStat(logBasePath string, sshConnectionId int, date string
 	if err != nil {
 		return SyslogPriStat{}, err
 	}
-	sshConnection.HostSSH = "192.168.163.139"
 	logPath := logBasePath + "/" + sshConnection.HostSSH + "/" + date + ".log"
 	dat, err := os.ReadFile(logPath)
 	if err != nil {
@@ -252,6 +248,10 @@ func GetAllClientSyslogPriStat(logBasePath string, date string) (SyslogPriStat, 
 	for _, sshConnection := range sshConnectionList {
 		tmpStat, err = GetClientSyslogPriStat("/var/log/remotelogs", sshConnection.SSHConnectionId, date)
 		if err != nil {
+			if strings.Contains(err.Error(), "no such file or directory") {
+				err = nil
+				continue
+			}
 			return SyslogPriStat{}, err
 		}
 		syslogPriStat.Pri0 += tmpStat.Pri0
@@ -276,10 +276,10 @@ func GetAllClientSyslog(logBasePath string, date string) ([]Syslog, error) {
 		return nil, err
 	}
 	for _, sshConnection := range sshConnectionList {
-		tmpRows, err = GetClientSyslog("/var/log/remotelogs", sshConnection.SSHConnectionId, date)
-		if err != nil {
-			return nil, err
-		}
+		tmpRows, err = GetClientSyslog(logBasePath, sshConnection.SSHConnectionId, date)
+		// if err != nil {
+		// 	return nil, err
+		// }
 		syslogRows = append(syslogRows, tmpRows...)
 		tmpRows = nil
 	}

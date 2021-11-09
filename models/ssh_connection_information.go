@@ -211,3 +211,13 @@ func GetDetailOSReport(osType string) ([]SshConnectionInformation, error) {
 	return sshConnectionInfoList, err
 
 }
+
+func (sshConnection SshConnectionInfo) GetDetailSSHConInfo() (SshConnectionInformation, error) {
+	var information SshConnectionInformation
+	db := database.ConnectDB()
+	defer db.Close()
+	query := `SELECT sc_info_id, sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_connection_id FROM ssh_connections_information WHERE sc_info_connection_id = ?`
+	row := db.QueryRow(query, sshConnection.SSHConnectionId)
+	err := row.Scan(&information.InformationId, &information.OsName, &information.OsVersion, &information.InstallDate, &information.Serial, &information.SshConnectionId)
+	return information, err
+}

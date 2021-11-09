@@ -681,7 +681,7 @@ func (sshConnection *SshConnectionInfo) RunCommandFromSSHConnectionUseKeys(comma
 	return result, err
 }
 
-func (sshConnection *SshConnectionInfo) connectSSHWithSSHKeys() (*ssh.Client, error) {
+func (sshConnection *SshConnectionInfo) ConnectSSHWithSSHKeys() (*ssh.Client, error) {
 	//If private key is incorrect or wrong format, return error immediately
 	var auth []ssh.AuthMethod
 	authMethod, err := ProcessPrivateKey(sshConnection.SSHKeyId)
@@ -720,7 +720,7 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithSSHKey(cmd string) (strin
 	)
 
 	//create ssh connect
-	sshClient, err = sshConnection.connectSSHWithSSHKeys()
+	sshClient, err = sshConnection.ConnectSSHWithSSHKeys()
 	if err != nil {
 		return "Wrong username or password to connect remote server", err
 	} else {
@@ -744,7 +744,7 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithSSHKey(cmd string) (strin
 	}
 }
 
-func (sshConnection *SshConnectionInfo) connectSSHWithPassword() (*ssh.Client, error) {
+func (sshConnection *SshConnectionInfo) ConnectSSHWithPassword() (*ssh.Client, error) {
 	var (
 		auth         []ssh.AuthMethod
 		addr         string
@@ -788,7 +788,7 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithPassword(cmd string) (str
 	)
 
 	//create ssh connect
-	sshClient, err = sshConnection.connectSSHWithPassword()
+	sshClient, err = sshConnection.ConnectSSHWithPassword()
 	if err != nil {
 		return "Wrong username or password to connect remote server", err
 	} else {
@@ -954,19 +954,22 @@ func (sshConnection SshConnectionInfo) RunAnsiblePlaybookWithjson(filepath strin
 		out, errbuf bytes.Buffer
 		err         error
 		output      string
+		args        []string
 	)
 
-	sshKey, err := GetSSHKeyFromId(sshConnection.SSHKeyId)
-	if err != nil {
-		return "", err
-	}
-	err = sshKey.WriteKeyToFile("./tmp/private_key_" + strconv.Itoa(sshConnection.SSHKeyId))
-	if err != nil {
-		return "", err
+	//If this client use ssh key to connect
+	if sshConnection.SSHKeyId > 0 {
+		sshKey, err := GetSSHKeyFromId(sshConnection.SSHKeyId)
+		if err != nil {
+			return "", err
+		}
+		err = sshKey.WriteKeyToFile("./tmp/private_key_" + strconv.Itoa(sshConnection.SSHKeyId))
+		if err != nil {
+			return "", err
+		}
+		args = append(args, "--private-key", "./tmp/private_key_"+strconv.Itoa(sshConnection.SSHKeyId))
 	}
 
-	var args []string
-	args = append(args, "--private-key", "./tmp/private_key_"+strconv.Itoa(sshConnection.SSHKeyId))
 	if extraVars != "" {
 		args = append(args, "--extra-vars", extraVars, filepath)
 	} else {
@@ -1040,4 +1043,14 @@ func CountNetworkOS() (int, error) {
 		}
 	}
 	return count, err
+}
+
+func (sshConnection SshConnectionInfo) InstallNxlogWindows() error {
+	_, err := sshConnection.RunAnsiblePlaybookWithjson("./yamls/windows_client/install_nxlog_program.yml", `{"host":"`+sshConnection.HostNameSSH+`"}`)
+	return err
+}
+
+func (sshConnection SshConnectionInfo) InstallRsyslog() error {
+	_, err := sshConnection.RunAnsiblePlaybookWithjson("./yamls/linux_client/install_rsyslog_ubuntu.yml", `{"host":"`+sshConnection.HostNameSSH+`"}`)
+	return err
 }

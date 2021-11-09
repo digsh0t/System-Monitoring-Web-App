@@ -12,11 +12,12 @@ import (
 )
 
 type TokenData struct {
-	Username string
-	Role     string
-	Userid   int
-	Exp      uint64
-	Twofa    string
+	Username   string
+	Role       string
+	Userid     int
+	Exp        uint64
+	Twofa      string
+	Authorized bool
 }
 
 func CreateToken(userId int, username string, role string, twofa string) (string, error) {
@@ -25,7 +26,8 @@ func CreateToken(userId int, username string, role string, twofa string) (string
 	claims["role"] = role
 	claims["userid"] = userId
 	claims["2fa"] = twofa
-	claims["exp"] = time.Now().Add(time.Hour * 12).Unix() // Token expires after 12 hours
+	claims["authorized"] = false
+	claims["exp"] = time.Now().Add(time.Hour * 1).Unix() // Token expires after 12 hours
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	//Activate env file
@@ -93,16 +95,21 @@ func ExtractTokenMetadata(r *http.Request) (*TokenData, error) {
 		if err != nil {
 			return nil, err
 		}
+		authorized, ok := claims["authorized"].(bool)
+		if !ok {
+			return nil, err
+		}
 		exp, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["exp"]), 10, 64)
 		if err != nil {
 			return nil, err
 		}
 		return &TokenData{
-			Username: username,
-			Role:     role,
-			Userid:   userId,
-			Exp:      exp,
-			Twofa:    twofa,
+			Username:   username,
+			Role:       role,
+			Userid:     userId,
+			Exp:        exp,
+			Authorized: authorized,
+			Twofa:      twofa,
 		}, nil
 	}
 	return nil, err

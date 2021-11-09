@@ -24,15 +24,26 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	// sshConnection, err := models.GetSSHConnectionFromId(55)
+	sshConnection, err := models.GetSSHConnectionFromId(58)
+	if err != nil {
+		log.Println(err)
+	}
+	key, err := sshConnection.GetAllWindowsLicense()
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(key)
+	// for _, index := range key {
+	// 	fmt.Print(index.Username + " ")
+	// 	fmt.Print(index.IsEnabled)
+	// 	fmt.Print(" " + index.LastLogon)
+	// 	fmt.Println(index.Type)
+	// }
+	// key, err = sshConnection.GetWindowsVmwareProductKey()
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// output, err := models.SetupRsyslogServer("/home/wintltr/Desktop/rsyslog.conf")
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// log.Println(output)
+	// fmt.Println(key)
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
@@ -250,6 +261,14 @@ func main() {
 	router.HandleFunc("/{id}/syslog/{date}/pri/{pri}/{page}", routes.GetSysLogByPriRoute).Methods("OPTIONS", "GET")
 	router.HandleFunc("/all/syslog/{date}", routes.GetAllClientSysLogRoute).Methods("OPTIONS", "GET")
 	router.HandleFunc("/syslog/setup", routes.SetupSyslogRoute).Methods("OPTIONS", "POST")
+
+	// router.Handle("/static/css/", http.StripPrefix("/static/css/", http.FileServer(http.Dir("static/css/"))))
+	// router.Handle("/static/js/", http.StripPrefix("/static/js/", http.FileServer(http.Dir("static/js/"))))
+	router.PathPrefix("/static/js/").Handler(http.StripPrefix("/static/js/", http.FileServer(http.Dir("static/js/"))))
+	router.PathPrefix("/static/css/").Handler(http.StripPrefix("/static/css/", http.FileServer(http.Dir("static/css/"))))
+
+	router.HandleFunc("/{id}/webconsole", routes.WebConsoleTemplate)
+	router.HandleFunc("/ws/v1/{id}", routes.WebConsoleWSHanlder)
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

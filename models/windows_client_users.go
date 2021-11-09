@@ -21,6 +21,7 @@ type ClientUser struct {
 	Username    string `json:"username"`
 	UUID        string `json:"uuid"`
 	IsEnabled   bool   `json:"is_enabled"`
+	LastLogon   string `json:"last_logon"`
 }
 
 type LocalUserGroup struct {
@@ -52,9 +53,34 @@ type appExecutionHistory struct {
 	Path              string `json:"path"`
 }
 
+func (sshConnection SshConnectionInfo) GetLocalUserLastLogonAndActive(userList []ClientUser) error {
+	var err error
+	for i := 0; i < len(userList); i++ {
+		cmd := `net user ` + userList[i].Username + ` | findstr "Last active"`
+		output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(cmd)
+		if err != nil {
+			return err
+		}
+		parseLocalUserLastLogonAndActiveResult(&userList[i], output)
+		if strings.Trim(output, "\r\n ") == "" {
+			return nil
+		}
+	}
+	return err
+}
+
+func parseLocalUserLastLogonAndActiveResult(user *ClientUser, output string) {
+	re := regexp.MustCompile(`\s{2,}`)
+	lines := strings.Split(strings.Trim(output, "\r\n\t"), "\n")
+	if strings.Contains(re.Split(lines[0], -1)[1], "Yes") {
+		user.IsEnabled = true
+	}
+	user.LastLogon = re.Split(lines[1], -1)[1]
+}
+
 //Both Linux and Windows can use this
 func (sshConnection *SshConnectionInfo) GetLocalUsers() ([]ClientUser, error) {
-	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM users"`)
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM users WHERE type NOT LIKE 'roaming' AND type NOT LIKE 'special'"`)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +90,7 @@ func (sshConnection *SshConnectionInfo) GetLocalUsers() ([]ClientUser, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = sshConnection.checkIfWindowsUserEnabled(&userList)
+	err = sshConnection.GetLocalUserLastLogonAndActive(userList)
 	return userList, err
 }
 
