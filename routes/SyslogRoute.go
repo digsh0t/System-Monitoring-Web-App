@@ -137,18 +137,18 @@ func SetupSyslogRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if strings.Contains(strings.ToLower(sshConnection.OsType), "windows") {
-		err = sshConnection.InstallNxlogWindows()
-		if err != nil {
-			utils.ERROR(w, http.StatusBadRequest, err.Error())
-			return
-		}
+		// err = sshConnection.InstallNxlogWindows()
+		// if err != nil {
+		// 	utils.ERROR(w, http.StatusBadRequest, err.Error())
+		// 	return
+		// }
 		err = sshConnection.SetupSyslogWindows(received.ServerIP, `C:\Program Files (x86)\nxlog\conf\nxlog.conf`)
-	} else if strings.Contains(strings.ToLower(sshConnection.OsType), "ubuntu") {
-		err = sshConnection.InstallRsyslog()
-		if err != nil {
-			utils.ERROR(w, http.StatusBadRequest, err.Error())
-			return
-		}
+	} else if strings.Contains(strings.ToLower(sshConnection.OsType), "ubuntu") || strings.Contains(strings.ToLower(sshConnection.OsType), "centos") {
+		// err = sshConnection.InstallRsyslog()
+		// if err != nil {
+		// 	utils.ERROR(w, http.StatusBadRequest, err.Error())
+		// 	return
+		// }
 		_, err = sshConnection.SetupSyslogRsyslog(received.ServerIP, `/etc/rsyslog.conf`)
 	}
 	if err != nil {
