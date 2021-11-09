@@ -105,12 +105,3 @@ func GetTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("api_telegram_user", apiKey.TelegramUser)
 	utils.JSON(w, http.StatusOK, returnJson)
 }
-
-func RemoveTelegramAPIKeyHandler(w http.ResponseWriter, r *http.Request) {
-	err := models.RemoveTelegramAPIKeyFromDB("Telegram_bot")
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	utils.JSON(w, http.StatusOK, nil)
-}

@@ -122,7 +122,6 @@ func main() {
 	//API management
 	router.HandleFunc("/telegrambotoken", routes.AddTelegramBotKey).Methods("POST", "OPTIONS")
 	router.HandleFunc("/telegrambotoken", routes.GetTelegramBotKey).Methods("GET", "OPTIONS")
-	router.HandleFunc("/telegrambotoken", routes.RemoveTelegramAPIKeyHandler).Methods("DELETE", "OPTIONS")
 
 	//Template & Task management
 	router.HandleFunc("/templates", routes.AddTemplate).Methods("POST", "OPTIONS")
