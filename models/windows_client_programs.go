@@ -2,7 +2,9 @@ package models
 
 import (
 	"encoding/json"
+	"math/rand"
 	"path/filepath"
+	"strconv"
 )
 
 type Programs struct {
@@ -25,8 +27,8 @@ func InstallWindowsProgram(host interface{}, url string, dest string) (string, e
 		Dest     string      `json:"dest"`
 		Filename string      `json:"filename"`
 	}
-
 	filename := filepath.Base(url)
+	dest = `C:\tmp` + strconv.Itoa(rand.Int()) + `\`
 	jsonArgs, err := json.Marshal(installInfo{Host: host, Url: url, Dest: dest, Filename: filename})
 	if err != nil {
 		return "", err

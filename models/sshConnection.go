@@ -939,6 +939,7 @@ func ListAllCisco() ([]SshConnectionInfo, error) {
 }
 
 func (sshConnection *SshConnectionInfo) GetInstalledProgram() ([]Programs, error) {
+	var year, day, month string
 	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM programs"`)
 	if err != nil {
 		return nil, err
@@ -946,6 +947,14 @@ func (sshConnection *SshConnectionInfo) GetInstalledProgram() ([]Programs, error
 	var installedPrograms []Programs
 
 	err = json.Unmarshal([]byte(result), &installedPrograms)
+	for i := 0; i < len(installedPrograms); i++ {
+		if installedPrograms[i].InstallDate != "" {
+			year = installedPrograms[i].InstallDate[:4]
+			month = installedPrograms[i].InstallDate[4:6]
+			day = installedPrograms[i].InstallDate[6:]
+			installedPrograms[i].InstallDate = day + "/" + month + "/" + year
+		}
+	}
 	return installedPrograms, err
 }
 
