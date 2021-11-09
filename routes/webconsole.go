@@ -32,9 +32,6 @@ func WebConsoleWSHanlder(w http.ResponseWriter, r *http.Request) {
 	)
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
-	// password = vars["password"]
-	// host = vars["ip"]
-	// port, _ = strconv.Atoi(vars["port"])
 	if conn, err = upgrader.Upgrade(w, r, nil); err != nil {
 		return
 	}

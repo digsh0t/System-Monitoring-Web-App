@@ -3,7 +3,7 @@ package models
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
+	"log"
 	"strings"
 	"time"
 
@@ -18,6 +18,10 @@ type SshConnectionInformation struct {
 	OsVersion       string `json:"osVersion"`
 	InstallDate     string `json:"installDate"`
 	Serial          string `json:"serial"`
+	Hostname        string `json:"hostname"`
+	Manufacturer    string `json:"manufacturer"`
+	Model           string `json:"model"`
+	Architecture    string `json:"architecture"`
 	SshConnectionId int    `json:"sshConnectionId"`
 }
 
@@ -30,45 +34,78 @@ func AddSSHConnectionInformation(sshConnection SshConnectionInfo, lastId int64) 
 
 	// Get SshConnectionId
 	sshConnectionInformation.SshConnectionId = int(lastId)
+
+	// Create json
+	type tmpJson struct {
+		Host string `json:"host"`
+	}
+
+	tmp := tmpJson{
+		Host: sshConnection.HostNameSSH,
+	}
+
+	tmpJsonMarshal, err := json.Marshal(tmp)
+	if err != nil {
+		log.Println("fail to unmarshal json")
+	}
+
+	// If sshconnection is not network device
 	if !sshConnection.IsNetwork {
 		// Get os version
 		os, err := sshConnection.GetOSVersion()
 		if err != nil {
-			return false, errors.New("fail to get os version")
+			log.Println("fail to get os version")
+		} else {
+			// Get Name
+			sshConnectionInformation.OsName = os.Name
+
+			// Get Version
+			sshConnectionInformation.OsVersion = os.Version
 		}
-
-		// Get Name
-		sshConnectionInformation.OsName = os.Name
-
-		// Get Version
-		sshConnectionInformation.OsVersion = os.Version
 
 		// Get install date
 		sshConnectionInformation.InstallDate, err = GetInstallDate(sshConnection)
 		if err != nil {
-			return false, errors.New("fail to get install date")
+			log.Println("fail to get install date")
 		}
 
 		// Get Serial
 		sshConnectionInformation.Serial, err = GetClientSerial(sshConnection)
 		if err != nil {
-			return false, errors.New("fail to get serial")
+			log.Println("fail to get serial")
 		}
+
+		// Get Hostname
+		sshConnectionInformation.Hostname, err = GetHostname(sshConnection)
+		if err != nil {
+			log.Println("fail to get hostname")
+		}
+
+		var filepath = "./yamls/get_client_setup.yml"
+		output, err := RunAnsiblePlaybookWithjson(filepath, string(tmpJsonMarshal))
+		if err != nil {
+			log.Println("fail to run playbook")
+		}
+		// Get substring from ansible output
+		data := utils.ExtractSubString(output, " => ", "PLAY RECAP")
+
+		// Parse Json format
+		jsonParsed, err := gabs.ParseJSON([]byte(data))
+		if err != nil {
+			log.Println("fail to parse json")
+		}
+
+		// Get Product Name
+		sshConnectionInformation.Model = strings.Trim(strings.TrimSpace(jsonParsed.Search("msg", "ansible_facts", "ansible_product_name").String()), "\"")
+
+		// Get Manufacturer
+		sshConnectionInformation.Manufacturer = strings.Trim(strings.TrimSpace(jsonParsed.Search("msg", "ansible_facts", "ansible_system_vendor").String()), "\"")
+
+		// Get Architecture
+		sshConnectionInformation.Architecture = strings.Trim(strings.TrimSpace(jsonParsed.Search("msg", "ansible_facts", "ansible_architecture").String()), "\"")
 
 	} else {
 		// Network device
-		type tmpJson struct {
-			Host string `json:"host"`
-		}
-
-		tmp := tmpJson{
-			Host: sshConnection.HostNameSSH,
-		}
-
-		tmpJsonMarshal, err := json.Marshal(tmp)
-		if err != nil {
-			return false, errors.New("fail to marshal json")
-		}
 		var filepath string
 		if sshConnection.NetworkOS == "ios" {
 			filepath = "./yamls/network_client/cisco/cisco_getfacts.yml"
@@ -79,7 +116,7 @@ func AddSSHConnectionInformation(sshConnection SshConnectionInfo, lastId int64) 
 		}
 		output, err := RunAnsiblePlaybookWithjson(filepath, string(tmpJsonMarshal))
 		if err != nil {
-			return false, errors.New("fail to run playbook")
+			log.Println("fail to run playbook")
 		}
 		// Get substring from ansible output
 		data := utils.ExtractSubString(output, " => ", "PLAY RECAP")
@@ -87,12 +124,14 @@ func AddSSHConnectionInformation(sshConnection SshConnectionInfo, lastId int64) 
 		// Parse Json format
 		jsonParsed, err := gabs.ParseJSON([]byte(data))
 		if err != nil {
-			return false, errors.New("fail to parse json")
+			log.Println("fail to parse json")
 		}
 
 		// Serial num
 		rawSerial := strings.Trim(strings.TrimSpace(jsonParsed.Search("msg", "ansible_facts", "ansible_net_serialnum").String()), "\"")
 		if rawSerial == "null" {
+			sshConnectionInformation.Serial = ""
+		} else if rawSerial == "{}" {
 			sshConnectionInformation.Serial = ""
 		} else {
 			sshConnectionInformation.Serial = rawSerial
@@ -107,15 +146,48 @@ func AddSSHConnectionInformation(sshConnection SshConnectionInfo, lastId int64) 
 			sshConnectionInformation.OsVersion = strings.TrimRight(sshConnectionInformation.OsVersion, "m[b10u\\")
 		}
 
+		// Get Hostname
+		sshConnectionInformation.Hostname = strings.Trim(strings.TrimSpace(jsonParsed.Search("msg", "ansible_facts", "ansible_net_hostname").String()), "\"")
+		if sshConnection.NetworkOS == "vyos" {
+			sshConnectionInformation.Hostname = strings.TrimRight(sshConnectionInformation.Hostname, "m[b10u\\")
+		}
+
+		sshConnectionInformation.Model = strings.Trim(strings.TrimSpace(jsonParsed.Search("msg", "ansible_facts", "ansible_net_model").String()), "\"")
+		if sshConnection.NetworkOS == "vyos" {
+			sshConnectionInformation.Model = strings.TrimRight(sshConnectionInformation.Hostname, "m[b10u\\")
+		}
+
 	}
 
 	// Insert to DB
 	_, err = sshConnectionInformation.AddSSHConnectionInformationToDB()
 	if err != nil {
-		return false, errors.New("fail to insert sshConnection Information to DB")
+		log.Println("fail to insert sshConnection Information to DB")
 	}
 
 	return result, err
+}
+
+func GetHostname(sshConnection SshConnectionInfo) (string, error) {
+	var (
+		hostname string
+		err      error
+	)
+	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT hostname FROM system_info"`)
+	if err != nil {
+		return hostname, err
+	}
+
+	type HostnameStruct struct {
+		Hostname string `json:"hostname"`
+	}
+	var hostnameList []HostnameStruct
+	err = json.Unmarshal([]byte(output), &hostnameList)
+	if err != nil {
+		return hostname, err
+	}
+	hostname = hostnameList[0].Hostname
+	return hostname, err
 }
 
 func GetInstallDate(sshConnection SshConnectionInfo) (string, error) {
@@ -155,7 +227,7 @@ func (sshConnectionInformation *SshConnectionInformation) AddSSHConnectionInform
 
 	// Use key-base Authentication
 
-	query = "INSERT INTO ssh_connections_information (sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_connection_id) VALUES (?,?,?,?,?)"
+	query = "INSERT INTO ssh_connections_information (sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_hostname, sc_info_manufacturer, sc_info_model, sc_info_architecture, sc_info_connection_id) VALUES (?,?,?,?,?,?,?,?,?)"
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		return lastId, err
@@ -164,7 +236,7 @@ func (sshConnectionInformation *SshConnectionInformation) AddSSHConnectionInform
 
 	var res sql.Result
 
-	res, err = stmt.Exec(sshConnectionInformation.OsName, sshConnectionInformation.OsVersion, sshConnectionInformation.InstallDate, sshConnectionInformation.Serial, sshConnectionInformation.SshConnectionId)
+	res, err = stmt.Exec(sshConnectionInformation.OsName, sshConnectionInformation.OsVersion, sshConnectionInformation.InstallDate, sshConnectionInformation.Serial, sshConnectionInformation.Hostname, sshConnectionInformation.Manufacturer, sshConnectionInformation.Model, sshConnectionInformation.Architecture, sshConnectionInformation.SshConnectionId)
 
 	if err != nil {
 		return lastId, err
@@ -185,15 +257,18 @@ func GetDetailOSReport(osType string) ([]SshConnectionInformation, error) {
 	db := database.ConnectDB()
 	defer db.Close()
 	var query string
-
-	if osType == "Linux" {
-		query = `SELECT sc_info_id, sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_connection_id FROM ssh_connections_information WHERE sc_info_osname='Ubuntu' or sc_info_osname LIKE '%CentOS%' or sc_info_osname LIKE '%Kali%'`
-	} else if osType == "Windows" {
-		query = `SELECT sc_info_id, sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_connection_id FROM ssh_connections_information WHERE sc_info_osname LIKE '%Windows%'`
-	} else if osType == "Network" {
-		query = `SELECT sc_info_id, sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_connection_id FROM ssh_connections_information WHERE sc_info_osname='ios' or sc_info_osname='junos' or sc_info_osname='vyos'`
+	if osType == "" {
+		query = `SELECT sc_info_id, sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_hostname, sc_info_manufacturer, sc_info_model, sc_info_architecture, sc_info_connection_id FROM ssh_connections_information `
 	} else {
-		return sshConnectionInfoList, err
+		if osType == "Linux" {
+			query = `SELECT sc_info_id, sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_hostname, sc_info_manufacturer, sc_info_model, sc_info_architecture, sc_info_connection_id FROM ssh_connections_information WHERE sc_info_osname='Ubuntu' or sc_info_osname LIKE '%CentOS%' or sc_info_osname LIKE '%Kali%'`
+		} else if osType == "Windows" {
+			query = `SELECT sc_info_id, sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_hostname, sc_info_manufacturer, sc_info_model, sc_info_architecture, sc_info_connection_id FROM ssh_connections_information WHERE sc_info_osname LIKE '%Windows%'`
+		} else if osType == "Network" {
+			query = `SELECT sc_info_id, sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_hostname, sc_info_manufacturer, sc_info_model, sc_info_architecture, sc_info_connection_id FROM ssh_connections_information WHERE sc_info_osname='ios' or sc_info_osname='junos' or sc_info_osname='vyos'`
+		} else {
+			return sshConnectionInfoList, err
+		}
 	}
 	selDB, err := db.Query(query)
 	if err != nil {
@@ -202,7 +277,7 @@ func GetDetailOSReport(osType string) ([]SshConnectionInformation, error) {
 
 	var sshConnectionInfo SshConnectionInformation
 	for selDB.Next() {
-		err = selDB.Scan(&sshConnectionInfo.InformationId, &sshConnectionInfo.OsName, &sshConnectionInfo.OsVersion, &sshConnectionInfo.InstallDate, &sshConnectionInfo.Serial, &sshConnectionInfo.SshConnectionId)
+		err = selDB.Scan(&sshConnectionInfo.InformationId, &sshConnectionInfo.OsName, &sshConnectionInfo.OsVersion, &sshConnectionInfo.InstallDate, &sshConnectionInfo.Serial, &sshConnectionInfo.Hostname, &sshConnectionInfo.Manufacturer, &sshConnectionInfo.Model, &sshConnectionInfo.Architecture, &sshConnectionInfo.SshConnectionId)
 		if err != nil {
 			return nil, err
 		}
@@ -210,6 +285,30 @@ func GetDetailOSReport(osType string) ([]SshConnectionInformation, error) {
 	}
 	return sshConnectionInfoList, err
 
+}
+
+func GetSSHConnectionInformationBySSH_Id(sshConnectionId int) (SshConnectionInformation, error) {
+	var (
+		sshConnectionInfo SshConnectionInformation
+		err               error
+	)
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := `SELECT sc_info_id, sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_hostname, sc_info_manufacturer, sc_info_model, sc_info_architecture, sc_info_connection_id FROM ssh_connections_information WHERE sc_info_connection_id = ? `
+
+	selDB, err := db.Query(query, sshConnectionId)
+	if err != nil {
+		return sshConnectionInfo, err
+	}
+
+	for selDB.Next() {
+		err = selDB.Scan(&sshConnectionInfo.InformationId, &sshConnectionInfo.OsName, &sshConnectionInfo.OsVersion, &sshConnectionInfo.InstallDate, &sshConnectionInfo.Serial, &sshConnectionInfo.Hostname, &sshConnectionInfo.Manufacturer, &sshConnectionInfo.Model, &sshConnectionInfo.Architecture, &sshConnectionInfo.SshConnectionId)
+		if err != nil {
+			return sshConnectionInfo, err
+		}
+	}
+	return sshConnectionInfo, err
 }
 
 func (sshConnection SshConnectionInfo) GetDetailSSHConInfo() (SshConnectionInformation, error) {

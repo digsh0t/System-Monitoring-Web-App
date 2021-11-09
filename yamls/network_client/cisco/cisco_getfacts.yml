@@ -3,7 +3,7 @@
   gather_facts: no
   hosts: "{{ host }}"
   tasks:
-  - name: Test reachability to host provided using default vrf
+  - name: get cisco facts
     ios_facts:
      gather_subset: all
     register: output

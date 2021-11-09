@@ -134,6 +134,9 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 	} else {
 		success, err := sshConnectionInfo.TestConnectionPassword()
 		if err != nil {
+			if strings.Contains(err.Error(), "none password") {
+				err = errors.New("wrong password, please try again")
+			}
 			returnJson.Set("Status", success)
 			returnJson.Set("Error", err.Error())
 			utils.JSON(w, http.StatusBadRequest, returnJson)
@@ -179,13 +182,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get Detail Information Of Client
-	result, err := models.AddSSHConnectionInformation(sshConnectionInfo, lastId)
-	if err != nil {
-		returnJson.Set("Status", result)
-		returnJson.Set("Error", err.Error())
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
-	}
+	go models.AddSSHConnectionInformation(sshConnectionInfo, lastId)
 
 	// Return Json
 	utils.ReturnInsertJSON(w, true, err)

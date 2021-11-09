@@ -174,7 +174,7 @@ func ParseAnsibleFactsOutput(output string) error {
 	}
 	closingTag := strings.LastIndex(output, "}")
 	if closingTag < 0 {
-		return errors.New("Ansible Output is not JSON format")
+		return errors.New("ansible Output is not JSON format")
 	}
 	jsonStr := output[openingTag:closingTag]
 	jsonStr += "}"
