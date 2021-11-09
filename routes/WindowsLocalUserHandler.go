@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
@@ -444,15 +443,10 @@ func ChangeWindowsLocalUserPassword(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	utils.JSON(w, http.StatusOK, nil)
-	go func() {
-		err = sshConnection.ChangeWindowsLocalUserPassword(nP.Username, nP.Password)
-		if err != nil {
-			// utils.ERROR(w, http.StatusBadRequest, err.Error())
-			// return
-			notifications.SendToNotificationChannel(err.Error(), "notification-"+strconv.Itoa(userid)+"-channel", "change-windows-user-password")
-		}
-		notifications.SendToNotificationChannel("User "+nP.Username+"'s password on client "+sshConnection.HostNameSSH+" has been changed succesfully", "notification-"+strconv.Itoa(userid)+"-channel", "change-windows-user-password")
-	}()
-	time.Sleep(time.Second)
+	err = sshConnection.ChangeWindowsLocalUserPassword(nP.Username, nP.Password)
+	if err != nil {
+		// utils.ERROR(w, http.StatusBadRequest, err.Error())
+		// return
+		notifications.SendToNotificationChannel(err.Error(), "notification-"+strconv.Itoa(userid)+"channel", "change-windows-user-password")
+	}
 }
