@@ -276,5 +276,7 @@ func main() {
 	router.HandleFunc("/{id}/webconsole", routes.WebConsoleTemplate)
 	router.HandleFunc("/ws/v1/{id}", routes.WebConsoleWSHanlder)
 
+	router.HandleFunc("/system/currenttime", routes.GetCurrentSystemTime).Methods("OPTIONS", "GET")
+
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
