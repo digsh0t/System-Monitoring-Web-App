@@ -221,7 +221,7 @@ func main() {
 	router.HandleFunc("/localuser", routes.DeleteWindowsUser).Methods("OPTIONS", "DELETE")
 	router.HandleFunc("/{id}/loggedinusers", routes.GetLoggedInUsers).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/loggedinusers/{session_id}", routes.KillWindowsLogonSession).Methods("OPTIONS", "DELETE")
-	router.HandleFunc("/{id}/loggedinusers/{username}/appexecutionhistory", routes.GetWindowsLogonAppExecutionHistory).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/loggedinusers/appexecutionhistory", routes.GetWindowsLogonAppExecutionHistory).Methods("OPTIONS", "POST")
 
 	//Windows Local Group Management
 	router.HandleFunc("/{id}/localusergroup", routes.GetWindowsLocalUserGroup).Methods("OPTIONS", "GET")

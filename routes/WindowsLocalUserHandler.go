@@ -333,23 +333,35 @@ func KillWindowsLogonSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetWindowsLogonAppExecutionHistory(w http.ResponseWriter, r *http.Request) {
+
+	type tmpStruct struct {
+		Username string `json:"username"`
+	}
+	var tS tmpStruct
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	username := vars["username"]
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	err = json.Unmarshal(body, &tS)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	sshConnection, err := models.GetSSHConnectionFromId(id)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	appHistory, err := sshConnection.GetWindowsLoginAppExecutionHistory(username)
+	appHistory, err := sshConnection.GetWindowsLoginAppExecutionHistory(tS.Username)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
