@@ -129,3 +129,12 @@ func CheckIfUserHasContactBot(apiToken string, username string) int64 {
 	}
 	return -1
 }
+
+func EditTelegramBotKey(apiKey ApiKey) error {
+	err := RemoveTelegramAPIKeyFromDB(apiKey.ApiName)
+	if err != nil {
+		return err
+	}
+	err = InsertTelegramAPIKeyToDB(apiKey)
+	return err
+}
