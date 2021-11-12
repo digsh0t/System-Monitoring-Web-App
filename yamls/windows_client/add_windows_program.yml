@@ -1,7 +1,12 @@
 
 - name: Add new Windows Firewall Rule
   hosts: "{{ host }}"
+  gather_facts: no
   tasks:
+  - name: Create tmp directory before download msi
+    ansible.windows.win_file:
+      path: "{{ dest }}"
+      state: directory
 
   - name: Download msi to folder temp
     win_get_url:
@@ -13,6 +18,11 @@
     win_package:
       path: "{{ dest + filename }}"
       state: present
+
+  - name: Remove directory structure
+    ansible.windows.win_file:
+      path: "{{ dest }}"
+      state: absent
 
 
 #Sample msi link:https://the.earth.li/~sgtatham/putty/latest/w64/putty-64bit-0.76-installer.msi

@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
@@ -334,23 +333,35 @@ func KillWindowsLogonSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetWindowsLogonAppExecutionHistory(w http.ResponseWriter, r *http.Request) {
+
+	type tmpStruct struct {
+		Username string `json:"username"`
+	}
+	var tS tmpStruct
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	username := vars["username"]
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	err = json.Unmarshal(body, &tS)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	sshConnection, err := models.GetSSHConnectionFromId(id)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	appHistory, err := sshConnection.GetWindowsLoginAppExecutionHistory(username)
+	appHistory, err := sshConnection.GetWindowsLoginAppExecutionHistory(tS.Username)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
@@ -444,15 +455,10 @@ func ChangeWindowsLocalUserPassword(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	utils.JSON(w, http.StatusOK, nil)
-	go func() {
-		err = sshConnection.ChangeWindowsLocalUserPassword(nP.Username, nP.Password)
-		if err != nil {
-			// utils.ERROR(w, http.StatusBadRequest, err.Error())
-			// return
-			notifications.SendToNotificationChannel(err.Error(), "notification-"+strconv.Itoa(userid)+"-channel", "change-windows-user-password")
-		}
-		notifications.SendToNotificationChannel("User "+nP.Username+"'s password on client "+sshConnection.HostNameSSH+" has been changed succesfully", "notification-"+strconv.Itoa(userid)+"-channel", "change-windows-user-password")
-	}()
-	time.Sleep(time.Second)
+	err = sshConnection.ChangeWindowsLocalUserPassword(nP.Username, nP.Password)
+	if err != nil {
+		// utils.ERROR(w, http.StatusBadRequest, err.Error())
+		// return
+		notifications.SendToNotificationChannel(err.Error(), "notification-"+strconv.Itoa(userid)+"channel", "change-windows-user-password")
+	}
 }

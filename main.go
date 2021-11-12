@@ -24,15 +24,15 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	/*sshConnection, err := models.GetSSHConnectionFromId(58)
-	if err != nil {
-		log.Println(err)
-	}
-	key, err := sshConnection.GetAllWindowsLicense()
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println(key)*/
+	// sshConnection, err := models.GetSSHConnectionFromId(59)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// key, err := sshConnection.GetLinuxUsersLastLogin()
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// log.Println(key)
 	// for _, index := range key {
 	// 	fmt.Print(index.Username + " ")
 	// 	fmt.Print(index.IsEnabled)
@@ -48,6 +48,8 @@ func main() {
 	//if err != nil {
 	//	log.Println(err.Error())
 	//}
+	// sI := models.SmtpInfo{EmailSender: "noti.lthmonitor@gmail.com", EmailPassword: "Lethihang123", SMTPHost: "smtp.gmail.com", SMTPPort: "587"}
+	// sI.SendReportMail("./10-11-2021-report.pdf", []string{"trilxse140935@fpt.edu.vn"})
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
@@ -122,6 +124,7 @@ func main() {
 	//API management
 	router.HandleFunc("/telegrambotoken", routes.AddTelegramBotKey).Methods("POST", "OPTIONS")
 	router.HandleFunc("/telegrambotoken", routes.GetTelegramBotKey).Methods("GET", "OPTIONS")
+	router.HandleFunc("/telegrambotoken", routes.EditTelegramBotKey).Methods("PUT", "OPTIONS")
 
 	//Template & Task management
 	router.HandleFunc("/templates", routes.AddTemplate).Methods("POST", "OPTIONS")
@@ -221,7 +224,7 @@ func main() {
 	router.HandleFunc("/localuser", routes.DeleteWindowsUser).Methods("OPTIONS", "DELETE")
 	router.HandleFunc("/{id}/loggedinusers", routes.GetLoggedInUsers).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/loggedinusers/{session_id}", routes.KillWindowsLogonSession).Methods("OPTIONS", "DELETE")
-	router.HandleFunc("/{id}/loggedinusers/{username}/appexecutionhistory", routes.GetWindowsLogonAppExecutionHistory).Methods("OPTIONS", "GET")
+	router.HandleFunc("/{id}/loggedinusers/appexecutionhistory", routes.GetWindowsLogonAppExecutionHistory).Methods("OPTIONS", "POST")
 
 	//Windows Local Group Management
 	router.HandleFunc("/{id}/localusergroup", routes.GetWindowsLocalUserGroup).Methods("OPTIONS", "GET")
@@ -273,6 +276,8 @@ func main() {
 
 	router.HandleFunc("/{id}/webconsole", routes.WebConsoleTemplate)
 	router.HandleFunc("/ws/v1/{id}", routes.WebConsoleWSHanlder)
+
+	router.HandleFunc("/system/currenttime", routes.GetCurrentSystemTime).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }

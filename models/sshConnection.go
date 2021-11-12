@@ -763,7 +763,7 @@ func (sshConnection *SshConnectionInfo) ConnectSSHWithPassword() (*ssh.Client, e
 	}
 	cipherOrder := clientConfig.Ciphers
 	clientConfig.Ciphers = append(cipherOrder, "aes128-ctr", "aes192-ctr", "aes256-ctr", "arcfour256", "arcfour128", "arcfour", "aes128-cbc")
-	clientConfig.KeyExchanges = append(clientConfig.KeyExchanges, "diffie-hellman-group1-sha1")
+	// clientConfig.KeyExchanges = append(clientConfig.KeyExchanges, "diffie-hellman-group1-sha1")
 	// connect to ssh
 
 	addr = fmt.Sprintf("%s:%d", sshConnection.HostSSH, sshConnection.PortSSH)
@@ -936,6 +936,7 @@ func ListAllCisco() ([]SshConnectionInfo, error) {
 }
 
 func (sshConnection *SshConnectionInfo) GetInstalledProgram() ([]Programs, error) {
+	var year, day, month string
 	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT * FROM programs"`)
 	if err != nil {
 		return nil, err
@@ -943,6 +944,14 @@ func (sshConnection *SshConnectionInfo) GetInstalledProgram() ([]Programs, error
 	var installedPrograms []Programs
 
 	err = json.Unmarshal([]byte(result), &installedPrograms)
+	for i := 0; i < len(installedPrograms); i++ {
+		if installedPrograms[i].InstallDate != "" {
+			year = installedPrograms[i].InstallDate[:4]
+			month = installedPrograms[i].InstallDate[4:6]
+			day = installedPrograms[i].InstallDate[6:]
+			installedPrograms[i].InstallDate = day + "/" + month + "/" + year
+		}
+	}
 	return installedPrograms, err
 }
 
