@@ -1,9 +1,11 @@
 package routes
 
 import (
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/wintltr/login-api/auth"
@@ -72,19 +74,38 @@ func ExportReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Retrieve Json Format
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to retrieve json format").Error())
+		return
+	}
+
+	var modules models.ReportModules
+	err = json.Unmarshal(reqBody, &modules)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to process json")
+		return
+	}
+
 	// Get current date time
 	datetime := utils.GetCurrentDateTime()
-	filename := "./reports/report-" + datetime + ".pdf"
-	err = models.ExportReport(filename)
+	filename := "./tmp/report-" + datetime + ".pdf"
+	err = models.ExportReport(filename, modules)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 	} else {
 		file, err := ioutil.ReadFile(filename)
 		if err != nil {
-			utils.ERROR(w, http.StatusBadRequest, err.Error())
-		} else {
-			utils.JSON(w, http.StatusOK, file)
+			utils.ERROR(w, http.StatusUnauthorized, err.Error())
+			return
 		}
+		err = os.Remove(filename)
+		if err != nil {
+			utils.ERROR(w, http.StatusUnauthorized, err.Error())
+			return
+		}
+		utils.JSON(w, http.StatusOK, file)
 
 	}
 

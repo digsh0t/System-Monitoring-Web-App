@@ -27,7 +27,6 @@ func LinuxClientGroupRemove(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve Json Format
 	reqBody, err := ioutil.ReadAll(r.Body)
-
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to retrieve json format").Error())
 		return

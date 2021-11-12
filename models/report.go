@@ -43,6 +43,10 @@ type ClientReport struct {
 	Osversion string `json:"osversion"`
 }
 
+type ReportModules struct {
+	Modules []int `json:"modules"`
+}
+
 func GetReport(r *http.Request, start time.Time) (Report, error) {
 	var (
 		reportInfo Report
@@ -223,7 +227,7 @@ func GetClientSerial(sshConnection SshConnectionInfo) (string, error) {
 
 }
 
-func ExportReport(filename string) error {
+func ExportReport(filename string, modulesList ReportModules) error {
 
 	// Cover Page
 	type recType struct {
@@ -1082,50 +1086,67 @@ func ExportReport(filename string) error {
 	pdf.WriteAligned(70, 20, "   1.1. Windows devices", "L")
 	pdf.Ln(10)
 
+	modules := modulesList.Modules
 	// Get Windows
 	sshConnectionList, err = GetAllOSSSHConnection("Windows")
 	if err != nil {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
-		err = DrawSystemInfoTable(pdf, index, sshConnection)
-		if err != nil {
-			log.Println("fail to excute function DrawSystemInfoTable =>", err.Error())
+		if CheckModules(modules, 1) {
+			err = DrawSystemInfoTable(pdf, index, sshConnection)
+			if err != nil {
+				log.Println("fail to excute function DrawSystemInfoTable =>", err.Error())
+			}
 		}
 
-		err = DrawPhysDriveTable(pdf, index, sshConnection)
-		if err != nil {
-			log.Println("fail to excute function DrawPhysDriveTable =>", err.Error())
+		if CheckModules(modules, 2) {
+			err = DrawPhysDriveTable(pdf, index, sshConnection)
+			if err != nil {
+				log.Println("fail to excute function DrawPhysDriveTable =>", err.Error())
+			}
 		}
 
-		err = DrawLogicDriveTable(pdf, index, sshConnection)
-		if err != nil {
-			log.Println("fail to excute function DrawLogicDriveTable =>", err.Error())
+		if CheckModules(modules, 3) {
+			err = DrawLogicDriveTable(pdf, index, sshConnection)
+			if err != nil {
+				log.Println("fail to excute function DrawLogicDriveTable =>", err.Error())
+			}
 		}
 
-		err = DrawWindowsLocalUserTable(pdf, index, sshConnection)
-		if err != nil {
-			log.Println("fail to excute function DrawLocalUserTable =>", err.Error())
+		if CheckModules(modules, 4) {
+			err = DrawWindowsLocalUserTable(pdf, index, sshConnection)
+			if err != nil {
+				log.Println("fail to excute function DrawLocalUserTable =>", err.Error())
+			}
 		}
 
-		err = DrawWindowsInterfaceTable(pdf, index, sshConnection)
-		if err != nil {
-			log.Println("fail to excute function DrawWindowsInterfaceTable =>", err.Error())
+		if CheckModules(modules, 5) {
+			err = DrawWindowsInterfaceTable(pdf, index, sshConnection)
+			if err != nil {
+				log.Println("fail to excute function DrawWindowsInterfaceTable =>", err.Error())
+			}
 		}
 
-		err = DrawWindowsProgramTable(pdf, index, sshConnection)
-		if err != nil {
-			log.Println("fail to excute function DrawWindowsProgramTable =>", err.Error())
+		if CheckModules(modules, 6) {
+			err = DrawWindowsProgramTable(pdf, index, sshConnection)
+			if err != nil {
+				log.Println("fail to excute function DrawWindowsProgramTable =>", err.Error())
+			}
 		}
 
-		err = DrawWindowsDefenderInfoTable(pdf, index, sshConnection)
-		if err != nil {
-			log.Println("fail to excute function DrawWindowsDefenderInfoTable =>", err.Error())
+		if CheckModules(modules, 7) {
+			err = DrawWindowsDefenderInfoTable(pdf, index, sshConnection)
+			if err != nil {
+				log.Println("fail to excute function DrawWindowsDefenderInfoTable =>", err.Error())
+			}
 		}
 
-		err = DrawWindowsLicenseTable(pdf, index, sshConnection)
-		if err != nil {
-			log.Println("fail to excute function DrawWindowsLicenseTable =>", err.Error())
+		if CheckModules(modules, 8) {
+			err = DrawWindowsLicenseTable(pdf, index, sshConnection)
+			if err != nil {
+				log.Println("fail to excute function DrawWindowsLicenseTable =>", err.Error())
+			}
 		}
 
 	}
@@ -1141,19 +1162,26 @@ func ExportReport(filename string) error {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
-		err = DrawSystemInfoTable(pdf, index, sshConnection)
-		if err != nil {
-			return err
+
+		if CheckModules(modules, 10) {
+			err = DrawSystemInfoTable(pdf, index, sshConnection)
+			if err != nil {
+				return err
+			}
 		}
 
-		err = DrawLinuxLocalUserTable(pdf, index, sshConnection)
-		if err != nil {
-			log.Println("fail to excute function DrawLocalUserTable =>", err.Error())
+		if CheckModules(modules, 11) {
+			err = DrawLinuxLocalUserTable(pdf, index, sshConnection)
+			if err != nil {
+				log.Println("fail to excute function DrawLocalUserTable =>", err.Error())
+			}
 		}
 
-		err = DrawLinuxInterfaceTable(pdf, index, sshConnection)
-		if err != nil {
-			log.Println("fail to excute function DrawWindowsInterfaceTable =>", err.Error())
+		if CheckModules(modules, 12) {
+			err = DrawLinuxInterfaceTable(pdf, index, sshConnection)
+			if err != nil {
+				log.Println("fail to excute function DrawWindowsInterfaceTable =>", err.Error())
+			}
 		}
 
 	}
@@ -1170,14 +1198,19 @@ func ExportReport(filename string) error {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
-		err = DrawSystemInfoTable(pdf, index, sshConnection)
-		if err != nil {
-			return err
+
+		if CheckModules(modules, 20) {
+			err = DrawSystemInfoTable(pdf, index, sshConnection)
+			if err != nil {
+				return err
+			}
 		}
 
-		err = DrawNetworkIpAddressTable(pdf, index, sshConnection)
-		if err != nil {
-			log.Println("fail to excute function DrawNetworkIpAddressTable =>", err.Error())
+		if CheckModules(modules, 21) {
+			err = DrawNetworkIpAddressTable(pdf, index, sshConnection)
+			if err != nil {
+				log.Println("fail to excute function DrawNetworkIpAddressTable =>", err.Error())
+			}
 		}
 	}
 
@@ -1191,11 +1224,29 @@ func ExportReport(filename string) error {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
-		err = DrawSystemInfoTable(pdf, index, sshConnection)
-		if err != nil {
-			return err
+
+		if CheckModules(modules, 30) {
+			err = DrawSystemInfoTable(pdf, index, sshConnection)
+			if err != nil {
+				return err
+			}
+		}
+
+		if CheckModules(modules, 31) {
+			err = DrawNetworkIpAddressTable(pdf, index, sshConnection)
+			if err != nil {
+				log.Println("fail to excute function DrawNetworkIpAddressTable =>", err.Error())
+			}
 		}
 	}
-
 	return pdf.OutputFileAndClose(filename)
+}
+
+func CheckModules(modules []int, number int) bool {
+	for _, module := range modules {
+		if module == number {
+			return true
+		}
+	}
+	return false
 }

@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -51,7 +52,7 @@ func GetWindowsEventLogs(sshConnectionId int, logname string, startTime string, 
 	if endTime != "" {
 		query += " -Before " + "'" + endTime + "'"
 	}
-
+	fmt.Println(query)
 	// Run remote command
 	output, err := sshConnection.RunCommandFromSSHConnectionUseKeys(query)
 	if err != nil {
