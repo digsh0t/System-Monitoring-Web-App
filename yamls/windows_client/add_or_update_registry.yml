@@ -3,7 +3,7 @@
   gather_facts: no
   tasks:
   - name: Add or update registry path MyCompany, with entry 'hello', and containing 'world'
-    ansible.windows.win_regedit:
+    win_regedit:
       path: "{{ registry_path }}"
       name: "{{ item.path }}"
       data: "{{ item.data }}"

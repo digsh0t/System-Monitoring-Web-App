@@ -110,10 +110,10 @@ func TestTelegramKey(apiToken string) bool {
 	return true
 }
 
-func CheckIfUserHasContactBot(apiToken string, username string) int64 {
+func CheckIfUserHasContactBot(apiToken string, username string) (int64, error) {
 	bot, err := tgbotapi.NewBotAPI(apiToken)
 	if err != nil {
-		panic(err)
+		return -1, err
 	}
 
 	bot.Debug = true
@@ -122,12 +122,16 @@ func CheckIfUserHasContactBot(apiToken string, username string) int64 {
 
 	updates, _ := bot.GetUpdates(updateConfig)
 	if len(updates) == 0 {
-		return -1
+		return -1, nil
 	}
-	if strings.Contains(updates[len(updates)-1].Message.From.UserName, username) {
-		return updates[len(updates)-1].Message.Chat.ID
+	tmp := updates[len(updates)-1]
+	if tmp.Message.From.UserName == "" {
+		return -1, errors.New("Please send a message to your Telegram Bot before continuing")
 	}
-	return -1
+	if strings.Contains(tmp.Message.From.UserName, username) {
+		return updates[len(updates)-1].Message.Chat.ID, err
+	}
+	return -1, err
 }
 
 func EditTelegramBotKey(apiKey ApiKey) error {

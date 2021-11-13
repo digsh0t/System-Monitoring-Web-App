@@ -4,7 +4,7 @@
   gather_facts: no
   tasks:
   - name: Create tmp directory before download msi
-    ansible.windows.win_file:
+    win_file:
       path: "{{ dest }}"
       state: directory
 
@@ -20,7 +20,7 @@
       state: present
 
   - name: Remove directory structure
-    ansible.windows.win_file:
+    win_file:
       path: "{{ dest }}"
       state: absent
 

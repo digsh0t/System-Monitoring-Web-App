@@ -47,7 +47,11 @@ func AddTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("your telegram bot api key is not valid, please check again").Error())
 		return
 	}
-	apiKey.TelegramChatId = models.CheckIfUserHasContactBot(apiKey.ApiToken, apiKey.TelegramUser)
+	apiKey.TelegramChatId, err = models.CheckIfUserHasContactBot(apiKey.ApiToken, apiKey.TelegramUser)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	if apiKey.TelegramChatId == -1 {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("please send a message to your bot before continuing").Error())
@@ -146,7 +150,11 @@ func EditTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("your telegram bot api key is not valid, please check again").Error())
 		return
 	}
-	apiKey.TelegramChatId = models.CheckIfUserHasContactBot(apiKey.ApiToken, apiKey.TelegramUser)
+	apiKey.TelegramChatId, err = models.CheckIfUserHasContactBot(apiKey.ApiToken, apiKey.TelegramUser)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	if apiKey.TelegramChatId == -1 {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("please send a message to your bot before continuing").Error())
