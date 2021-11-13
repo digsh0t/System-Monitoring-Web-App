@@ -46,6 +46,8 @@ type ClientReport struct {
 type ReportModules struct {
 	Modules      []int    `json:"modules"`
 	ReceiveEmail []string `json:"receiveEmail"`
+	Cc           []string `json:"cc"`
+	Bcc          []string `json:"bcc"`
 }
 
 func GetReport(r *http.Request, start time.Time) (Report, error) {
