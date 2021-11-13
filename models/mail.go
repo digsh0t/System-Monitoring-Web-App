@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"io"
 	"text/template"
 	"time"
@@ -15,11 +16,17 @@ type SmtpInfo struct {
 	SMTPPort      string `json:"smtp_port"`
 }
 
-func (sI SmtpInfo) SendReportMail(filepath string, receiver []string) {
+func (sI SmtpInfo) SendReportMail(filepath string, receiver []string, ccer []string) error {
 	subject := "LTH Monitor Report requestes by user at " + time.Now().Format("Mon Jan 2 15:04:05 MST 2006")
 	m := gomail.NewMessage()
+	if receiver == nil {
+		return errors.New("Please enter the receiver email")
+	}
 	m.SetHeader("From", sI.EmailSender)
 	m.SetHeader("To", receiver...)
+	if ccer != nil {
+		m.SetHeader("Cc", ccer...)
+	}
 	m.SetHeader("Subject", subject)
 	t, _ := template.ParseFiles("./template/mail_template.html")
 	m.AddAlternativeWriter("text/html", func(w io.Writer) error {
@@ -34,7 +41,6 @@ func (sI SmtpInfo) SendReportMail(filepath string, receiver []string) {
 
 	d := gomail.NewDialer("smtp.gmail.com", 587, sI.EmailSender, sI.EmailPassword)
 
-	if err := d.DialAndSend(m); err != nil {
-		panic(err)
-	}
+	err := d.DialAndSend(m)
+	return err
 }

@@ -48,8 +48,8 @@ func main() {
 	//if err != nil {
 	//	log.Println(err.Error())
 	//}
-	// sI := models.SmtpInfo{EmailSender: "noti.lthmonitor@gmail.com", EmailPassword: "Lethihang123", SMTPHost: "smtp.gmail.com", SMTPPort: "587"}
-	// sI.SendReportMail("./10-11-2021-report.pdf", []string{"trilxse140935@fpt.edu.vn"})
+	sI := models.SmtpInfo{EmailSender: "noti.lthmonitor@gmail.com", EmailPassword: "Lethihang123", SMTPHost: "smtp.gmail.com", SMTPPort: "587"}
+	sI.SendReportMail("./10-11-2021-report.pdf", []string{"trilxse140935@fpt.edu.vn"}, []string{"wintltr@gmail.com"})
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
