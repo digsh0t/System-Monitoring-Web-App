@@ -44,7 +44,8 @@ type ClientReport struct {
 }
 
 type ReportModules struct {
-	Modules []int `json:"modules"`
+	Modules      []int    `json:"modules"`
+	ReceiveEmail []string `json:"receiveEmail"`
 }
 
 func GetReport(r *http.Request, start time.Time) (Report, error) {
@@ -1075,6 +1076,29 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		return err
 	}
 
+	var DrawEndPage = func(pdf *gofpdf.Fpdf) error {
+		pdf.SetAutoPageBreak(true, 20.0)
+		pdf.AddPage()
+		pdf.SetMargins(10, 10, 10)
+		pdf.SetAutoPageBreak(false, 0)
+		pdf.ImageOptions(
+			"./pictures/fpt.png",
+			70, 70,
+			0, 0,
+			false,
+			gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true},
+			0,
+			"",
+		)
+
+		pdf.SetXY(20, 20)
+		pdf.CellFormat(258, 365, "End Report", "1", 0, "CM", false, 0, "")
+		pdf.SetXY(20, 20)
+		pdf.CellFormat(258, 365, utils.GetCurrentDateTime(), "", 0, "BC", false, 0, "")
+
+		return err
+	}
+
 	// Call function
 	pdf.AddPage()
 	pdf.SetFont("", "B", 15)
@@ -1238,6 +1262,12 @@ func ExportReport(filename string, modulesList ReportModules) error {
 				log.Println("fail to excute function DrawNetworkIpAddressTable =>", err.Error())
 			}
 		}
+	}
+
+	// End Page
+	err = DrawEndPage(pdf)
+	if err != nil {
+		log.Println("fail to excute function DrawEndPage =>", err.Error())
 	}
 	return pdf.OutputFileAndClose(filename)
 }

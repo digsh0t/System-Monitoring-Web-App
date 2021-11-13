@@ -2,9 +2,11 @@ package models
 
 import (
 	"io"
+	"net/http"
 	"text/template"
 	"time"
 
+	"github.com/wintltr/login-api/auth"
 	"gopkg.in/gomail.v2"
 )
 
@@ -15,18 +17,27 @@ type SmtpInfo struct {
 	SMTPPort      string `json:"smtp_port"`
 }
 
-func (sI SmtpInfo) SendReportMail(filepath string, receiver []string) {
+func (sI SmtpInfo) SendReportMail(filepath string, receiver []string, r *http.Request) error {
+
 	subject := "LTH Monitor Report requestes by user at " + time.Now().Format("Mon Jan 2 15:04:05 MST 2006")
 	m := gomail.NewMessage()
 	m.SetHeader("From", sI.EmailSender)
 	m.SetHeader("To", receiver...)
 	m.SetHeader("Subject", subject)
 	t, _ := template.ParseFiles("./template/mail_template.html")
+
+	// Get Current User Web app
+	tokenData, err := auth.RetrieveTokenData(r)
+	if err != nil {
+		return err
+	}
+	userWebApp := tokenData.Username
 	m.AddAlternativeWriter("text/html", func(w io.Writer) error {
 		return t.Execute(w, struct {
 			Username string
 		}{
-			Username: "Le Xuan Tri",
+
+			Username: userWebApp,
 		})
 	})
 
@@ -37,4 +48,5 @@ func (sI SmtpInfo) SendReportMail(filepath string, receiver []string) {
 	if err := d.DialAndSend(m); err != nil {
 		panic(err)
 	}
+	return nil
 }
