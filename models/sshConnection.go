@@ -796,9 +796,13 @@ func (sshConnection *SshConnectionInfo) ExecCommandWithPassword(cmd string) (str
 			return "Failed to open new session", err
 		}
 		defer session.Close()
-		var b bytes.Buffer //import "bytes"
+		var b, out bytes.Buffer //import "bytes"
 		session.Stdout = &b
+		session.Stderr = &out
 		err = session.Run(cmd)
+		if out.String() != "" {
+			fmt.Println(out.String())
+		}
 		return b.String(), err
 	}
 

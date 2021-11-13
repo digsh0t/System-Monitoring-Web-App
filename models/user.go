@@ -18,6 +18,7 @@ type User struct {
 	Role     string `json:"role"`
 	Secret   string `json:"secret"`
 	TwoFA    bool   `json:"2fa"`
+	Name     string `json:"name"`
 }
 
 //Check if username or password is legit
