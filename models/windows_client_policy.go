@@ -162,6 +162,8 @@ func (sshConnection SshConnectionInfo) regLoadCurrentUser(uuid string) (string, 
 	if err != nil {
 		if strings.Contains(err.Error(), "The process cannot access the file because it is being used by another process.") {
 			return `HKU:\` + uuid, nil
+		} else if strings.Contains(err.Error(), "exited with status 1") {
+			return `HKU:\` + uuid, nil
 		}
 
 		return "", err
