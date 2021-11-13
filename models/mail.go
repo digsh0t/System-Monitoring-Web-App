@@ -18,7 +18,7 @@ type SmtpInfo struct {
 	SMTPPort      string `json:"smtp_port"`
 }
 
-func (sI SmtpInfo) SendReportMail(filepath string, receiver []string, ccer []string, r *http.Request) error {
+func (sI SmtpInfo) SendReportMail(filepath string, receiver []string, ccer []string, bccer []string, r *http.Request) error {
 	subject := "LTH Monitor Report requestes by user at " + time.Now().Format("Mon Jan 2 15:04:05 MST 2006")
 	m := gomail.NewMessage()
 	if receiver == nil {
@@ -28,6 +28,9 @@ func (sI SmtpInfo) SendReportMail(filepath string, receiver []string, ccer []str
 	m.SetHeader("To", receiver...)
 	if ccer != nil {
 		m.SetHeader("Cc", ccer...)
+	}
+	if bccer != nil {
+		m.SetHeader("Bcc", bccer...)
 	}
 	m.SetHeader("Subject", subject)
 	t, _ := template.ParseFiles("./template/mail_template.html")
