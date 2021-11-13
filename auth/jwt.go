@@ -27,7 +27,7 @@ func CreateToken(userId int, username string, role string, twofa string) (string
 	claims["userid"] = userId
 	claims["2fa"] = twofa
 	claims["authorized"] = false
-	claims["exp"] = time.Now().Add(time.Hour * 1).Unix() // Token expires after 12 hours
+	claims["exp"] = time.Now().Add(time.Hour + time.Hour/2).Unix() // Token expires after 1 hour and 30 minutes
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	//Activate env file
