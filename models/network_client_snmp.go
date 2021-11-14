@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -462,7 +461,6 @@ func GetNetworkIPAddr(sshConnectionId int) ([]IpAddrSNMP, error) {
 		return err
 	})
 	if err != nil {
-		fmt.Println(err.Error())
 		return ipSNMPList, errors.New("fail to get numbers of interfaces")
 	}
 

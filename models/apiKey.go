@@ -125,7 +125,7 @@ func CheckIfUserHasContactBot(apiToken string, username string) (int64, error) {
 		return -1, nil
 	}
 	tmp := updates[len(updates)-1]
-	if tmp.Message.From.UserName == "" {
+	if tmp.Message == nil {
 		return -1, errors.New("Please send a message to your Telegram Bot before continuing")
 	}
 	if strings.Contains(tmp.Message.From.UserName, username) {
