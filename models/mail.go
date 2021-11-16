@@ -26,10 +26,10 @@ func (sI SmtpInfo) SendReportMail(filepath string, receiver []string, ccer []str
 	}
 	m.SetHeader("From", sI.EmailSender)
 	m.SetHeader("To", receiver...)
-	if ccer != nil {
+	if len(ccer) > 0 {
 		m.SetHeader("Cc", ccer...)
 	}
-	if bccer != nil {
+	if len(bccer) > 0 {
 		m.SetHeader("Bcc", bccer...)
 	}
 	m.SetHeader("Subject", subject)

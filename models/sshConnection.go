@@ -763,7 +763,7 @@ func (sshConnection *SshConnectionInfo) ConnectSSHWithPassword() (*ssh.Client, e
 	}
 	cipherOrder := clientConfig.Ciphers
 	clientConfig.Ciphers = append(cipherOrder, "aes128-ctr", "aes192-ctr", "aes256-ctr", "arcfour256", "arcfour128", "arcfour", "aes128-cbc")
-	clientConfig.KeyExchanges = append(clientConfig.KeyExchanges, "diffie-hellman-group1-sha1")
+	clientConfig.KeyExchanges = append(clientConfig.KeyExchanges, "diffie-hellman-group1-sha1", "ecdh-sha2-nistp384")
 	// connect to ssh
 
 	addr = fmt.Sprintf("%s:%d", sshConnection.HostSSH, sshConnection.PortSSH)
