@@ -61,8 +61,12 @@ func (sshConnection SshConnectionInfo) GetWindowsLicenseKey() (windowsLicense, e
 	if err != nil {
 		return license, err
 	}
+	info, err := sshConnection.GetDetailSSHConInfo()
+	if err != nil {
+		return windowsLicense{}, nil
+	}
 
-	license.ProductName = "Windows 10 Pro"
+	license.ProductName = info.OsName + " " + info.Architecture
 	license.ProductKey = DecodeProductKey(digitalProductID)
 	return license, err
 }
