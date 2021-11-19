@@ -91,6 +91,8 @@ func VerifyQR(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		user.Role = "not authorized"
 		twofa = "not authorized"
+		utils.ERROR(w, http.StatusBadRequest, errors.New("Not authorized").Error())
+		return
 	} else {
 		twofa = "authorized"
 	}

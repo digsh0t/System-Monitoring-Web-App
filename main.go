@@ -24,11 +24,12 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	// sshConnection, err := models.GetSSHConnectionFromId(59)
+	// sshConnection, err := models.GetSSHConnectionFromId(69)
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// key, err := sshConnection.GetLinuxUsersLastLogin()
+	// models.AddSSHConnectionInformation(*sshConnection, int64(sshConnection.SSHConnectionId))
+	// key, err := sshConnection.GetAllWindowsLicense()
 	// if err != nil {
 	// 	log.Println(err)
 	// }
@@ -49,7 +50,7 @@ func main() {
 	//	log.Println(err.Error())
 	//}
 	// sI := models.SmtpInfo{EmailSender: "noti.lthmonitor@gmail.com", EmailPassword: "Lethihang123", SMTPHost: "smtp.gmail.com", SMTPPort: "587"}
-	// sI.SendReportMail("./10-11-2021-report.pdf", []string{"trilxse140935@fpt.edu.vn"}, []string{"wintltr@gmail.com"})
+	// sI.SendReportMail("./10-11-2021-report.pdf", []string{"trilxse140935@fpt.edu.vn"}, []string{"wintltrbackup@gmail.com"},[]string{"wintltr@gmail.com"})
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
