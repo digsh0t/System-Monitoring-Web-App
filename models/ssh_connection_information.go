@@ -264,6 +264,10 @@ func GetDetailOSReport(osType string) ([]SshConnectionInformation, error) {
 			query = `SELECT sc_info_id, sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_hostname, sc_info_manufacturer, sc_info_model, sc_info_architecture, sc_info_connection_id FROM ssh_connections_information WHERE sc_info_osname='Ubuntu' or sc_info_osname LIKE '%CentOS%' or sc_info_osname LIKE '%Kali%'`
 		} else if osType == "Windows" {
 			query = `SELECT sc_info_id, sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_hostname, sc_info_manufacturer, sc_info_model, sc_info_architecture, sc_info_connection_id FROM ssh_connections_information WHERE sc_info_osname LIKE '%Windows%'`
+		} else if osType == "Router" {
+			query = `SELECT I.sc_info_id, I.sc_info_osname, I.sc_info_osversion, I.sc_info_installdate, I.sc_info_serial, I.sc_info_hostname, I.sc_info_manufacturer, I.sc_info_model, I.sc_info_architecture, I.sc_info_connection_id FROM ssh_connections_information AS I LEFT JOIN ssh_connections AS S ON I.sc_info_connection_id = S.sc_connection_id WHERE S.sc_networktype='Router'`
+		} else if osType == "Switch" {
+			query = `SELECT I.sc_info_id, I.sc_info_osname, I.sc_info_osversion, I.sc_info_installdate, I.sc_info_serial, I.sc_info_hostname, I.sc_info_manufacturer, I.sc_info_model, I.sc_info_architecture, I.sc_info_connection_id FROM ssh_connections_information AS I LEFT JOIN ssh_connections AS S ON I.sc_info_connection_id = S.sc_connection_id WHERE S.sc_networktype='Switch'`
 		} else if osType == "Network" {
 			query = `SELECT sc_info_id, sc_info_osname, sc_info_osversion, sc_info_installdate, sc_info_serial, sc_info_hostname, sc_info_manufacturer, sc_info_model, sc_info_architecture, sc_info_connection_id FROM ssh_connections_information WHERE sc_info_osname='ios' or sc_info_osname='junos' or sc_info_osname='vyos'`
 		} else {

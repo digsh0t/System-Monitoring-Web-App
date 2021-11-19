@@ -44,10 +44,11 @@ func AddTemplate(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to parse form-data").Error())
 		return
 	}
+
 	template = models.Template{
 		TemplateName: templateData.Get("template_name"),
 		Description:  templateData.Get("template_description"),
-		SshKeyId:     templateData.GetInt("ssh_key_id"),
+		SshKeyId:     30,
 		Alert:        templateData.GetBool("alert"),
 	}
 

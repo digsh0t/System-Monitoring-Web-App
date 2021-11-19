@@ -158,7 +158,7 @@ func main() {
 	}).Methods("GET")
 	router.HandleFunc("/webapp/report/detail", routes.GetDetailOSReport).Methods("GET")
 	router.HandleFunc("/webapp/report/export", routes.ExportReport).Methods("POST")
-
+	router.HandleFunc("/client/report/export", routes.ClientExportReport).Methods("POST")
 	// Network Automation: Vyos
 	//router.HandleFunc("/vyos/listconfig/{id}", routes.GetInfoConfigVyos).Methods("GET")
 	router.HandleFunc("/vyos/list/{id}", routes.GetInfoVyos).Methods("GET")
@@ -244,7 +244,7 @@ func main() {
 	router.HandleFunc("/{id}/interfaces", routes.GetInterfaceList).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/connectivity", routes.GetConnectivityInfo).Methods("OPTIONS", "GET")
 
-	//Windows Service
+	//Windows Services
 	router.HandleFunc("/{id}/services", routes.GetWindowsServiceList).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/services/{service_name}/{service_state}", routes.ChangeWindowsServiceState).Methods("OPTIONS", "PUT")
 
