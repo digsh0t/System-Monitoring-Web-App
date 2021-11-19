@@ -1,0 +1,11 @@
+- name: Network module
+  connection: network_cli
+  gather_facts: false
+  hosts: "{{ host }}"
+  tasks:
+  - name: Remove eth0 IPv4 address
+    vyos_facts:
+     gather_subset: all
+    register: output
+ 
+  - debug: msg="{{ output }}"

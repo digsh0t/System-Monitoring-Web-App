@@ -1,0 +1,9 @@
+- name: Remove User Yaml
+  hosts: "{{ host }}"
+  tasks:
+
+  - name: Remove the user 'johnd'
+    user:
+     name: "{{ username }}"
+     state: absent
+     remove: yes

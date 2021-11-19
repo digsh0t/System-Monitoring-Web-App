@@ -1,0 +1,8 @@
+- name: Gather Windows Facts 
+  hosts: "{{ host }}"
+  tasks:
+    - name: Get whoami information
+      win_whoami:    
+      register: output
+
+    - debug: msg="{{ output }}"

@@ -1,0 +1,5 @@
+- name: Print all available facts
+  hosts: "{{ host }}"
+  tasks:
+  - debug:
+      var: ansible_facts

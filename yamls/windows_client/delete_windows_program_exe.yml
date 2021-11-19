@@ -1,0 +1,10 @@
+- name: Delete Windows Program
+  hosts: "{{ host }}"
+  tasks:
+
+  - name: Uninstall teamviewer from the exe
+    win_package:
+      path: C:\Program Files\HxD\unins000.exe
+      product_id: HxD
+      arguments: /S
+      state: absent

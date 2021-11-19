@@ -1,0 +1,14 @@
+- name: Enable SNMPv3
+  connection: network_cli
+  hosts: "{{ host }}"
+  gather_facts: false
+  tasks:
+  - name: Enable SNMPv3
+    ios_config:
+     lines: 
+     - snmp-server enable
+     - snmp-server community public
+     - snmp-server group snmpGroup v3 priv
+     - snmp-server user "{{ auth_username }}" snmpGroup v3 auth md5 "{{ auth_password }}" priv des "{{ priv_password }}"
+     - snmp-server host 
+     save_when: changed

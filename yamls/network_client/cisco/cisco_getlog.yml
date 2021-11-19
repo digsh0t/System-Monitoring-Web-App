@@ -1,0 +1,11 @@
+- name: Get Information Cisco
+  connection: network_cli
+  hosts: "{{ host }}"
+  gather_facts: false
+  tasks:
+  - name: Get Logs
+    ios_command:
+      commands: show logging | include \*
+    register: output
+
+  - debug: msg="{{ output.stdout_lines }}"

@@ -1,0 +1,14 @@
+- name: Add interface to vlan
+  connection: network_cli
+  gather_facts: no
+  hosts: "{{ host }}"
+  tasks:
+  - name: add interface to vlan
+    ios_vlan:
+     vlan_id: "{{ vlanId }}"
+     interfaces: "{{ interfaces }}"
+
+  - name: save running to startup when modified
+    ios_config: 
+     save_when: modified
+  

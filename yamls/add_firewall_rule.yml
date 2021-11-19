@@ -1,0 +1,11 @@
+- name: Firewall settings
+  hosts: "{{ host }}"
+  tasks:
+    - name: Allow all access to port for Ubuntu and Kali
+      ufw:
+        rule: allow
+        from_port: "{{ from_port }}"
+        proto: "{{ protocol }}"
+        from_ip: "{{ from_ip }}"
+        to_ip: "{{ to_ip }}"
+        to_port: "{{ to_port }}"

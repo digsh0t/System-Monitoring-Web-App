@@ -1,0 +1,10 @@
+- name: Windows User management
+  hosts: "{{ host }}"
+  tasks:
+  - name: Replace Windows Group for Users
+    win_user:
+      name: "{{ username }}"
+      groups: "{{ group }}"
+      groups_action: replace
+
+#Usage: ansible-playbook --extra-vars '{"host":"DESKTOP-AUKB810","username":"trilx","group":["Users","Power Users"]}' yamls/windows_client/change_user_group_membership.yml

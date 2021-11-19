@@ -1,0 +1,15 @@
+- name: Remove package
+  hosts: "{{ host_var }}"
+  tasks:
+  - name: Remove package if OS is CentOS
+    yum:
+     name: "{{ package }}"
+     state: absent
+    when: ansible_facts['distribution'] == "CentOS"
+
+  - name: Remove package if OS is Ubuntu or Kali
+    apt:
+     name: "{{ package }}"
+     state: absent
+    when: (ansible_facts['distribution'] == "Ubuntu") or
+          (ansible_facts['distribution'] == "Kali GNU/Linux")

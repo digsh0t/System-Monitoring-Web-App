@@ -1,0 +1,19 @@
+- name: Delete Windows Firewall Rule
+  hosts: "{{ host }}"
+  tasks:
+  - name: Delete Firewall rule
+    win_firewall_rule:
+      name: "{{ rule_name }}"
+      group: "{{ group }}"
+      localip: "{{ local_ip }}"
+      localport: "{{ local_port }}"
+      remoteip: "{{ remote_ip }}"
+      remoteport: "{{ remote_port }}"
+      action: "{{ rule_action }}"
+      direction: "{{ direction }}"
+      protocol: "{{ protocol }}"
+      enabled: "{{ enabled }}"
+      profiles: "{{ profiles }}"
+      state: "absent"
+
+

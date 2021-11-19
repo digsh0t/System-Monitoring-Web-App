@@ -1,0 +1,15 @@
+- name: Configure static route
+  connection: network_cli
+  hosts: "{{ host }}"
+  gather_facts: false
+  tasks:
+  - name: configure console logging
+    vyos_logging:
+     dest: host
+     facility: all
+     level: all
+     name: "{{ server_ip }}"
+ 
+  - name: Save configuaration to starup file
+    vyos_config:
+     save: yes

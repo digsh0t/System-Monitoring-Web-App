@@ -1,0 +1,12 @@
+- name: Add Iptables Yaml
+  hosts: "{{ host }}"
+  tasks:
+  - name: Add Iptables
+    iptables:
+     chain: "{{ chain }}"
+     source: "{{ src_ip }}"
+     destination: "{{ dst_ip }}"
+     protocol: "{{ protocol }}"
+     jump: "{{ target }}"
+     state: absent
+    become: yes

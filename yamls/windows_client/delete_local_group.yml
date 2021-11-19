@@ -1,0 +1,10 @@
+- name: Delete new Windows Local Group
+  hosts: "{{ host }}"
+  gather_facts: no
+  tasks:
+  - name: Delete a new group
+    win_group:
+      name: "{{ group_name }}"
+      state: absent
+
+#Usage: ansible-playbook --extra-vars '{"host":"DESKTOP-AUKB810","group_name":"test123"}' yamls/windows_client/delete_local_group.yml

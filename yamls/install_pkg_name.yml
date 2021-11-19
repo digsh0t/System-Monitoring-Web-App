@@ -1,0 +1,15 @@
+- name: Install package file
+  hosts: "{{ host_var }}"
+  tasks:
+  - name: Install package if OS is CentOS
+    yum:
+     name: "{{ package }}"
+     state: latest
+    when: ansible_facts['distribution'] == "CentOS"
+
+  - name: Install package if OS is Ubuntu or Kali
+    apt:
+     name: "{{ package }}"
+     state: latest
+    when: (ansible_facts['distribution'] == "Ubuntu") or
+          (ansible_facts['distribution'] == "Kali GNU/Linux")

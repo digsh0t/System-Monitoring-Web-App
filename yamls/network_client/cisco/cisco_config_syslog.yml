@@ -1,0 +1,14 @@
+- name: Network module
+  connection: network_cli
+  gather_facts: no
+  hosts: "{{ host }}"
+  tasks:
+  - name: configure host logging
+    ios_logging:
+     dest: host
+     name: "{{ server_ip }}"
+     state: present
+
+  - name: save running to startup when modified
+    ios_config:
+     save_when: modified

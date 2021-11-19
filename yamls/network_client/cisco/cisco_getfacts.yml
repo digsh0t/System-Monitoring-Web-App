@@ -1,0 +1,11 @@
+- name: Network module
+  connection: network_cli
+  gather_facts: no
+  hosts: "{{ host }}"
+  tasks:
+  - name: get cisco facts
+    ios_facts:
+     gather_subset: all
+    register: output
+ 
+  - debug: msg="{{ output }}"

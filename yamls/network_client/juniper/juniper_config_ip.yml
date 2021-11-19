@@ -1,0 +1,22 @@
+- name: Config ip
+  connection: netconf
+  hosts: "{{ host }}"
+  gather_facts: false 
+
+  vars:    
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+  - name: Delete JUNOS L3 logical interface
+    junos_l3_interfaces:
+      config:
+      - name: "{{ interface }}"
+      state: deleted
+
+  - name: Config ip
+    junos_l3_interfaces:
+      config:
+      - name: "{{ interface }}"
+        ipv4:
+        - address: "{{ address4 }}"
+      state: merged

@@ -1,0 +1,13 @@
+- name: Config static route
+  connection: netconf
+  hosts: "{{ host }}"
+  gather_facts: false
+
+  vars:    
+    ansible_python_interpreter: /usr/bin/python3
+    
+  tasks:
+  - name: Config static route
+    junos_static_route:
+     address: "{{ prefix }}"
+     next_hop: "{{ next_hop }}"

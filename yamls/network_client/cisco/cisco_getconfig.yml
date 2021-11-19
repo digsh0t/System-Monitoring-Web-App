@@ -1,0 +1,11 @@
+- name: Get Config Cisco
+  connection: network_cli
+  hosts: "{{ host }}"
+  gather_facts: yes
+  tasks:
+  - name: Gather config info of Cisco
+    ios_facts:
+     gather_subset: all
+    register: output
+
+  - debug: msg="{{ output }}"
