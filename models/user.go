@@ -5,10 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os"
 
+	"github.com/wintltr/login-api/config"
 	"github.com/wintltr/login-api/database"
-	"github.com/wintltr/login-api/utils"
 )
 
 type User struct {
@@ -97,7 +96,7 @@ func AddWebAppUser(user User) (bool, error) {
 
 	err = InsertUserToDB(user)
 	if err != nil {
-		return false, errors.New("failed to create new user")
+		return false, err
 	}
 	return true, err
 
@@ -162,17 +161,21 @@ func ListWepAppUser(waUserId int) (User, error) {
 
 // Insert Wep App User
 func InsertUserToDB(user User) error {
-	db := database.ConnectDB()
-	defer db.Close()
+	conf, err := config.LoadConfig()
+	if err != nil {
+		return err
+	}
 
-	stmt, err := db.Prepare(`INSERT INTO wa_users (wa_users_username, wa_users_password, wa_users_role,wa_secret) VALUES (?,?,?,"")`)
+	db := conf.ConnectDB()
+	defer db.Close()
+	stmt, err := db.Prepare(`INSERT INTO wa_users (wa_users_username, wa_users_password, wa_users_name, wa_users_role,wa_secret) VALUES (?,?,?,?,"")`)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
 	hashedPassword := HashPassword(user.Password)
-	_, err = stmt.Exec(user.Username, hashedPassword, user.Role)
+	_, err = stmt.Exec(user.Username, hashedPassword, user.Name, user.Role)
 	if err != nil {
 		return err
 	}
@@ -191,6 +194,32 @@ func DeleteUserFromDB(id int) error {
 	defer stmt.Close()
 
 	res, err := stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if rows == 0 {
+		return errors.New("no web app user with this ID exists")
+	}
+	return err
+}
+
+func DeleteUserWithUsernameFromDB(username string) error {
+	conf, err := config.LoadConfig()
+	if err != nil {
+		return err
+	}
+
+	db := conf.ConnectDB()
+	defer db.Close()
+
+	stmt, err := db.Prepare("DELETE FROM wa_users WHERE wa_users_username = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(username)
 	if err != nil {
 		return err
 	}
@@ -277,6 +306,16 @@ func GetUserByIdFromDB(waUserId int) (User, error) {
 	var waUser User
 	row := db.QueryRow("SELECT wa_users_id, wa_users_username, wa_users_role, wa_secret, wa_users_password, wa_2fa FROM wa_users WHERE wa_users_id = ?", waUserId)
 	err := row.Scan(&waUser.UserId, &waUser.Username, &waUser.Role, &waUser.Secret, &waUser.Password, &waUser.TwoFA)
+	return waUser, err
+}
+
+func GetUserByUsernameFromDB(username string) (User, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	var waUser User
+	row := db.QueryRow("SELECT wa_users_id, wa_users_username, wa_users_role, wa_users_name wa_secret, wa_users_password, wa_2fa FROM wa_users WHERE wa_users_username = ?", username)
+	err := row.Scan(&waUser.UserId, &waUser.Username, &waUser.Role, &waUser.Name, &waUser.Secret, &waUser.Password, &waUser.TwoFA)
 	if err != nil {
 		return waUser, err
 	}
@@ -301,10 +340,14 @@ func (user User) GetSecret() (string, error) {
 }
 
 func CheckUserNameExist(username string) (bool, error) {
-	db := database.ConnectDB()
+	conf, err := config.LoadConfig()
+	if err != nil {
+		return false, err
+	}
+	db := conf.ConnectDB()
 	defer db.Close()
 
-	err := db.QueryRow("SELECT wa_users_username FROM wa_users WHERE wa_users_username = ?", username).Scan(&username)
+	err = db.QueryRow("SELECT wa_users_username FROM wa_users WHERE wa_users_username = ?", username).Scan(&username)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			return false, err
@@ -317,12 +360,14 @@ func CheckUserNameExist(username string) (bool, error) {
 }
 
 func HashPassword(password string) string {
+	conf, err := config.LoadConfig()
+	if err != nil {
+		return ""
+	}
 	// convert password to byte slice
 	var passwordBytes = []byte(password)
 
-	// Load SALT environment variable from .env file
-	utils.EnvInit()
-	salt := os.Getenv("SALT")
+	salt := conf.PasswordHashSalt
 	var saltBytes = []byte(salt)
 
 	passwordBytes = append(passwordBytes, saltBytes...)
@@ -340,4 +385,45 @@ func HashPassword(password string) string {
 	result := fmt.Sprintf("%x", hashedPasswordBytes)
 
 	return result
+}
+
+func GetAllUserByUsername(username string) ([]User, error) {
+	conf, err := config.LoadConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	db := conf.ConnectDB()
+	defer db.Close()
+
+	var waUserList []User
+	username = "%" + username + "%"
+	stmt, err := db.Prepare(`SELECT wa_users_id, wa_users_username, wa_users_role, wa_users_name FROM wa_users WHERE wa_users_username LIKE ?`)
+	if err != nil {
+		return waUserList, err
+	}
+	selDB, err := stmt.Query(username)
+	if err != nil {
+		return waUserList, err
+	}
+	var user User
+	for selDB.Next() {
+		var id int
+		var username, role, name string
+
+		err = selDB.Scan(&id, &username, &role, &name)
+		if err != nil {
+			return waUserList, err
+		}
+		user = User{
+			UserId:   id,
+			Username: username,
+			Role:     role,
+			Name:     name,
+		}
+		waUserList = append(waUserList, user)
+	}
+
+	return waUserList, err
+
 }

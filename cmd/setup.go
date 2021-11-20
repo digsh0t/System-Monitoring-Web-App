@@ -60,8 +60,7 @@ func doSetup() int {
 		log.Println(err)
 		os.Exit(1)
 	}
-	configPath := setup.SaveConfig(conf)
-	config.Config = conf
+	setup.SaveConfig(conf)
 
 	// store := factory.CreateStore()
 	// if err := store.Connect(); err != nil {
@@ -77,9 +76,26 @@ func doSetup() int {
 
 	stdin := bufio.NewReader(os.Stdin)
 
+	rsyslogConfigPath := readNewline("\n\n > Rsyslog config path (default: /etc/rsyslog.conf): ", stdin)
+	if rsyslogConfigPath == "" {
+		rsyslogConfigPath = "/etc/rsyslog.conf"
+	}
+	models.SetupRsyslogServer(rsyslogConfigPath)
+
 	var user models.User
 	user.Username = readNewline("\n\n > Username: ", stdin)
 	user.Username = strings.ToLower(user.Username)
+	user.Password = readNewline(" > Password: ", stdin)
+	user.Name = readNewline(" > Realname: ", stdin)
+	user.Role = "admin"
+	ok, err := models.AddWebAppUser(user)
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	if ok {
+		fmt.Printf("\n You are all setup %v!\n", user.Name)
+	}
 
 	// util.LogWarning(err)
 
@@ -99,9 +115,9 @@ func doSetup() int {
 	// 	fmt.Printf("\n You are all setup %v!\n", user.Name)
 	// }
 
-	fmt.Printf(" Re-launch this program pointing to the configuration file\n\n./lthmonitor --config %v\n\n", configPath)
-	fmt.Printf(" To run as daemon:\n\nnohup ./lthmonitor --config %v &\n\n", configPath)
-	fmt.Printf(" You can login with %v or %v.\n", user.Name, user.Username)
+	fmt.Printf(" Re-launch this program by running\n\n./lthmonitor service\n\n")
+	fmt.Printf(" To run as daemon:\n\nnohup ./lthmonitor &\n\n")
+	fmt.Printf(" You can login with username: %v.\n", user.Username)
 
 	return 0
 }

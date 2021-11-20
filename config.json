@@ -12,7 +12,7 @@
  		"secret": "",
  		"cluster": ""
  	},
- 	"secret_jwt": "+VZtd4q0jH9G5+cqf0kZhEfvpaT+GAquk7QnY3sSP8g=",
- 	"password_hash_salt": "uHM2UVL4JVf4qup0O0jAXv+lKsydfG2b7Eb7IeTuT+U=",
- 	"aes_key": "POFy+5YIb4zMgjXMYmRN1bRbqirbPbFnnjU2xgIe4cU="
+ 	"secret_jwt": "qCsFODt95bJtnK+sX+23WgNBbZ7EK0aLt+BwlvQdv4Y=",
+ 	"password_hash_salt": "r0/Eklvd8VgLh0zzpr/2DHWyrz/TLMUz7AadsAgy0ow=",
+ 	"aes_key": "msiLdmJzYIDwv/LBhtsLET+WVX6lQH0dGc1SZkwoJPI="
  }

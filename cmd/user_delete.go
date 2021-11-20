@@ -2,14 +2,16 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wintltr/login-api/models"
 )
 
 func init() {
-	userDeleteCmd.PersistentFlags().StringVar(&targetUserArgs.username, "username", "", "Username of the user you want to delete")
-	userDeleteCmd.PersistentFlags().StringVar(&targetUserArgs.name, "name", "", "Name of the user you want to delete")
+	userDeleteCmd.PersistentFlags().StringVar(&targetUserArgs.Username, "username", "", "Username of the user you want to delete")
+	userDeleteCmd.PersistentFlags().StringVar(&targetUserArgs.Name, "name", "", "Name of the user you want to delete")
 	userCmd.AddCommand(userDeleteCmd)
 }
 
@@ -20,7 +22,7 @@ var userDeleteCmd = &cobra.Command{
 
 		ok := true
 
-		if targetUserArgs.username == "" && targetUserArgs.name == "" {
+		if targetUserArgs.Username == "" && targetUserArgs.Name == "" {
 			fmt.Println("Argument --username or --name required")
 			ok = false
 		}
@@ -30,9 +32,12 @@ var userDeleteCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println("Getting user from DB (REPLACE THIS)")
-		fmt.Println("Removing user from DB (REPLACE THIS)")
+		err := models.DeleteUserWithUsernameFromDB(targetUserArgs.Username)
+		if err != nil {
+			log.Println(err)
+			os.Exit(1)
+		}
 
-		fmt.Printf("User %s <%s> deleted!\n", "REPLACE THIS", "REPLACE THIS")
+		fmt.Printf("User %s deleted!\n", targetUserArgs.Username)
 	},
 }

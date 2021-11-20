@@ -1,4 +1,4 @@
-CREATE TABLE wa_users (wa_users_id INT PRIMARY KEY AUTO_INCREMENT,wa_users_username VARCHAR(60),wa_users_password VARCHAR(130),wa_users_name VARCHAR(60),wa_users_role VARCHAR(60));
+CREATE TABLE wa_users (wa_users_id INT PRIMARY KEY AUTO_INCREMENT,wa_users_username VARCHAR(60),wa_users_password VARCHAR(130),wa_users_name VARCHAR(60),wa_users_role VARCHAR(60), wa_secret VARCHAR(150), wa_2fa BOOLEAN);
 
 CREATE TABLE  ssh_keys (sk_key_id INT PRIMARY KEY AUTO_INCREMENT,sk_key_name varchar(60),sk_private_key text,creator_id INT,FOREIGN KEY (creator_id) references wa_users(wa_users_id));
 

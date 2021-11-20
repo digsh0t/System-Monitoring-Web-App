@@ -2,16 +2,18 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wintltr/login-api/models"
 )
 
 func init() {
-	userAddCmd.PersistentFlags().StringVar(&targetUserArgs.username, "username", "", "New user login")
-	userAddCmd.PersistentFlags().StringVar(&targetUserArgs.name, "name", "", "New user name")
-	userAddCmd.PersistentFlags().StringVar(&targetUserArgs.password, "password", "", "New user password")
-	userAddCmd.PersistentFlags().BoolVar(&targetUserArgs.admin, "admin", false, "Mark new user as admin")
+	userAddCmd.PersistentFlags().StringVar(&targetUserArgs.Username, "username", "", "New user login")
+	userAddCmd.PersistentFlags().StringVar(&targetUserArgs.Name, "name", "", "New user name")
+	userAddCmd.PersistentFlags().StringVar(&targetUserArgs.Password, "password", "", "New user password")
+	userAddCmd.PersistentFlags().StringVar(&targetUserArgs.Role, "role", "user", "Mark new user as admin")
 	userCmd.AddCommand(userAddCmd)
 }
 
@@ -21,16 +23,16 @@ var userAddCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		ok := true
-		if targetUserArgs.name == "" {
+		if targetUserArgs.Name == "" {
 			fmt.Println("Argument --name required")
 			ok = false
 		}
-		if targetUserArgs.username == "" {
+		if targetUserArgs.Username == "" {
 			fmt.Println("Argument --username required")
 			ok = false
 		}
 
-		if targetUserArgs.password == "" {
+		if targetUserArgs.Password == "" {
 			fmt.Println("Argument --password required")
 			ok = false
 		}
@@ -40,8 +42,11 @@ var userAddCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println("Adding new user (REPLACE THIS IN PRODUCT MODE")
+		_, err := models.AddWebAppUser(targetUserArgs)
+		if err != nil {
+			log.Println(err)
+		}
 
-		fmt.Printf("User %s <%s> added!\n", targetUserArgs.username, targetUserArgs.name)
+		fmt.Printf("User %s <%s> added!\n", targetUserArgs.Username, targetUserArgs.Name)
 	},
 }

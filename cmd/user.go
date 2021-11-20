@@ -4,16 +4,10 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wintltr/login-api/models"
 )
 
-type userArgs struct {
-	username string
-	name     string
-	password string
-	admin    bool
-}
-
-var targetUserArgs userArgs
+var targetUserArgs models.User
 
 func init() {
 	rootCmd.AddCommand(userCmd)

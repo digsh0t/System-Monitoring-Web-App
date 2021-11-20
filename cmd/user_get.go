@@ -2,14 +2,16 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wintltr/login-api/models"
 )
 
 func init() {
-	userGetCmd.PersistentFlags().StringVar(&targetUserArgs.username, "username", "", "Username of the user you want to see")
-	userGetCmd.PersistentFlags().StringVar(&targetUserArgs.name, "name", "", "Name of the user you want to see")
+	userGetCmd.PersistentFlags().StringVar(&targetUserArgs.Username, "username", "", "Username of the user you want to see")
+	userGetCmd.PersistentFlags().StringVar(&targetUserArgs.Name, "name", "", "Name of the user you want to see")
 	userCmd.AddCommand(userGetCmd)
 }
 
@@ -20,7 +22,7 @@ var userGetCmd = &cobra.Command{
 
 		ok := true
 
-		if targetUserArgs.username == "" && targetUserArgs.name == "" {
+		if targetUserArgs.Username == "" && targetUserArgs.Name == "" {
 			fmt.Println("Argument --name or --username required")
 			ok = false
 		}
@@ -30,8 +32,13 @@ var userGetCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println("Loading user by name from DB (REPLACE THIS)")
-
-		fmt.Println("User info here (REPLACE THIS)")
+		userList, err := models.GetAllUserByUsername(targetUserArgs.Username)
+		if err != nil {
+			log.Println(err)
+			os.Exit(1)
+		}
+		for _, user := range userList {
+			fmt.Printf("Username: %s, Name: %s, role: %s\n", user.Username, user.Name, user.Role)
+		}
 	},
 }

@@ -588,7 +588,7 @@ local7.*                                                /var/log/boot.log
 	}
 	newConfig = strings.ReplaceAll(newConfig, `\`, `\\`)
 	newConfig = strings.ReplaceAll(newConfig, `'`, `'\''`)
-	command = `echo -e '` + newConfig + `' > "/home/wintltr/Desktop/rsyslog.conf"`
+	command = `echo -e '` + newConfig + `' > ` + configFilePath
 	cmd := exec.Command("bash", "-c", command)
 	var out, errbuf bytes.Buffer
 	cmd.Stdout = &out
@@ -596,7 +596,9 @@ local7.*                                                /var/log/boot.log
 	err := cmd.Run()
 	output := out.String()
 	stderr := errbuf.String()
-	log.Println(stderr)
+	if stderr != "" {
+		log.Println(stderr)
+	}
 	command += newConfig
 	if err != nil {
 		return string(output), err

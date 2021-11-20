@@ -3,9 +3,15 @@ package config
 import (
 	"encoding/base64"
 	"encoding/json"
+	"os"
 
 	"github.com/gorilla/securecookie"
 	log "github.com/sirupsen/logrus"
+
+	"database/sql"
+	"fmt"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type DbConfig struct {
@@ -60,4 +66,28 @@ func (conf *ConfigType) GenerateSecrets() {
 	conf.PasswordHashSalt = base64.StdEncoding.EncodeToString(secretByte)
 	secretByte = securecookie.GenerateRandomKey(32)
 	conf.AESKey = base64.StdEncoding.EncodeToString(secretByte)
+}
+
+func LoadConfig() (*ConfigType, error) {
+	var conf ConfigType
+	dat, err := os.ReadFile("config.json")
+	if err != nil {
+		return &ConfigType{}, err
+	}
+	err = json.Unmarshal(dat, &conf)
+	return &conf, err
+}
+
+func (conf ConfigType) ConnectDB() *sql.DB {
+	//db, err := sql.Open("mysql", "admin:Anmbmkn123@(capstone-project-db.cjltabe5xft3.us-east-2.rds.amazonaws.com:3306)/CP_Server_Administrator_WA")
+	connString := conf.MySQL.Username + ":" + conf.MySQL.Password + "@(" + conf.MySQL.Hostname + ")/" + conf.MySQL.DbName
+	db, err := sql.Open("mysql", connString)
+	if err != nil {
+		log.Fatal(fmt.Println(err))
+	}
+	err = db.Ping()
+	if err != nil {
+		log.Fatal(fmt.Println("db.Ping failed: ", err))
+	}
+	return db
 }

@@ -88,22 +88,17 @@ func AskConfigConfirmation(conf *config.ConfigType) bool {
 
 func SaveConfig(conf *config.ConfigType) (configPath string) {
 	configDirectory, err := os.Getwd()
-	fmt.Println("1: " + configDirectory)
 	if err != nil {
 		configDirectory, err = os.UserConfigDir()
-		fmt.Println("2: " + configDirectory)
 		if err != nil {
 			// Final fallback
-			configDirectory = "tmp1"
+			configDirectory = "./"
 		}
-		configDirectory = filepath.Join(configDirectory, "tmp1")
-		fmt.Println("3: " + configDirectory)
+		configDirectory = filepath.Join(configDirectory, "./")
 	}
-	askValue("Config output directory", configDirectory, &configDirectory)
 
 	fmt.Printf("Running: mkdir -p %v..\n", configDirectory)
 	err = os.MkdirAll(configDirectory, 0755)
-	fmt.Println("4: " + configDirectory)
 	if err != nil {
 		log.Panic("Could not create config directory: " + err.Error())
 	}
@@ -115,7 +110,6 @@ func SaveConfig(conf *config.ConfigType) (configPath string) {
 	}
 
 	configPath = filepath.Join(configDirectory, "config.json")
-	fmt.Println("5: " + configPath)
 	if err = ioutil.WriteFile(configPath, bytes, 0644); err != nil {
 		panic(err)
 	}
