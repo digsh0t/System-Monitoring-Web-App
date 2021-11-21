@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -51,6 +52,19 @@ func main() {
 	//}
 	// sI := models.SmtpInfo{EmailSender: "noti.lthmonitor@gmail.com", EmailPassword: "Lethihang123", SMTPHost: "smtp.gmail.com", SMTPPort: "587"}
 	// sI.SendReportMail("./10-11-2021-report.pdf", []string{"trilxse140935@fpt.edu.vn"}, []string{"wintltrbackup@gmail.com"},[]string{"wintltr@gmail.com"})
+
+	maps, err := models.AnalyzeSyslog()
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		for index, values := range maps {
+			if len(values) > 0 {
+				for _, problem := range values {
+					fmt.Println(index, " => ", problem)
+				}
+			}
+		}
+	}
 
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
