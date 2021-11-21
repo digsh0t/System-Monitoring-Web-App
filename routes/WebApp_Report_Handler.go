@@ -92,8 +92,10 @@ func ExportReport(w http.ResponseWriter, r *http.Request) {
 	datetime := utils.GetCurrentDateTime()
 	filename := "./tmp/report-" + datetime + ".pdf"
 	err = models.ExportReport(filename, modules)
+	var eventStatus string
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		eventStatus = "failed"
 	} else {
 		// Send Email
 		sI := models.SmtpInfo{EmailSender: "noti.lthmonitor@gmail.com", EmailPassword: "Lethihang123", SMTPHost: "smtp.gmail.com", SMTPPort: "587"}
@@ -110,7 +112,15 @@ func ExportReport(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		utils.JSON(w, http.StatusOK, err)
+		eventStatus = "successfulyy"
 
+	}
+	// Write Event Web
+	description := "Export report " + eventStatus
+	_, err = models.WriteWebEvent(r, "Template", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write template event").Error())
+		return
 	}
 
 }

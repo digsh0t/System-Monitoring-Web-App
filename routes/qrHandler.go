@@ -14,6 +14,17 @@ import (
 
 func GenerateQR(w http.ResponseWriter, r *http.Request) {
 
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+
 	//w.Write([]byte(fmt.Sprintf("Generating QR code\n")))
 	userdata, err := auth.ExtractTokenMetadata(r)
 	if err != nil {
@@ -40,9 +51,28 @@ func GenerateQR(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("url", authLink)
 	returnJson.Set("secret", secret)
 	utils.JSON(w, http.StatusOK, returnJson)
+
+	// Write Event Web
+	description := "qr was generated"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 }
 
 func VerifyQR(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	var twofa string
 
 	userdata, err := auth.ExtractTokenMetadata(r)
@@ -51,7 +81,7 @@ func VerifyQR(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if userdata.Twofa == "not configured" {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("You have not configured 2FA!").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("you have not configured 2FA!").Error())
 		return
 	}
 
@@ -111,6 +141,17 @@ func VerifyQR(w http.ResponseWriter, r *http.Request) {
 }
 
 func VerifyQRSettingsRoute(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	type verifyInfo struct {
 		Password string `json:"password"`
 		Secret   string `json:"secret"`
@@ -163,6 +204,16 @@ func VerifyQRSettingsRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func TurnOff2FARoute(w http.ResponseWriter, r *http.Request) {
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 
 	type passwordInfo struct {
 		Password string `json:"password"`
@@ -203,7 +254,15 @@ func TurnOff2FARoute(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Wrong password!").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("wrong password").Error())
+		return
+	}
+
+	// Write Event Web
+	description := "qr was turn off"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 		return
 	}
 }

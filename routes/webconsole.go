@@ -9,7 +9,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
+	"github.com/wintltr/login-api/utils"
 	"github.com/wintltr/login-api/webconsole"
 	"golang.org/x/crypto/ssh"
 )
@@ -24,11 +26,21 @@ var (
 )
 
 func WebConsoleWSHanlder(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	var (
 		conn    *websocket.Conn
 		client  *ssh.Client
 		sshConn *webconsole.SSHConnect
-		err     error
 	)
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
@@ -71,6 +83,16 @@ func WebConsoleWSHanlder(w http.ResponseWriter, r *http.Request) {
 
 func WebConsoleTemplate(w http.ResponseWriter, r *http.Request) {
 
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	type sshID struct {
 		ID string
 	}

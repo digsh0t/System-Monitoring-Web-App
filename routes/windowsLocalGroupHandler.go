@@ -17,7 +17,7 @@ import (
 func GetWindowsLocalUserGroup(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -98,6 +98,19 @@ func AddNewWindowsGroup(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatal)
 	utils.JSON(w, http.StatusOK, returnJson)
+
+	// Write Event Web
+	hostname, err := models.ConvertListIdToHostnameVer2(uG.SSHConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to get hostname")
+		return
+	}
+	description := "1 windows group added to host  [" + hostname + "]"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 }
 
 func RemoveWindowsGroup(w http.ResponseWriter, r *http.Request) {
@@ -148,5 +161,13 @@ func RemoveWindowsGroup(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatal)
 	utils.JSON(w, http.StatusOK, returnJson)
+
+	// Write Event Web
+	description := "1 windows group deleted from host  [" + sshConnection.HostNameSSH + "]"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 
 }

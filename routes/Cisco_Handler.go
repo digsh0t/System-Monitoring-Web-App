@@ -16,7 +16,7 @@ import (
 
 func ListAllCisco(w http.ResponseWriter, r *http.Request) {
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -38,7 +38,7 @@ func ListAllCisco(w http.ResponseWriter, r *http.Request) {
 func GetInfoConfigCisco(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -66,7 +66,7 @@ func GetInfoConfigCisco(w http.ResponseWriter, r *http.Request) {
 func GetInfoInterfaceCisco(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -217,7 +217,7 @@ func ConfigStaticRouteCisco(w http.ResponseWriter, r *http.Request) {
 func TestPingCisco(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -283,7 +283,7 @@ func TestPingCisco(w http.ResponseWriter, r *http.Request) {
 // Get Cisco Traffic
 func GetTrafficCisco(w http.ResponseWriter, r *http.Request) {
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return

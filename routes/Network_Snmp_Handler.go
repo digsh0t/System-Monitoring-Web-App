@@ -16,7 +16,7 @@ import (
 // Get Cisco Traffic
 func GetNetworkInterfaces(w http.ResponseWriter, r *http.Request) {
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -45,7 +45,7 @@ func GetNetworkInterfaces(w http.ResponseWriter, r *http.Request) {
 // Get Network System
 func GetNetworkSystem(w http.ResponseWriter, r *http.Request) {
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -74,7 +74,7 @@ func GetNetworkSystem(w http.ResponseWriter, r *http.Request) {
 // Get Router IP Info
 func GetNetworkIPAddr(w http.ResponseWriter, r *http.Request) {
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -103,7 +103,7 @@ func GetNetworkIPAddr(w http.ResponseWriter, r *http.Request) {
 // Get Router IP Info
 func GetNetworkIPNetToMedia(w http.ResponseWriter, r *http.Request) {
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -132,7 +132,7 @@ func GetNetworkIPNetToMedia(w http.ResponseWriter, r *http.Request) {
 // Get Router IP Info
 func GetNetworkIPRoute(w http.ResponseWriter, r *http.Request) {
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -161,7 +161,7 @@ func GetNetworkIPRoute(w http.ResponseWriter, r *http.Request) {
 // Get Network System
 func ListNetworkDevices(w http.ResponseWriter, r *http.Request) {
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -187,7 +187,7 @@ func ListNetworkDevices(w http.ResponseWriter, r *http.Request) {
 func TestPingNetworkDevices(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -241,7 +241,7 @@ func TestPingNetworkDevices(w http.ResponseWriter, r *http.Request) {
 func GetNetworkLog(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return

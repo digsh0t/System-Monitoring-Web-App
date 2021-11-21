@@ -47,10 +47,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	hashedPassword := models.HashPassword(user.Password)
 	row := db.QueryRow("SELECT wa_users_id, wa_users_username, wa_users_role FROM wa_users WHERE wa_users_username = ? AND wa_users_password = ?", user.Username, hashedPassword)
 	err = row.Scan(&user.UserId, &user.Username, &user.Role)
-	var eventStatus string
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, "Wrong Username or Password")
-		eventStatus = "failed"
 		return
 	} else {
 		fullUser, err := models.GetUserByIdFromDB(user.UserId)
@@ -73,7 +71,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Write Event Web
-		description := "User \"" + user.Username + "\" login to web app " + eventStatus
+		description := "User \"" + user.Username + "\" login to web app successfully"
 		_, err = models.WriteWebEvent(r, "Login", description)
 		if err != nil {
 			utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
@@ -87,6 +85,5 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		returnJson.Set("user_id", user.UserId)
 		returnJson.Set("Error", "")
 		utils.JSON(w, http.StatusOK, returnJson)
-		eventStatus = "successfully"
 	}
 }

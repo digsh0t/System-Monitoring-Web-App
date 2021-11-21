@@ -75,13 +75,15 @@ func main() {
 	router.HandleFunc("/sshkeys", routes.GetAllSSHKey).Methods("GET", "OPTIONS")
 
 	// Inventory Group
-	router.HandleFunc("/inventory/group/add", routes.InventoryGroupAdd).Methods("POST")
-	router.HandleFunc("/inventory/group/list", routes.InventoryGroupList).Methods("GET")
-	router.HandleFunc("/inventory/group/delete/{id}", routes.InventoryGroupDelete).Methods("DELETE")
-	router.HandleFunc("/sshconnections/list/nogroup", routes.GetAllSSHConnectionNoGroup).Methods("GET", "OPTIONS")
-	router.HandleFunc("/inventory/group/addclient", routes.InventoryGroupAddClient).Methods("POST")
-	router.HandleFunc("/inventory/group/deleteclient", routes.InventoryGroupDeleteClient).Methods("POST")
-	router.HandleFunc("/inventory/group/listclient/{groupid}", routes.InventoryGroupListClient).Methods("GET")
+	/*
+		router.HandleFunc("/inventory/group/add", routes.InventoryGroupAdd).Methods("POST")
+		router.HandleFunc("/inventory/group/list", routes.InventoryGroupList).Methods("GET")
+		router.HandleFunc("/inventory/group/delete/{id}", routes.InventoryGroupDelete).Methods("DELETE")
+		router.HandleFunc("/sshconnections/list/nogroup", routes.GetAllSSHConnectionNoGroup).Methods("GET", "OPTIONS")
+		router.HandleFunc("/inventory/group/addclient", routes.InventoryGroupAddClient).Methods("POST")
+		router.HandleFunc("/inventory/group/deleteclient", routes.InventoryGroupDeleteClient).Methods("POST")
+		router.HandleFunc("/inventory/group/listclient/{groupid}", routes.InventoryGroupListClient).Methods("GET")
+	*/
 
 	// Get PC info
 	router.HandleFunc("/systeminfo/{id}", routes.GetSystemInfoRoute).Methods("GET", "OPTIONS")

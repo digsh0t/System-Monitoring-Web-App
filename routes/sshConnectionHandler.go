@@ -420,4 +420,11 @@ func AddNewSSHConnection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.JSON(w, http.StatusOK, body)
+	// Write Event Web
+	description := "1 new connection added with hostname" + info.Hostname
+	_, err = models.WriteWebEvent(r, "SSHConnection", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 }

@@ -74,7 +74,7 @@ func GetAllTemplate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -103,7 +103,7 @@ func GetTemplateArgument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("please login").Error())
 		return

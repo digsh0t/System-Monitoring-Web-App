@@ -10,11 +10,23 @@ import (
 
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
+	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
 func GetSysLogFilesRoute(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -49,6 +61,17 @@ func GetSysLogFilesRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetSysLogByPriRoute(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -88,6 +111,17 @@ func GetSysLogByPriRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllClientSysLogPriStatRoute(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	vars := mux.Vars(r)
 	date := vars["date"]
 	logs, err := models.GetAllClientSyslogPriStat("/var/log/remotelogs", date)
@@ -99,6 +133,17 @@ func GetAllClientSysLogPriStatRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllClientSysLogRoute(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	vars := mux.Vars(r)
 	date := vars["date"]
 	logs, err := models.GetAllClientSyslog("/var/log/remotelogs", date)
@@ -114,6 +159,17 @@ func GetAllClientSysLogRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func SetupSyslogRoute(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 
 	var received models.SyslogConnectionInfo
 	body, err := ioutil.ReadAll(r.Body)
@@ -155,6 +211,13 @@ func SetupSyslogRoute(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	// Write Event Web
+	description := "syslog was setup"
+	_, err = models.WriteWebEvent(r, "Syslog", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 		return
 	}
 }

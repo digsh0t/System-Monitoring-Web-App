@@ -68,7 +68,7 @@ func AddTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 	description := "Telegram bot key added"
 	_, err = models.WriteWebEvent(r, "Bot", description)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write bot key event").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write bot key event").Error())
 		return
 	}
 
@@ -89,7 +89,7 @@ func GetTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("please login").Error())
 		return
@@ -168,10 +168,10 @@ func EditTelegramBotKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write Event Web
-	description := "Telegram bot key added"
+	description := "Telegram bot key edited"
 	_, err = models.WriteWebEvent(r, "Bot", description)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write bot key event").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write bot key event").Error())
 		return
 	}
 

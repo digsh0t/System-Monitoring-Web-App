@@ -169,7 +169,7 @@ func DeleteWebAppUser(w http.ResponseWriter, r *http.Request) {
 	description := "Delete web app user " + username + " " + status
 	_, err = models.WriteWebEvent(r, "wauser", description)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write task event").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write task event").Error())
 		return
 	}
 
@@ -177,7 +177,7 @@ func DeleteWebAppUser(w http.ResponseWriter, r *http.Request) {
 
 func ListWebAppUser(w http.ResponseWriter, r *http.Request) {
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -208,7 +208,7 @@ func ListWebAppUser(w http.ResponseWriter, r *http.Request) {
 
 func ListAllWebAppUser(w http.ResponseWriter, r *http.Request) {
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -223,7 +223,7 @@ func ListAllWebAppUser(w http.ResponseWriter, r *http.Request) {
 
 	// Return json
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to get all list web app users").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to get all list web app users").Error())
 	} else {
 		utils.JSON(w, http.StatusOK, waUserList)
 	}

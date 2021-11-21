@@ -28,7 +28,7 @@ func LinuxClientGroupRemove(w http.ResponseWriter, r *http.Request) {
 	// Retrieve Json Format
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to retrieve json format").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to retrieve json format").Error())
 		return
 	}
 	var groupJson models.LinuxClientGroupJson
@@ -38,28 +38,36 @@ func LinuxClientGroupRemove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var eventStatus string
 	// Remove Host User
 	output, err := models.LinuxClientGroupRemove(groupJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
+		eventStatus = "failed"
+	} else {
 
-	// Processing Output From Ansible
-	status, fatalList, err := models.ProcessingAnsibleOutput(output)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
-	}
+		// Processing Output From Ansible
+		status, fatalList, err := models.ProcessingAnsibleOutput(output)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
 
-	// Return Json
-	returnJson := simplejson.New()
-	returnJson.Set("Status", status)
-	returnJson.Set("Fatal", fatalList)
-	utils.JSON(w, http.StatusOK, returnJson)
+		// Return Json
+		returnJson := simplejson.New()
+		returnJson.Set("Status", status)
+		returnJson.Set("Fatal", fatalList)
+		utils.JSON(w, http.StatusOK, returnJson)
+		eventStatus = "successfully"
+	}
 
 	// Write Event Web
-	description := "User \"" + groupJson.Groupname + "\" removed from successfully"
+	hostnames, err := models.ConvertListIdToHostnameVer2(groupJson.SshConnectionIdList)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to conver list id to hostname")
+		return
+	}
+	description := "User \"" + groupJson.Groupname + "\" removed from [" + hostnames + "] " + eventStatus
 	_, err = models.WriteWebEvent(r, "LinuxGroup", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
@@ -90,27 +98,34 @@ func LinuxClientGroupAdd(w http.ResponseWriter, r *http.Request) {
 	var groupJson models.LinuxClientGroupJson
 	json.Unmarshal(reqBody, &groupJson)
 
+	var eventStatus string
 	output, err := models.LinuxClientGroupAdd(groupJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
+		eventStatus = "failed"
+	} else {
+
+		// Processing Output From Ansible
+		status, fatalList, err := models.ProcessingAnsibleOutput(output)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
+
+		// Return Json
+		returnJson := simplejson.New()
+		returnJson.Set("Status", status)
+		returnJson.Set("Fatal", fatalList)
+		utils.JSON(w, http.StatusOK, returnJson)
+		eventStatus = "successfully"
 	}
-
-	// Processing Output From Ansible
-	status, fatalList, err := models.ProcessingAnsibleOutput(output)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
-	}
-
-	// Return Json
-	returnJson := simplejson.New()
-	returnJson.Set("Status", status)
-	returnJson.Set("Fatal", fatalList)
-	utils.JSON(w, http.StatusOK, returnJson)
-
 	// Write Event Web
-	description := "User \"" + groupJson.Groupname + "\" added successfully"
+	hostnames, err := models.ConvertListIdToHostnameVer2(groupJson.SshConnectionIdList)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to conver list id to hostname")
+		return
+	}
+	description := "Group \"" + groupJson.Groupname + "\" added to [" + hostnames + "] " + eventStatus
 	_, err = models.WriteWebEvent(r, "LinuxGroup", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())

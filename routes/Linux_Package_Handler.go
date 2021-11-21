@@ -55,30 +55,31 @@ func PackageRemove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var eventStatus string
 	output, err := models.RunAnsiblePlaybookWithjson("./yamls/"+packages.File, string(packetJsonMarshal))
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, "fail to load yaml")
-		return
+		eventStatus = "failed"
+	} else {
+		// Processing Output From Ansible
+		status, fatalList, err := models.ProcessingAnsibleOutput(output)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
+
+		// Return Json
+		returnJson := simplejson.New()
+		returnJson.Set("Status", status)
+		returnJson.Set("Fatal", fatalList)
+		utils.JSON(w, http.StatusOK, returnJson)
+		eventStatus = "successfully"
 	}
-
-	// Processing Output From Ansible
-	status, fatalList, err := models.ProcessingAnsibleOutput(output)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
-	}
-
-	// Return Json
-	returnJson := simplejson.New()
-	returnJson.Set("Status", status)
-	returnJson.Set("Fatal", fatalList)
-	utils.JSON(w, http.StatusOK, returnJson)
-
 	// Write Event Web
-	description := "Package \"" + packages.Package + "\" removed from " + fmt.Sprint(host) + " successfully"
+	description := "Package \"" + packages.Package + "\" removed from " + fmt.Sprint(host) + " " + eventStatus
 	_, err = models.WriteWebEvent(r, "Package", description)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 		return
 	}
 
@@ -123,28 +124,29 @@ func PackageInstall(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to parse marshal json").Error())
 		return
 	}
-
+	var eventStatus string
 	output, err := models.RunAnsiblePlaybookWithjson("./yamls/"+packages.File, string(packetJsonMarshal))
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, "fail to load yaml")
-		return
+		eventStatus = "failed"
+	} else {
+
+		// Processing Output From Ansible
+		status, fatalList, err := models.ProcessingAnsibleOutput(output)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
+
+		// Return Json
+		returnJson := simplejson.New()
+		returnJson.Set("Fatal", fatalList)
+		returnJson.Set("Status", status)
+		utils.JSON(w, http.StatusOK, returnJson)
+		eventStatus = "successfully"
 	}
-
-	// Processing Output From Ansible
-	status, fatalList, err := models.ProcessingAnsibleOutput(output)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
-	}
-
-	// Return Json
-	returnJson := simplejson.New()
-	returnJson.Set("Fatal", fatalList)
-	returnJson.Set("Status", status)
-	utils.JSON(w, http.StatusOK, returnJson)
-
 	// Write Event Web
-	description := "Package \"" + packages.Package + "\" installed to" + fmt.Sprint(host) + " successfully"
+	description := "Package \"" + packages.Package + "\" installed to" + fmt.Sprint(host) + " " + eventStatus
 	_, err = models.WriteWebEvent(r, "Package", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
