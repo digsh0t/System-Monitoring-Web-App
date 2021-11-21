@@ -208,7 +208,7 @@ func parseWindowsAppExecution(output string) ([]appExecutionHistory, error) {
 
 func (sshConnection SshConnectionInfo) GetWindowsLoginAppExecutionHistory(username string) ([]appExecutionHistory, error) {
 	var appHistory []appExecutionHistory
-	query := fmt.Sprintf(`osqueryi --json "SELECT P.last_execution_time, P.path FROM background_activities_moderator AS P LEFT JOIN logged_in_users AS U WHERE P.sid=U.sid AND U.user='%s' AND P.last_execution_time != ''"`, username)
+	query := fmt.Sprintf(`osqueryi --json "SELECT P.last_execution_time, P.path FROM background_activities_moderator AS P LEFT JOIN logged_in_users AS U WHERE P.sid=U.sid AND LOWER(U.user) = LOWER('%s') AND P.last_execution_time != ''"`, username)
 	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(query)
 	if err != nil {
 		return appHistory, err

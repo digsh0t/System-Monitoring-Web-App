@@ -238,17 +238,11 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		align, txt string
 	}
 
-	recList := []recType{
-		{"CM", "Web Application Report"},
-		{"BC", utils.GetCurrentDateTime()},
-	}
-
-	var formatRect = func(pdf *gofpdf.Fpdf, recList []recType) {
+	var formatRect = func(pdf *gofpdf.Fpdf) {
 		pdf.AddPage()
 		pdf.SetMargins(10, 10, 10)
 		pdf.SetAutoPageBreak(false, 0)
 		//borderStr := "1"
-		pdf.CellFormat(280, 360, "Version 1.0", "", 1, "BC", false, 0, "")
 		pdf.ImageOptions(
 			"./pictures/fpt.png",
 			70, 70,
@@ -259,10 +253,15 @@ func ExportReport(filename string, modulesList ReportModules) error {
 			"",
 		)
 
+		pdf.SetFont("Arial", "B", 22)
 		pdf.SetXY(20, 20)
 		pdf.CellFormat(258, 365, "Web Application Report", "1", 0, "CM", false, 0, "")
+		pdf.SetXY(11, 15)
+		pdf.CellFormat(280, 360, "Version 1.0", "", 1, "BC", false, 0, "")
 		pdf.SetXY(20, 20)
 		pdf.CellFormat(258, 365, utils.GetCurrentDateTime(), "", 0, "BC", false, 0, "")
+		// Return Font
+		pdf.SetFont("Arial", "", 16)
 
 	}
 
@@ -293,8 +292,8 @@ func ExportReport(filename string, modulesList ReportModules) error {
 	})
 
 	pdf.AliasNbPages("")
-	pdf.SetFont("Arial", "B", 16)
-	formatRect(pdf, recList)
+	pdf.SetFont("Arial", "B", 30)
+	formatRect(pdf)
 
 	// Second Page
 	pdf.AddPage()
@@ -570,7 +569,7 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		pdf.SetTextColor(255, 255, 255)
 		pdf.SetLineWidth(.3)
 		pdf.SetFont("", "B", 0)
-		w := []float64{45.0, 85.0, 65.0}
+		w := []float64{70.0, 85.0, 65.0}
 		for j, str := range header {
 			pdf.CellFormat(w[j], 7, str, "1", 0, "C", true, 0, "")
 		}
@@ -1095,6 +1094,7 @@ func ExportReport(filename string, modulesList ReportModules) error {
 			"",
 		)
 
+		pdf.SetFont("Arial", "B", 22)
 		pdf.SetXY(20, 20)
 		pdf.CellFormat(258, 365, "End Report", "1", 0, "CM", false, 0, "")
 		pdf.SetXY(20, 20)
