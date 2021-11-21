@@ -63,16 +63,6 @@ func GenerateQR(w http.ResponseWriter, r *http.Request) {
 
 func VerifyQR(w http.ResponseWriter, r *http.Request) {
 
-	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
-		return
-	}
-	if !isAuthorized {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
-		return
-	}
 	var twofa string
 
 	userdata, err := auth.ExtractTokenMetadata(r)
@@ -81,7 +71,7 @@ func VerifyQR(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if userdata.Twofa == "not configured" {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("you have not configured 2FA!").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("you have not configured 2FA").Error())
 		return
 	}
 
