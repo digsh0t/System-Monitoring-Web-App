@@ -11,6 +11,7 @@ import (
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
+	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 

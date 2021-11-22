@@ -41,6 +41,17 @@ type SyslogPriStat struct {
 	Total int `json:"total"`
 }
 
+var priorityDictionary = map[int]string{
+	0: "Emergency",
+	1: "Alert",
+	2: "Critical",
+	3: "Error",
+	4: "Warning",
+	5: "Notice",
+	6: "Informational",
+	7: "Debug",
+}
+
 func extractProcessId(input string) (string, int, error) {
 	var processId int
 	var err error
@@ -187,9 +198,42 @@ func GetClientTodayLog(logBasePath string, sshConnectionId int, seconds int, pri
 	return logList, err
 }
 
+func AllClientAlertLog(baseLogPath string, seconds int) error {
+	watchList, err := GetAllWatch()
+	if err != nil {
+		return err
+	}
+	for _, watch := range watchList {
+		tmp, err := ConvertPriListToInt(watch.WatchList)
+		if err != nil {
+			return err
+		}
+		err = ClientAlertLog(baseLogPath, watch.SSHConnectionId, seconds, tmp)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+func ConvertPriListToInt(priListString string) ([]int, error) {
+	var priList []int
+	var tmp int
+	var err error
+	priStr := strings.Split(priListString, ",")
+	for _, pri := range priStr {
+		tmp, err = strconv.Atoi(pri)
+		if err != nil {
+			return nil, err
+		}
+		priList = append(priList, tmp)
+	}
+	return priList, err
+}
+
 func ClientAlertLog(logBasePath string, sshConnectionId int, seconds int, priList []int) error {
 	var message string
-	logList, err := GetClientTodayLog("/var/log/remotelogs", 72, 300, []int{5, 6})
+	logList, err := GetClientTodayLog(logBasePath, sshConnectionId, seconds, priList)
 	if err != nil {
 		return err
 	}
@@ -197,7 +241,7 @@ func ClientAlertLog(logBasePath string, sshConnectionId int, seconds int, priLis
 		return nil
 	}
 	for _, log := range logList {
-		message += fmt.Sprintf("%d: Time: %s, Host: %s, Origin Process: %s, Message: %s\n", log.SyslogPRI, log.Timegenerated, log.Hostname, log.ProgramName, log.Message)
+		message += fmt.Sprintf("%s: Time: %s, Host: %s, Origin Process: %s, Message: %s\n", priorityDictionary[log.SyslogPRI], log.Timegenerated, log.Hostname, log.ProgramName, log.Message)
 	}
 	err = SendTelegramMessage(message)
 	return err

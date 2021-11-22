@@ -2,6 +2,8 @@ package models
 
 import (
 	"errors"
+	"log"
+	"time"
 
 	"github.com/wintltr/login-api/database"
 )
@@ -68,4 +70,23 @@ func GetAllWatch() ([]WatchInfo, error) {
 		watchList = append(watchList, watch)
 	}
 	return watchList, err
+}
+
+func AlertWatcher() {
+	ticker := time.NewTicker(30 * time.Second)
+	quit := make(chan struct{})
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				err := AllClientAlertLog("/var/log/remotelogs", 30)
+				if err != nil {
+					log.Println(err)
+				}
+			case <-quit:
+				ticker.Stop()
+				return
+			}
+		}
+	}()
 }

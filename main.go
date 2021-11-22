@@ -34,7 +34,7 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	// err := models.ClientAlertLog("/var/log/remotelogs", 72, 300, []int{5, 6})
+	// err := models.AllClientAlertLog("/var/log/remotelogs", 30)
 	// if err != nil {
 	// 	log.Println(err)
 	// }
@@ -56,6 +56,7 @@ func main() {
 	// sI := models.SmtpInfo{EmailSender: "noti.lthmonitor@gmail.com", EmailPassword: "Lethihang123", SMTPHost: "smtp.gmail.com", SMTPPort: "587"}
 	// sI.SendReportMail("./10-11-2021-report.pdf", []string{"trilxse140935@fpt.edu.vn"}, []string{"wintltrbackup@gmail.com"},[]string{"wintltr@gmail.com"})
 
+	go models.AlertWatcher()
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
