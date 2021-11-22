@@ -29,10 +29,10 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	err := models.RemoveWatcher(72)
-	if err != nil {
-		log.Println(err)
-	}
+	// err := models.RemoveWatcher(72)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 
 	// err := models.ClientAlertLog("/var/log/remotelogs", 72, 300, []int{5, 6})
 	// if err != nil {
@@ -283,6 +283,11 @@ func main() {
 	router.HandleFunc("/ws/v1/{id}", routes.WebConsoleWSHanlder)
 
 	router.HandleFunc("/system/currenttime", routes.GetCurrentSystemTime).Methods("OPTIONS", "GET")
+
+	//Alert Watch
+	router.HandleFunc("/alertwatch", routes.AddNewWatcherRoute).Methods("OPTIONS", "POST")
+	router.HandleFunc("/alertwatch/{id}", routes.RemoveFromWatchRoute).Methods("OPTIONS", "DELETE")
+	router.HandleFunc("/alertwatch", routes.GetAllWatcherRoute).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
