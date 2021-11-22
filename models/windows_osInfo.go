@@ -244,7 +244,7 @@ func parseAnsibleWindowsInterfaceInfoOutput(input string) ([]ansibleWindowsInter
 	input = re.FindString(input)
 	jsonParsed, err := gabs.ParseJSON([]byte(input))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	err = json.Unmarshal([]byte(jsonParsed.Path("ansible_facts.interfaces").String()), &interfaceList)
 	return interfaceList, err

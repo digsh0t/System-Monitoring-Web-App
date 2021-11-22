@@ -1,248 +1,35 @@
 package models
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
-	"math"
-	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/Jeffail/gabs"
 	"github.com/jung-kurt/gofpdf"
-	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/utils"
 )
 
-type Report struct {
-	Linux_os_total         int            `json:"linux_os_total"`
-	Windows_os_total       int            `json:"windows_os_total"`
-	Netowrk_os_total       int            `json:"network_os_total"`
-	Unknown_os_total       int            `json:"unknown_os_total"`
-	SshConnection_total    int            `json:"sshConnection_total"`
-	SshKey_total           int            `json:"sshKey_total"`
-	Template_total         int            `json:"template_total"`
-	EventWeb_total         int            `json:"eventWeb_total"`
-	User_total             int            `json:"user_total"`
-	CurrentUserWebApp      string         `json:"currentUserWebApp"`
-	CurrentUserWebAppRole  string         `json:"currentUserWebAppRole"`
-	CurrentUserWebServer   string         `json:"currentUserWebServer"`
-	WebServerRunningTime   string         `json:"webserverRunningTime"`
-	Current_telegram_token string         `json:"current_telegram_token"`
-	Client_report          []ClientReport `json:"client_report"`
-}
-
-type ClientReport struct {
-	Hostname  string `json:"hostname"`
-	Cpu       string `json:"cpu"`
-	Serial    string `json:"serial"`
-	Osversion string `json:"osversion"`
-}
-
-type ReportModules struct {
-	SshConnectionId []int    `json:"sshConnectionId"`
-	Modules         []int    `json:"modules"`
-	ReceiveEmail    []string `json:"receiveEmail"`
-	Cc              []string `json:"cc"`
-	Bcc             []string `json:"bcc"`
-}
-
-func GetReport(r *http.Request, start time.Time) (Report, error) {
-	var (
-		reportInfo Report
-		err        error
-	)
-
-	// Get Linux Os total
-	sshConnectionLinux, err := GetAllOSSSHConnection("Linux")
-	if err != nil {
-		return reportInfo, errors.New("fail to get linux os total")
-	}
-	reportInfo.Linux_os_total = len(sshConnectionLinux)
-
-	// Get Windows Os total
-	sshConnectionWindows, err := GetAllOSSSHConnection("Windows")
-	if err != nil {
-		return reportInfo, errors.New("fail to get windows os total")
-	}
-	reportInfo.Windows_os_total = len(sshConnectionWindows)
-
-	// Get Unknown Os
-	reportInfo.Unknown_os_total, err = CountUnknownOS()
-	if err != nil {
-		return reportInfo, errors.New("fail to get unknown os total")
-	}
-
-	// Get Network Os
-	reportInfo.Netowrk_os_total, err = CountNetworkOS()
-	if err != nil {
-		return reportInfo, errors.New("fail to get network os total")
-	}
-
-	// Get Total ssh Connection
-	reportInfo.SshConnection_total = reportInfo.Linux_os_total + reportInfo.Netowrk_os_total + reportInfo.Windows_os_total + reportInfo.Unknown_os_total
-
-	// Get SshKey total
-	sshKeys, err := GetAllSSHKeyFromDB()
-	if err != nil {
-		return reportInfo, errors.New("fail to get ssh key total")
-	}
-	reportInfo.SshKey_total = len(sshKeys)
-
-	// Get Template total
-	templates, err := GetAllTemplate()
-	if err != nil {
-		return reportInfo, errors.New("fail to get template total")
-	}
-	reportInfo.Template_total = len(templates)
-
-	// Get number of eventWeb Log
-	evenWebs, err := GetAllEventWebFromDB()
-	if err != nil {
-		return reportInfo, errors.New("fail to get event web")
-	}
-	reportInfo.EventWeb_total = len(evenWebs)
-
-	// Get User total
-	users, err := GetAllUserFromDB()
-	if err != nil {
-		return reportInfo, errors.New("fail to get user total")
-	}
-	reportInfo.User_total = len(users)
-
-	// Get Current User Web app
-	tokenData, err := auth.RetrieveTokenData(r)
-	if err != nil {
-		return reportInfo, errors.New("fail to get current user web app")
-	}
-	reportInfo.CurrentUserWebApp = tokenData.Username
-
-	// Get Current User Web app role
-	reportInfo.CurrentUserWebAppRole = tokenData.Role
-
-	// Get Current User Web Server
-	reportInfo.CurrentUserWebServer = utils.GetCurrentUser().Name
-
-	// Get Current telegram token
-	apikey, err := GetTelegramAPIKey()
-	if err != nil {
-		return reportInfo, errors.New("fail to get current telegram key")
-	}
-	reportInfo.Current_telegram_token = apikey.ApiToken
-
-	// Get Web Server Running time
-	elapsed := time.Since(start)
-	secondDuration := math.Floor(elapsed.Seconds())
-
-	reportInfo.WebServerRunningTime = utils.SecondsToHuman(int(secondDuration))
-
-	/*  // Get Client Report
-	reportInfo.Client_report, err = GetClientReport()
-	if err != nil {
-		return reportInfo, errors.New("fail to get client report")
-	}
-	*/
-	return reportInfo, err
-
-}
-
-func GetClientReport() ([]ClientReport, error) {
-	var (
-		clientReportList []ClientReport
-		err              error
-	)
-	sshConnectionList, err := GetAllSSHConnection()
-	if err != nil {
-		return clientReportList, err
-	}
-
-	// Loop connection
-	for _, sshConnection := range sshConnectionList {
-		var clientReport ClientReport
-		clientReport.Hostname = sshConnection.HostNameSSH
-		sysInfo, err := GetLatestSysInfo(sshConnection)
-		if err != nil {
-			return clientReportList, err
-		}
-		// Get CPU
-		clientReport.Cpu = sysInfo.AvgCPU
-
-		// GET Os Version
-		if !sshConnection.IsNetwork {
-			clientReport.Osversion = sshConnection.OsType
-		} else {
-			clientReport.Osversion = sshConnection.NetworkOS
-		}
-
-		// Get Serial
-		clientReport.Serial, _ = GetClientSerial(sshConnection)
-
-		// Append to list
-		clientReportList = append(clientReportList, clientReport)
-
-	}
-
-	// Return
-	return clientReportList, err
-}
-
-func GetClientSerial(sshConnection SshConnectionInfo) (string, error) {
-	var (
-		serial string
-		err    error
-	)
-
-	type SerialJson struct {
-		Host string `json:"host"`
-	}
-
-	serialJson := SerialJson{
-		Host: sshConnection.HostNameSSH,
-	}
-	serialJsonMarshal, err := json.Marshal(serialJson)
-	if err != nil {
-		return serial, err
-	}
-	output, err := RunAnsiblePlaybookWithjson("./yamls/client_getserial.yml", string(serialJsonMarshal))
-	if err != nil {
-		return serial, err
-	}
-	if strings.Contains(output, "fatal:") {
-		return serial, err
-	}
-
-	// Get substring from ansible output
-	data := utils.ExtractSubString(output, " => ", "PLAY RECAP")
-
-	// Parse Json format
-	jsonParsed, err := gabs.ParseJSON([]byte(data))
-	if err != nil {
-		return serial, err
-	}
-
-	// Get Interfaces
-	serial = jsonParsed.Search("msg").String()
-
-	return serial, err
-
-}
-
-func ExportReport(filename string, modulesList ReportModules) error {
+func ClientExportReport(filename string, modulesList ReportModules) error {
+	var err error
 
 	// Cover Page
 	type recType struct {
 		align, txt string
 	}
 
-	var formatRect = func(pdf *gofpdf.Fpdf) {
+	recList := []recType{
+		{"CM", "Clients Report"},
+		{"BC", utils.GetCurrentDateTime()},
+	}
+
+	var formatRect = func(pdf *gofpdf.Fpdf, recList []recType) {
 		pdf.AddPage()
 		pdf.SetMargins(10, 10, 10)
 		pdf.SetAutoPageBreak(false, 0)
 		//borderStr := "1"
+		pdf.CellFormat(280, 360, "Version 1.0", "", 1, "BC", false, 0, "")
 		pdf.ImageOptions(
 			"./pictures/fpt.png",
 			70, 70,
@@ -253,15 +40,10 @@ func ExportReport(filename string, modulesList ReportModules) error {
 			"",
 		)
 
-		pdf.SetFont("Arial", "B", 22)
 		pdf.SetXY(20, 20)
-		pdf.CellFormat(258, 365, "Web Application Report", "1", 0, "CM", false, 0, "")
-		pdf.SetXY(11, 15)
-		pdf.CellFormat(280, 360, "Version 1.0", "", 1, "BC", false, 0, "")
+		pdf.CellFormat(258, 365, "Clients Report", "1", 0, "CM", false, 0, "")
 		pdf.SetXY(20, 20)
 		pdf.CellFormat(258, 365, utils.GetCurrentDateTime(), "", 0, "BC", false, 0, "")
-		// Return Font
-		pdf.SetFont("Arial", "", 16)
 
 	}
 
@@ -292,8 +74,32 @@ func ExportReport(filename string, modulesList ReportModules) error {
 	})
 
 	pdf.AliasNbPages("")
-	pdf.SetFont("Arial", "B", 30)
-	formatRect(pdf)
+	pdf.SetFont("Arial", "B", 16)
+	formatRect(pdf, recList)
+
+	var WindowsList []SshConnectionInfo
+	var LinuxList []SshConnectionInfo
+	var RouterList []SshConnectionInfo
+	var SwitchList []SshConnectionInfo
+
+	// Classify OsType
+	for _, id := range modulesList.SshConnectionId {
+		sshConnection, err := GetSSHConnectionFromId(id)
+		if err != nil {
+			return err
+		}
+		deviceType := ClassifyDeiveType(*sshConnection)
+		if deviceType == "Windows" {
+			WindowsList = append(WindowsList, *sshConnection)
+		} else if deviceType == "Linux" {
+			LinuxList = append(LinuxList, *sshConnection)
+		} else if deviceType == "Router" {
+			RouterList = append(RouterList, *sshConnection)
+		} else if deviceType == "Switch" {
+			SwitchList = append(SwitchList, *sshConnection)
+		}
+
+	}
 
 	// Second Page
 	pdf.AddPage()
@@ -304,56 +110,39 @@ func ExportReport(filename string, modulesList ReportModules) error {
 	pdf.WriteAligned(70, 20, "   1.1. Windows devices", "L")
 	pdf.Ln(10)
 
-	// Get Windows
-	sshConnectionList, err := GetAllOSSSHConnection("Windows")
-	if err != nil {
-		return err
-	}
-	for index, sshConnection := range sshConnectionList {
+	for index, sshConnection := range WindowsList {
 		pdf.WriteAligned(100, 20, "          1.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
-		pdf.Ln(8)
 	}
 
-	pdf.Ln(2)
+	// Get Linux
+
+	pdf.Ln(10)
 	pdf.WriteAligned(70, 20, "   1.2. Linux devices", "L")
 	pdf.Ln(10)
 
-	// Get Linux
-	sshConnectionList, err = GetAllOSSSHConnection("Linux")
-	if err != nil {
-		return err
-	}
-	for index, sshConnection := range sshConnectionList {
+	for index, sshConnection := range LinuxList {
 		pdf.WriteAligned(100, 20, "          1.2."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
 		pdf.Ln(8)
 	}
 
+	// Get Router
 	pdf.Ln(2)
 	pdf.WriteAligned(70, 20, "2. Network devices", "L")
 	pdf.Ln(10)
 	pdf.WriteAligned(70, 20, "   2.1. Router devices", "L")
 	pdf.Ln(10)
 
-	// Get Router
-	sshConnectionList, err = GetAllOSSSHConnection("Router")
-	if err != nil {
-		return err
-	}
-	for index, sshConnection := range sshConnectionList {
+	for index, sshConnection := range RouterList {
 		pdf.WriteAligned(100, 20, "          2.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
 		pdf.Ln(8)
 	}
 
+	// Get Switch
 	pdf.Ln(2)
 	pdf.WriteAligned(70, 20, "   2.2. Switch devices", "L")
 	pdf.Ln(10)
 
-	// Get Switch
-	sshConnectionList, err = GetAllOSSSHConnection("Switch")
-	if err != nil {
-		return err
-	}
-	for index, sshConnection := range sshConnectionList {
+	for index, sshConnection := range SwitchList {
 		pdf.WriteAligned(100, 20, "          2.2."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
 		pdf.Ln(8)
 	}
@@ -569,7 +358,7 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		pdf.SetTextColor(255, 255, 255)
 		pdf.SetLineWidth(.3)
 		pdf.SetFont("", "B", 0)
-		w := []float64{70.0, 85.0, 65.0}
+		w := []float64{45.0, 85.0, 65.0}
 		for j, str := range header {
 			pdf.CellFormat(w[j], 7, str, "1", 0, "C", true, 0, "")
 		}
@@ -1094,7 +883,6 @@ func ExportReport(filename string, modulesList ReportModules) error {
 			"",
 		)
 
-		pdf.SetFont("Arial", "B", 22)
 		pdf.SetXY(20, 20)
 		pdf.CellFormat(258, 365, "End Report", "1", 0, "CM", false, 0, "")
 		pdf.SetXY(20, 20)
@@ -1161,11 +949,7 @@ func ExportReport(filename string, modulesList ReportModules) error {
 
 	modules := modulesList.Modules
 	// Get Windows
-	sshConnectionList, err = GetAllOSSSHConnection("Windows")
-	if err != nil {
-		return err
-	}
-	for index, sshConnection := range sshConnectionList {
+	for index, sshConnection := range WindowsList {
 		if CheckModules(modules, 1) {
 			err = DrawSystemInfoTable(pdf, index, sshConnection)
 			if err != nil {
@@ -1236,11 +1020,8 @@ func ExportReport(filename string, modulesList ReportModules) error {
 	pdf.SetFont("", "B", 15)
 	pdf.WriteAligned(70, 20, "   1.2. Linux devices", "L")
 	pdf.Ln(10)
-	sshConnectionList, err = GetAllOSSSHConnection("Linux")
-	if err != nil {
-		return err
-	}
-	for index, sshConnection := range sshConnectionList {
+
+	for index, sshConnection := range LinuxList {
 
 		if CheckModules(modules, 10) {
 			err = DrawSystemInfoTable(pdf, index, sshConnection)
@@ -1278,11 +1059,8 @@ func ExportReport(filename string, modulesList ReportModules) error {
 	pdf.Ln(10)
 	pdf.WriteAligned(70, 20, "   2.1. Router devices", "L")
 	pdf.Ln(10)
-	sshConnectionList, err = GetAllOSSSHConnection("Router")
-	if err != nil {
-		return err
-	}
-	for index, sshConnection := range sshConnectionList {
+
+	for index, sshConnection := range RouterList {
 
 		if CheckModules(modules, 20) {
 			err = DrawSystemInfoTable(pdf, index, sshConnection)
@@ -1310,11 +1088,8 @@ func ExportReport(filename string, modulesList ReportModules) error {
 	pdf.SetFont("", "B", 15)
 	pdf.WriteAligned(70, 20, "   2.2. Switch devices", "L")
 	pdf.Ln(10)
-	sshConnectionList, err = GetAllOSSSHConnection("Switch")
-	if err != nil {
-		return err
-	}
-	for index, sshConnection := range sshConnectionList {
+
+	for index, sshConnection := range SwitchList {
 
 		if CheckModules(modules, 30) {
 			err = DrawSystemInfoTable(pdf, index, sshConnection)
@@ -1345,11 +1120,17 @@ func ExportReport(filename string, modulesList ReportModules) error {
 	return pdf.OutputFileAndClose(filename)
 }
 
-func CheckModules(modules []int, number int) bool {
-	for _, module := range modules {
-		if module == number {
-			return true
+func ClassifyDeiveType(sshConnection SshConnectionInfo) string {
+	if strings.Contains(sshConnection.OsType, "Windows") {
+		return "Windows"
+	} else if strings.Contains(sshConnection.OsType, "CentOS") || strings.Contains(sshConnection.OsType, "Ubuntu") || strings.Contains(sshConnection.OsType, "Kali") {
+		return "Linux"
+	} else if sshConnection.OsType == "Unknown" && sshConnection.IsNetwork {
+		if sshConnection.NetworkType == "router" {
+			return "Router"
+		} else if sshConnection.NetworkType == "switch" {
+			return "Switch"
 		}
 	}
-	return false
+	return "Unknown"
 }

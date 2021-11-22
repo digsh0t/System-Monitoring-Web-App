@@ -44,10 +44,11 @@ func AddTemplate(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("fail to parse form-data").Error())
 		return
 	}
+
 	template = models.Template{
 		TemplateName: templateData.Get("template_name"),
 		Description:  templateData.Get("template_description"),
-		SshKeyId:     templateData.GetInt("ssh_key_id"),
+		SshKeyId:     30,
 		Alert:        templateData.GetBool("alert"),
 	}
 
@@ -70,8 +71,6 @@ func AddTemplate(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read user id from token").Error())
 		return
 	}
-	//THIS VALUE IS FIXED PLEASE REPAIR AFTER DEMO
-	template.SshKeyId = 14
 
 	lastIndex, err := template.AddTemplateToDB()
 	if err != nil {

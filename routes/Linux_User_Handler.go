@@ -31,7 +31,7 @@ func LinuxClientUserRemove(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
 
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to retrieve json format").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to retrieve json format").Error())
 		return
 	}
 	var userJson models.LinuxClientUserJson
@@ -41,31 +41,37 @@ func LinuxClientUserRemove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var eventStatus string
 	// Remove Host User
 	output, err := models.LinuxClientUserRemove(userJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
+		eventStatus = "failed"
+	} else {
+		// Processing Output From Ansible
+		status, fatalList, err := models.ProcessingAnsibleOutput(output)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
+
+		// Return Json
+		returnJson := simplejson.New()
+		returnJson.Set("Status", status)
+		returnJson.Set("Fatal", fatalList)
+		utils.JSON(w, http.StatusOK, returnJson)
+		eventStatus = "successfully"
 	}
-
-	// Processing Output From Ansible
-	status, fatalList, err := models.ProcessingAnsibleOutput(output)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
-	}
-
-	// Return Json
-	returnJson := simplejson.New()
-	returnJson.Set("Status", status)
-	returnJson.Set("Fatal", fatalList)
-	utils.JSON(w, http.StatusOK, returnJson)
-
 	// Write Event Web
-	description := "User \"" + userJson.Username + "\" removed from successfully"
+	hostnames, err := models.ConvertListIdToHostnameVer2(userJson.SshConnectionIdList)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to conver list id to hostname")
+		return
+	}
+	description := "User \"" + userJson.Username + "\" removed from [" + hostnames + "] " + eventStatus
 	_, err = models.WriteWebEvent(r, "LinuxUser", description)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 		return
 	}
 }
@@ -93,30 +99,37 @@ func LinuxClientUserAdd(w http.ResponseWriter, r *http.Request) {
 	var userJson models.LinuxClientUserJson
 	json.Unmarshal(reqBody, &userJson)
 
+	var eventStatus string
 	output, err := models.LinuxClientUserAdd(userJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
+		eventStatus = "failed"
+	} else {
+
+		// Processing Output From Ansible
+		status, fatalList, err := models.ProcessingAnsibleOutput(output)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
+
+		// Return Json
+		returnJson := simplejson.New()
+		returnJson.Set("Status", status)
+		returnJson.Set("Fatal", fatalList)
+		utils.JSON(w, http.StatusOK, returnJson)
+		eventStatus = "successfully"
 	}
-
-	// Processing Output From Ansible
-	status, fatalList, err := models.ProcessingAnsibleOutput(output)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
-	}
-
-	// Return Json
-	returnJson := simplejson.New()
-	returnJson.Set("Status", status)
-	returnJson.Set("Fatal", fatalList)
-	utils.JSON(w, http.StatusOK, returnJson)
-
 	// Write Event Web
-	description := "User \"" + userJson.Username + "\" added successfully"
+	hostnames, err := models.ConvertListIdToHostnameVer2(userJson.SshConnectionIdList)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to conver list id to hostname")
+		return
+	}
+	description := "User \"" + userJson.Username + "\" added to [" + hostnames + "] " + eventStatus
 	_, err = models.WriteWebEvent(r, "LinuxUser", description)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 		return
 	}
 }

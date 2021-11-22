@@ -79,13 +79,15 @@ func main() {
 	router.HandleFunc("/sshkeys", routes.GetAllSSHKey).Methods("GET", "OPTIONS")
 
 	// Inventory Group
-	router.HandleFunc("/inventory/group/add", routes.InventoryGroupAdd).Methods("POST")
-	router.HandleFunc("/inventory/group/list", routes.InventoryGroupList).Methods("GET")
-	router.HandleFunc("/inventory/group/delete/{id}", routes.InventoryGroupDelete).Methods("DELETE")
-	router.HandleFunc("/sshconnections/list/nogroup", routes.GetAllSSHConnectionNoGroup).Methods("GET", "OPTIONS")
-	router.HandleFunc("/inventory/group/addclient", routes.InventoryGroupAddClient).Methods("POST")
-	router.HandleFunc("/inventory/group/deleteclient", routes.InventoryGroupDeleteClient).Methods("POST")
-	router.HandleFunc("/inventory/group/listclient/{groupid}", routes.InventoryGroupListClient).Methods("GET")
+	/*
+		router.HandleFunc("/inventory/group/add", routes.InventoryGroupAdd).Methods("POST")
+		router.HandleFunc("/inventory/group/list", routes.InventoryGroupList).Methods("GET")
+		router.HandleFunc("/inventory/group/delete/{id}", routes.InventoryGroupDelete).Methods("DELETE")
+		router.HandleFunc("/sshconnections/list/nogroup", routes.GetAllSSHConnectionNoGroup).Methods("GET", "OPTIONS")
+		router.HandleFunc("/inventory/group/addclient", routes.InventoryGroupAddClient).Methods("POST")
+		router.HandleFunc("/inventory/group/deleteclient", routes.InventoryGroupDeleteClient).Methods("POST")
+		router.HandleFunc("/inventory/group/listclient/{groupid}", routes.InventoryGroupListClient).Methods("GET")
+	*/
 
 	// Get PC info
 	router.HandleFunc("/systeminfo/{id}", routes.GetSystemInfoRoute).Methods("GET", "OPTIONS")
@@ -163,7 +165,7 @@ func main() {
 	}).Methods("GET")
 	router.HandleFunc("/webapp/report/detail", routes.GetDetailOSReport).Methods("GET")
 	router.HandleFunc("/webapp/report/export", routes.ExportReport).Methods("POST")
-
+	router.HandleFunc("/client/report/export", routes.ClientExportReport).Methods("POST")
 	// Network Automation: Vyos
 	//router.HandleFunc("/vyos/listconfig/{id}", routes.GetInfoConfigVyos).Methods("GET")
 	router.HandleFunc("/vyos/list/{id}", routes.GetInfoVyos).Methods("GET")
@@ -249,7 +251,7 @@ func main() {
 	router.HandleFunc("/{id}/interfaces", routes.GetInterfaceList).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/connectivity", routes.GetConnectivityInfo).Methods("OPTIONS", "GET")
 
-	//Windows Service
+	//Windows Services
 	router.HandleFunc("/{id}/services", routes.GetWindowsServiceList).Methods("OPTIONS", "GET")
 	router.HandleFunc("/{id}/services/{service_name}/{service_state}", routes.ChangeWindowsServiceState).Methods("OPTIONS", "PUT")
 

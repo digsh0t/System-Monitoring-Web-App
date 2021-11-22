@@ -235,12 +235,15 @@ func ConvertListIdToHostnameVer2(hosts []int) (string, error) {
 		hostStr string
 		err     error
 	)
-	for _, id := range hosts {
+	for index, id := range hosts {
 		sshConnection, err := GetSSHConnectionFromId(id)
 		if err != nil {
 			return "", err
 		}
-		hostStr += sshConnection.HostNameSSH + ","
+		hostStr += sshConnection.HostNameSSH
+		if index < len(hosts)-1 {
+			hostStr += ","
+		}
 	}
 
 	return hostStr, err

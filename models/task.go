@@ -273,7 +273,7 @@ func GetAllTasks(template Template) ([]Task, error) {
 	for selDB.Next() {
 		err = selDB.Scan(&task.TaskId, &task.TemplateId, &task.OverridedArgs, &startTime, &endTime, &task.Status, &task.UserId)
 		if err != nil {
-			return nil, err
+			return nil, errors.New("fail to get tasks from database with template id: " + strconv.Itoa(template.TemplateId))
 			//return nil, err
 		}
 		if startTime.Valid && endTime.Valid {

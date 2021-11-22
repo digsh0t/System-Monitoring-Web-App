@@ -3,7 +3,6 @@ package routes
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -42,27 +41,35 @@ func LinuxClientIptablesRemove(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Remove Host User
+	var eventStatus string
 	output, err := models.LinuxClientIptablesRemove(iptablesJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
+		eventStatus = "failed"
+	} else {
 
-	// Processing Output From Ansible
-	status, fatalList, err := models.ProcessingAnsibleOutput(output)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
-	}
+		// Processing Output From Ansible
+		status, fatalList, err := models.ProcessingAnsibleOutput(output)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
 
-	// Return Json
-	returnJson := simplejson.New()
-	returnJson.Set("Status", status)
-	returnJson.Set("Fatal", fatalList)
-	utils.JSON(w, http.StatusOK, returnJson)
+		// Return Json
+		returnJson := simplejson.New()
+		returnJson.Set("Status", status)
+		returnJson.Set("Fatal", fatalList)
+		utils.JSON(w, http.StatusOK, returnJson)
+		eventStatus = "successfully"
+	}
 
 	// Write Event Web
-	description := "1 Rule removed successfully from machines id " + fmt.Sprint(iptablesJson.SshConnectionId)
+	hostnames, err := models.ConvertListIdToHostnameVer2(iptablesJson.SshConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to conver list id to hostname")
+		return
+	}
+	description := "1 Rule removed successfully from machines [" + hostnames + "] " + eventStatus
 	_, err = models.WriteWebEvent(r, "LinuxUser", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
@@ -93,27 +100,34 @@ func LinuxClientIptablesAdd(w http.ResponseWriter, r *http.Request) {
 	var iptablesJson models.IptablesJson
 	json.Unmarshal(reqBody, &iptablesJson)
 
+	var eventStatus string
 	output, err := models.LinuxClientIptablesAdd(iptablesJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
+		eventStatus = "failed"
+	} else {
+
+		// Processing Output From Ansible
+		status, fatalList, err := models.ProcessingAnsibleOutput(output)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
+
+		// Return Json
+		returnJson := simplejson.New()
+		returnJson.Set("Status", status)
+		returnJson.Set("Fatal", fatalList)
+		utils.JSON(w, http.StatusOK, returnJson)
+		eventStatus = "successfully"
 	}
-
-	// Processing Output From Ansible
-	status, fatalList, err := models.ProcessingAnsibleOutput(output)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
-	}
-
-	// Return Json
-	returnJson := simplejson.New()
-	returnJson.Set("Status", status)
-	returnJson.Set("Fatal", fatalList)
-	utils.JSON(w, http.StatusOK, returnJson)
-
 	// Write Event Web
-	description := "1 Rule added successfully to machines id" + fmt.Sprint(iptablesJson.SshConnectionId)
+	hostnames, err := models.ConvertListIdToHostnameVer2(iptablesJson.SshConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to conver list id to hostname")
+		return
+	}
+	description := "1 Rule added successfully to machines [" + hostnames + "] " + eventStatus
 	_, err = models.WriteWebEvent(r, "LinuxIptables", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())

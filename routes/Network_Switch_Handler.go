@@ -40,30 +40,33 @@ func CreateVlanSwitch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Config IP
+	var eventStatus string
 	outputList, err := models.CreateVlanSwitch(switchJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	// Processing Output From Ansible
-	status, fatals, err := models.ProcessingAnsibleOutputList(outputList)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
-	}
-
-	// Return Json
-	returnJson := simplejson.New()
-	var statusCode int
-	if len(fatals) == 0 {
-		statusCode = http.StatusOK
+		eventStatus = "failed"
 	} else {
-		statusCode = http.StatusBadRequest
+
+		// Processing Output From Ansible
+		status, fatals, err := models.ProcessingAnsibleOutputList(outputList)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
+
+		// Return Json
+		returnJson := simplejson.New()
+		var statusCode int
+		if len(fatals) == 0 {
+			statusCode = http.StatusOK
+		} else {
+			statusCode = http.StatusBadRequest
+		}
+		returnJson.Set("Status", status)
+		returnJson.Set("Fatal", fatals)
+		utils.JSON(w, statusCode, returnJson)
+		eventStatus = "successfully"
 	}
-	returnJson.Set("Status", status)
-	returnJson.Set("Fatal", fatals)
-	utils.JSON(w, statusCode, returnJson)
 
 	// Write Event Web
 	hostname, err := models.ConvertListIdToHostnameVer2(switchJson.SshConnectionId)
@@ -71,7 +74,7 @@ func CreateVlanSwitch(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, "fail to get hostname")
 		return
 	}
-	description := "Create vlan to network device " + hostname + " successfully"
+	description := "Create vlan to network device [" + hostname + "] " + eventStatus
 	_, err = models.WriteWebEvent(r, "Network", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
@@ -84,7 +87,7 @@ func CreateVlanSwitch(w http.ResponseWriter, r *http.Request) {
 func GetVlanSwitch(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -138,30 +141,33 @@ func AddInterfaceToVlanSwitch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// add interfaces to vlan
+	var eventStatus string
 	outputList, err := models.AddInterfacesToVlanSwitch(switchJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	// Processing Output From Ansible
-	status, fatals, err := models.ProcessingAnsibleOutputList(outputList)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
-	}
-
-	// Return Json
-	returnJson := simplejson.New()
-	var statusCode int
-	if len(fatals) == 0 {
-		statusCode = http.StatusOK
+		eventStatus = "failed"
 	} else {
-		statusCode = http.StatusBadRequest
+
+		// Processing Output From Ansible
+		status, fatals, err := models.ProcessingAnsibleOutputList(outputList)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
+
+		// Return Json
+		returnJson := simplejson.New()
+		var statusCode int
+		if len(fatals) == 0 {
+			statusCode = http.StatusOK
+		} else {
+			statusCode = http.StatusBadRequest
+		}
+		returnJson.Set("Status", status)
+		returnJson.Set("Fatal", fatals)
+		utils.JSON(w, statusCode, returnJson)
+		eventStatus = "successfully"
 	}
-	returnJson.Set("Status", status)
-	returnJson.Set("Fatal", fatals)
-	utils.JSON(w, statusCode, returnJson)
 
 	// Write Event Web
 	hostname, err := models.ConvertListIdToHostnameVer2(switchJson.SshConnectionId)
@@ -169,7 +175,7 @@ func AddInterfaceToVlanSwitch(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, "fail to get hostname")
 		return
 	}
-	description := "Add interfaces to vlan on network device " + hostname + " successfully"
+	description := "Add interfaces to vlan on network device [" + hostname + "] " + eventStatus
 	_, err = models.WriteWebEvent(r, "Network", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
@@ -205,30 +211,33 @@ func DeleteVlanSwitch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Config IP
+	var eventStatus string
 	outputList, err := models.DeleteVlanSwitch(switchJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	// Processing Output From Ansible
-	status, fatals, err := models.ProcessingAnsibleOutputList(outputList)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
-	}
-
-	// Return Json
-	returnJson := simplejson.New()
-	var statusCode int
-	if len(fatals) == 0 {
-		statusCode = http.StatusOK
+		eventStatus = "failed"
 	} else {
-		statusCode = http.StatusBadRequest
+
+		// Processing Output From Ansible
+		status, fatals, err := models.ProcessingAnsibleOutputList(outputList)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
+
+		// Return Json
+		returnJson := simplejson.New()
+		var statusCode int
+		if len(fatals) == 0 {
+			statusCode = http.StatusOK
+		} else {
+			statusCode = http.StatusBadRequest
+		}
+		returnJson.Set("Status", status)
+		returnJson.Set("Fatal", fatals)
+		utils.JSON(w, statusCode, returnJson)
+		eventStatus = "successfully"
 	}
-	returnJson.Set("Status", status)
-	returnJson.Set("Fatal", fatals)
-	utils.JSON(w, statusCode, returnJson)
 
 	// Write Event Web
 	hostname, err := models.ConvertListIdToHostnameVer2(switchJson.SshConnectionId)
@@ -236,7 +245,7 @@ func DeleteVlanSwitch(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, "fail to get hostname")
 		return
 	}
-	description := "Delete vlan " + strconv.Itoa(switchJson.VlanId) + "from network device " + hostname + " successfully"
+	description := "Delete vlan " + strconv.Itoa(switchJson.VlanId) + "from network device [" + hostname + "] " + eventStatus
 	_, err = models.WriteWebEvent(r, "Network", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
@@ -249,7 +258,7 @@ func DeleteVlanSwitch(w http.ResponseWriter, r *http.Request) {
 func GetInterfaceSwitch(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return

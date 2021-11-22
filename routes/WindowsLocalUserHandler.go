@@ -34,7 +34,7 @@ type localUser struct {
 func GetWindowsLocalUser(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -140,6 +140,18 @@ func AddNewWindowsLocalUser(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatal)
 	utils.JSON(w, http.StatusOK, returnJson)
+	// Write Event Web
+	hostname, err := models.ConvertListIdToHostnameVer2(lu.SSHConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to get hostname")
+		return
+	}
+	description := "1 new local user added to host [" + hostname + "]"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 
 }
 
@@ -211,12 +223,20 @@ func DeleteWindowsUser(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatal)
 	utils.JSON(w, http.StatusOK, returnJson)
+
+	// Write Event Web
+	description := "1 local user deleted from host [" + sshConnection.HostNameSSH + "]"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 }
 
 func GetWindowsGroupListOfUser(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -306,9 +326,28 @@ func ReplaceWindowsGroupOfUser(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatal)
 	utils.JSON(w, http.StatusOK, returnJson)
+
+	// Write Event Web
+	description := "Replace Windows Group of User " + rGL.Name + " on host " + sshConnection.HostNameSSH
+	_, err = models.WriteWebEvent(r, "Network", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 }
 
 func KillWindowsLogonSession(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -330,9 +369,27 @@ func KillWindowsLogonSession(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	// Write Event Web
+	description := "1 session killed from host [" + sshConnection.HostNameSSH + "]"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 }
 
 func GetWindowsLogonAppExecutionHistory(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 
 	type tmpStruct struct {
 		Username string `json:"username"`
@@ -396,6 +453,18 @@ func GetWindowsLogonAppExecutionHistory(w http.ResponseWriter, r *http.Request) 
 // }
 
 func ChangeWindowsEnabledStatus(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -418,9 +487,28 @@ func ChangeWindowsEnabledStatus(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	// Write Event Web
+	description := "Change windows enable status of user " + username + " on host [" + sshConnection.HostNameSSH + "]"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
+
 }
 
 func ChangeWindowsLocalUserPassword(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 
 	type newPassword struct {
 		Username string `json:"username"`
@@ -460,5 +548,12 @@ func ChangeWindowsLocalUserPassword(w http.ResponseWriter, r *http.Request) {
 		// utils.ERROR(w, http.StatusBadRequest, err.Error())
 		// return
 		notifications.SendToNotificationChannel(err.Error(), "notification-"+strconv.Itoa(userid)+"channel", "change-windows-user-password")
+	}
+	// Write Event Web
+	description := "Change password of user " + nP.Username + " on host [" + sshConnection.HostNameSSH + "]"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
 	}
 }

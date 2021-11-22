@@ -2,16 +2,29 @@ package routes
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
 func GetWindowsExplorerPolicy(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -33,6 +46,17 @@ func GetWindowsExplorerPolicy(w http.ResponseWriter, r *http.Request) {
 }
 
 func ChangeWindowsExplorerPolicy(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -61,9 +85,28 @@ func ChangeWindowsExplorerPolicy(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	// Write Event Web
+	description := "Change windows explorer policy on host [" + sshConnection.HostNameSSH + "]"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 }
 
 func GetWindowsUserProhibitedProgramsPolicy(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -85,6 +128,17 @@ func GetWindowsUserProhibitedProgramsPolicy(w http.ResponseWriter, r *http.Reque
 }
 
 func ChangeWindowsUserProhibitedProgramPolicy(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -113,9 +167,26 @@ func ChangeWindowsUserProhibitedProgramPolicy(w http.ResponseWriter, r *http.Req
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	// Write Event Web
+	description := "Change windows user prohibit program on host [" + sshConnection.HostNameSSH + "]"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 }
 
 func GetWindowsPasswordPolicy(w http.ResponseWriter, r *http.Request) {
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -136,6 +207,17 @@ func GetWindowsPasswordPolicy(w http.ResponseWriter, r *http.Request) {
 }
 
 func ChangeWindowsPasswordPolicy(w http.ResponseWriter, r *http.Request) {
+
+	//Authorization
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -161,6 +243,13 @@ func ChangeWindowsPasswordPolicy(w http.ResponseWriter, r *http.Request) {
 	err = sshConnection.ChangeWindowsPasswordPolicy(policy)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	// Write Event Web
+	description := "Change windows password policy on host [" + sshConnection.HostNameSSH + "]"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 		return
 	}
 }

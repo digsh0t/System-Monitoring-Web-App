@@ -6,62 +6,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
-func GetReport(w http.ResponseWriter, r *http.Request, start time.Time) {
-
-	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
-		return
-	}
-	if !isAuthorized {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
-		return
-	}
-
-	report, err := models.GetReport(r, start)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-	} else {
-		utils.JSON(w, http.StatusOK, report)
-	}
-
-}
-
-func GetDetailOSReport(w http.ResponseWriter, r *http.Request) {
-
-	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
-		return
-	}
-	if !isAuthorized {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
-		return
-	}
-
-	// Get Id parameter
-	query := r.URL.Query()
-	ostype := query.Get("ostype")
-
-	report, err := models.GetDetailOSReport(ostype)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-	} else {
-		utils.JSON(w, http.StatusOK, report)
-	}
-
-}
-
-func ExportReport(w http.ResponseWriter, r *http.Request) {
+func ClientExportReport(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
@@ -91,7 +42,7 @@ func ExportReport(w http.ResponseWriter, r *http.Request) {
 	// Get current date time
 	datetime := utils.GetCurrentDateTime()
 	filename := "./tmp/report-" + datetime + ".pdf"
-	err = models.ExportReport(filename, modules)
+	err = models.ClientExportReport(filename, modules)
 	var eventStatus string
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
@@ -112,7 +63,7 @@ func ExportReport(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		utils.JSON(w, http.StatusOK, err)
-		eventStatus = "successfulyy"
+		eventStatus = "successfully"
 
 	}
 	// Write Event Web

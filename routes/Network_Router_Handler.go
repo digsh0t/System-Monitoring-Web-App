@@ -39,30 +39,33 @@ func ConfigIPRouter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Config IP
+	var eventStatus string
 	outputList, err := models.ConfigIPRouter(routerJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	// Processing Output From Ansible
-	status, fatals, err := models.ProcessingAnsibleOutputList(outputList)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
-	}
-
-	// Return Json
-	returnJson := simplejson.New()
-	var statusCode int
-	if len(fatals) > 0 {
-		statusCode = http.StatusBadRequest
+		eventStatus = "failed"
 	} else {
-		statusCode = http.StatusOK
+
+		// Processing Output From Ansible
+		status, fatals, err := models.ProcessingAnsibleOutputList(outputList)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
+
+		// Return Json
+		returnJson := simplejson.New()
+		var statusCode int
+		if len(fatals) > 0 {
+			statusCode = http.StatusBadRequest
+		} else {
+			statusCode = http.StatusOK
+		}
+		returnJson.Set("Status", status)
+		returnJson.Set("Fatal", fatals)
+		utils.JSON(w, statusCode, returnJson)
+		eventStatus = "successfully"
 	}
-	returnJson.Set("Status", status)
-	returnJson.Set("Fatal", fatals)
-	utils.JSON(w, statusCode, returnJson)
 
 	// Write Event Web
 	hostname, err := models.ConvertListIdToHostnameVer2(routerJson.SshConnectionId)
@@ -70,7 +73,7 @@ func ConfigIPRouter(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, "fail to get hostname")
 		return
 	}
-	description := "Config IP to network device " + hostname + " successfully"
+	description := "Config IP to network device [" + hostname + "] " + eventStatus
 	_, err = models.WriteWebEvent(r, "Network", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
@@ -106,24 +109,26 @@ func ConfigStaticRouteRouter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Config IP
+	var eventStatus string
 	outputList, err := models.ConfigStaticRouteRouter(routerJson)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
-	}
+		eventStatus = "failed"
+	} else {
+		// Processing Output From Ansible
+		status, fatals, err := models.ProcessingAnsibleOutputList(outputList)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
+			return
+		}
 
-	// Processing Output From Ansible
-	status, fatals, err := models.ProcessingAnsibleOutputList(outputList)
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, "fail to process ansible output")
-		return
+		// Return Json
+		returnJson := simplejson.New()
+		returnJson.Set("Status", status)
+		returnJson.Set("Fatal", fatals)
+		utils.JSON(w, http.StatusOK, returnJson)
+		eventStatus = "successfully"
 	}
-
-	// Return Json
-	returnJson := simplejson.New()
-	returnJson.Set("Status", status)
-	returnJson.Set("Fatal", fatals)
-	utils.JSON(w, http.StatusOK, returnJson)
 
 	// Write Event Web
 	hostname, err := models.ConvertListIdToHostnameVer2(routerJson.SshConnectionId)
@@ -131,7 +136,7 @@ func ConfigStaticRouteRouter(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, "fail to get hostname")
 		return
 	}
-	description := "Config static route to network device " + hostname + " successfully"
+	description := "Config static route to network device [" + hostname + "] " + eventStatus
 	_, err = models.WriteWebEvent(r, "Network", description)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())

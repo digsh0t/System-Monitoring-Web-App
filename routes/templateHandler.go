@@ -3,7 +3,6 @@ package routes
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -51,7 +50,8 @@ func DeleteTemplate(w http.ResponseWriter, r *http.Request) {
 	// Remove template file
 	err = os.Remove(template.FilePath)
 	if err != nil {
-		log.Println("template file " + template.FilePath + " has been moved or deleted")
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to remove template").Error())
+		return
 	}
 
 	err = models.DeleteTemplateFromId(templateId)
@@ -74,7 +74,7 @@ func GetAllTemplate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -103,7 +103,7 @@ func GetTemplateArgument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("please login").Error())
 		return

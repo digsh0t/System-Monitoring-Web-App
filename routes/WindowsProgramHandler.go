@@ -18,7 +18,7 @@ import (
 func GetWindowsInstalledProgram(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -99,6 +99,19 @@ func InstallWindowsProgram(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatal)
 	utils.JSON(w, http.StatusOK, returnJson)
+
+	// Write Event Web
+	hostname, err := models.ConvertListIdToHostnameVer2(uP.SSHConnectionId)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, "fail to get hostname")
+		return
+	}
+	description := "1 new program installed to host [" + hostname + "]"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 }
 
 func RemoveWindowsProgram(w http.ResponseWriter, r *http.Request) {
@@ -151,5 +164,14 @@ func RemoveWindowsProgram(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatal)
 	utils.JSON(w, http.StatusOK, returnJson)
+
+	// Write Event Web
+
+	description := "1 program removed from host [" + sshConnection.HostNameSSH + "]"
+	_, err = models.WriteWebEvent(r, "Windows", description)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
+		return
+	}
 
 }
