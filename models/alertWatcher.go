@@ -12,7 +12,7 @@ type WatchInfo struct {
 	WatchList         string `json:"watch_list"`
 }
 
-func (watch *WatchInfo) AddNewWatcher(watchList string) error {
+func (watch *WatchInfo) AddNewWatcher() error {
 	db := database.ConnectDB()
 	defer db.Close()
 
