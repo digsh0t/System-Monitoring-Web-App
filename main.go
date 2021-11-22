@@ -24,12 +24,12 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	sshConnection, err := models.GetSSHConnectionFromId(72)
-	if err != nil {
-		log.Println(err)
-	}
+	// sshConnection, err := models.GetSSHConnectionFromId(72)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 
-	err = sshConnection.AddNewWatcher("info,noti")
+	err := models.RemoveWatcher(72)
 	if err != nil {
 		log.Println(err)
 	}
