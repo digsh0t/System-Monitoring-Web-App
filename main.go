@@ -24,16 +24,20 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	// sshConnection, err := models.GetSSHConnectionFromId(69)
+	sshConnection, err := models.GetSSHConnectionFromId(72)
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = sshConnection.AddNewWatcher("info,noti")
+	if err != nil {
+		log.Println(err)
+	}
+
+	// err := models.ClientAlertLog("/var/log/remotelogs", 72, 300, []int{5, 6})
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// models.AddSSHConnectionInformation(*sshConnection, int64(sshConnection.SSHConnectionId))
-	// key, err := sshConnection.GetAllWindowsLicense()
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// log.Println(key)
 	// for _, index := range key {
 	// 	fmt.Print(index.Username + " ")
 	// 	fmt.Print(index.IsEnabled)

@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -173,6 +174,59 @@ func parseSyslogByPri(rawLogs string, pri int) ([]Syslog, error) {
 		logs = append(logs, log)
 	}
 	return logs, nil
+}
+
+func GetClientTodayLog(logBasePath string, sshConnectionId int, seconds int, priList []int) ([]Syslog, error) {
+	currentTime := time.Now()
+	currDate := currentTime.Format("02-01-2006")
+	logList, err := GetClientSyslog(logBasePath, sshConnectionId, currDate)
+	if err != nil {
+		return nil, err
+	}
+	logList, err = GetLogInterval(seconds, logList, priList)
+	return logList, err
+}
+
+func ClientAlertLog(logBasePath string, sshConnectionId int, seconds int, priList []int) error {
+	var message string
+	logList, err := GetClientTodayLog("/var/log/remotelogs", 72, 300, []int{5, 6})
+	if err != nil {
+		return err
+	}
+	if logList == nil {
+		return nil
+	}
+	for _, log := range logList {
+		message += fmt.Sprintf("%d: Time: %s, Host: %s, Origin Process: %s, Message: %s\n", log.SyslogPRI, log.Timegenerated, log.Hostname, log.ProgramName, log.Message)
+	}
+	err = SendTelegramMessage(message)
+	return err
+}
+
+func GetLogInterval(seconds int, logList []Syslog, priorities []int) ([]Syslog, error) {
+	var newLog []Syslog
+	var currTime = time.Now()
+	for i := len(logList) - 1; i > 0; i-- {
+		parsed, err := time.Parse("2006-01-02 15:04:05 -0700 -07", logList[i].Timegenerated)
+		if err != nil {
+			return nil, err
+		}
+		if currTime.Sub(parsed) < (time.Second*time.Duration(seconds)) && checkPri(logList[i].SyslogPRI, priorities) {
+			newLog = append(newLog, logList[i])
+		} else {
+			return newLog, nil
+		}
+	}
+	return newLog, nil
+}
+
+func checkPri(logPri int, priList []int) bool {
+	for _, pri := range priList {
+		if pri == logPri {
+			return true
+		}
+	}
+	return false
 }
 
 func GetClientSyslog(logBasePath string, sshConnectionId int, date string) ([]Syslog, error) {

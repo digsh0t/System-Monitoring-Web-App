@@ -70,6 +70,8 @@ func AddTemplate(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to read user id from token").Error())
 		return
 	}
+	//THIS VALUE IS FIXED PLEASE REPAIR AFTER DEMO
+	template.SshKeyId = 14
 
 	lastIndex, err := template.AddTemplateToDB()
 	if err != nil {

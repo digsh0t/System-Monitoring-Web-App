@@ -3,6 +3,7 @@ package routes
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -50,8 +51,7 @@ func DeleteTemplate(w http.ResponseWriter, r *http.Request) {
 	// Remove template file
 	err = os.Remove(template.FilePath)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to remove template").Error())
-		return
+		log.Println("template file " + template.FilePath + " has been moved or deleted")
 	}
 
 	err = models.DeleteTemplateFromId(templateId)
