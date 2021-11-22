@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -25,16 +24,20 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	// sshConnection, err := models.GetSSHConnectionFromId(69)
+	// sshConnection, err := models.GetSSHConnectionFromId(72)
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// models.AddSSHConnectionInformation(*sshConnection, int64(sshConnection.SSHConnectionId))
-	// key, err := sshConnection.GetAllWindowsLicense()
+
+	// err := models.RemoveWatcher(72)
 	// if err != nil {
 	// 	log.Println(err)
 	// }
-	// log.Println(key)
+
+	// err := models.AllClientAlertLog("/var/log/remotelogs", 30)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 	// for _, index := range key {
 	// 	fmt.Print(index.Username + " ")
 	// 	fmt.Print(index.IsEnabled)
@@ -53,19 +56,7 @@ func main() {
 	// sI := models.SmtpInfo{EmailSender: "noti.lthmonitor@gmail.com", EmailPassword: "Lethihang123", SMTPHost: "smtp.gmail.com", SMTPPort: "587"}
 	// sI.SendReportMail("./10-11-2021-report.pdf", []string{"trilxse140935@fpt.edu.vn"}, []string{"wintltrbackup@gmail.com"},[]string{"wintltr@gmail.com"})
 
-	maps, err := models.AnalyzeSyslog()
-	if err != nil {
-		fmt.Println(err.Error())
-	} else {
-		for index, values := range maps {
-			if len(values) > 0 {
-				for _, problem := range values {
-					fmt.Println(index, " => ", problem)
-				}
-			}
-		}
-	}
-
+	go models.AlertWatcher()
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)
 	credentials := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
@@ -295,6 +286,11 @@ func main() {
 	router.HandleFunc("/ws/v1/{id}", routes.WebConsoleWSHanlder)
 
 	router.HandleFunc("/system/currenttime", routes.GetCurrentSystemTime).Methods("OPTIONS", "GET")
+
+	//Alert Watch
+	router.HandleFunc("/alertwatch", routes.AddNewWatcherRoute).Methods("OPTIONS", "POST")
+	router.HandleFunc("/alertwatch/{id}", routes.RemoveFromWatchRoute).Methods("OPTIONS", "DELETE")
+	router.HandleFunc("/alertwatch", routes.GetAllWatcherRoute).Methods("OPTIONS", "GET")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
 }
