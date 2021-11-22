@@ -6,7 +6,13 @@ import (
 	"github.com/wintltr/login-api/database"
 )
 
-func (sshConnection *SshConnectionInfo) AddNewWatcher(watchList string) error {
+type WatchInfo struct {
+	SSHConnectionId   int    `json:"ssh_connection_id"`
+	SSHConnectionName string `json:"ssh_connection_name"`
+	WatchList         string `json:"watch_list"`
+}
+
+func (watch *WatchInfo) AddNewWatcher(watchList string) error {
 	db := database.ConnectDB()
 	defer db.Close()
 
@@ -16,7 +22,7 @@ func (sshConnection *SshConnectionInfo) AddNewWatcher(watchList string) error {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(sshConnection.SSHConnectionId, sshConnection.HostNameSSH, watchList)
+	_, err = stmt.Exec(watch.SSHConnectionId, watch.SSHConnectionName, watch.WatchList)
 	return err
 }
 
@@ -39,4 +45,27 @@ func RemoveWatcher(sshConnectionId int) error {
 		return errors.New("This SSH Connection is not in watchlist")
 	}
 	return err
+}
+
+func GetAllWatch() ([]WatchInfo, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := `SELECT sca_id, sca_connection_name, sca_alert_pri FROM ssh_connection_alert`
+	selDB, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var watch WatchInfo
+	var watchList []WatchInfo
+	for selDB.Next() {
+		err = selDB.Scan(&watch.SSHConnectionId, &watch.SSHConnectionName, &watch.WatchList)
+		if err != nil {
+			return nil, err
+		}
+
+		watchList = append(watchList, watch)
+	}
+	return watchList, err
 }
