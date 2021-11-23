@@ -75,7 +75,7 @@ func GetAllWatch() ([]WatchInfo, error) {
 func AlertWatcher() {
 	ticker := time.NewTicker(30 * time.Second)
 	quit := make(chan struct{})
-	go func() {
+	func() {
 		for {
 			select {
 			case <-ticker.C:
