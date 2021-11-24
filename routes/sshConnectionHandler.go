@@ -132,6 +132,16 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 
 		// Use Password-Based Authentication
 	} else {
+		isExist, err := models.CheckHostnameExist(sshConnectionInfo.HostNameSSH)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, errors.New("fail to check hostname exist").Error())
+			return
+		}
+		if isExist {
+			utils.ERROR(w, http.StatusBadRequest, errors.New("hostname existed, please choose another hostname").Error())
+			return
+		}
+
 		success, err := sshConnectionInfo.TestConnectionPassword()
 		if err != nil {
 			if strings.Contains(err.Error(), "none password") {

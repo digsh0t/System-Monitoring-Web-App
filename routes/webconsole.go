@@ -27,20 +27,11 @@ var (
 
 func WebConsoleWSHanlder(w http.ResponseWriter, r *http.Request) {
 
-	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
-	if err != nil {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
-		return
-	}
-	if !isAuthorized {
-		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
-		return
-	}
 	var (
 		conn    *websocket.Conn
 		client  *ssh.Client
 		sshConn *webconsole.SSHConnect
+		err     error
 	)
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
@@ -93,6 +84,7 @@ func WebConsoleTemplate(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
 		return
 	}
+
 	type sshID struct {
 		ID string
 	}

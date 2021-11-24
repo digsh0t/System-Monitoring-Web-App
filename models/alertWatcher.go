@@ -44,7 +44,7 @@ func RemoveWatcher(sshConnectionId int) error {
 	}
 	rows, err := res.RowsAffected()
 	if rows == 0 {
-		return errors.New("This SSH Connection is not in watchlist")
+		return errors.New("this SSH Connection is not in watchlist")
 	}
 	return err
 }

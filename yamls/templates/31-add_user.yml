@@ -1,0 +1,16 @@
+---
+- hosts: '{{ host }}'
+
+  tasks:
+  - name: Create a login user
+    user:
+      name: '{{ username }}'
+      password: '{{ hashedPassword }}'
+      groups: '{{ userGroups }}'
+      state: '{{ userState }}'
+      shell: '{{ defaultShell }}' 
+      system: '{{ isSystem }}'    
+      createhome: '{{ isHome }}'     
+      home: '{{ userHomePath }}'  
+
+#Sample run: ansible-playbook yamls/add_user.yml --extra-vars='{"host":"vmware-ubuntu","username":"john","hashedPassword":"$6$QWyppX8orfHkw6kO$lreRC6iHpi59cKXIfjP5/fefPtqOtyA6LHv12n2sQ8otFYVCvg8FzUZSveO8l7f6JJyjE8m6K7jTjRnqp0sZM1","userGroups":["users"],"userState":"present","defaultShell":"/bin/bash","isSystem":False,"isHome":True,"userHomePath":"/home/john"}'

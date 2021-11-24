@@ -211,6 +211,23 @@ func GetAllSSHConnection() ([]SshConnectionInfo, error) {
 	return connectionInfos, err
 }
 
+func CheckHostnameExist(hostname string) (bool, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := `SELECT sc_connection_id, sc_username FROM ssh_connections WHERE sc_hostname = ?`
+	selDB, err := db.Query(query, hostname)
+	if err != nil {
+		return false, err
+	}
+
+	if selDB.Next() {
+		return true, err
+	} else {
+		return false, err
+	}
+}
+
 func GetAllSSHConnectionNoGroup() ([]SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()

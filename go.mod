@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/Jeffail/gabs v1.4.0
+	github.com/adhocore/gronx v0.2.6
 	github.com/albrow/forms v0.3.3
 	github.com/bitly/go-simplejson v0.5.0
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect

@@ -1,0 +1,23 @@
+- name: Harden ssh settings then restart when down
+  hosts: "{{ host }}"
+
+  handlers:
+    - name: restart ssh
+      service: name=sshd state=restarted
+      
+  vars:
+    MySQL_root_pass: ReplaceWithYourPassword
+  tasks:
+    - name: Update SSH configuration to be more secure.
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "{{item.regexp}}"
+        line: "{{item.line}}"
+        state: present
+        validate: 'sshd -t -f %s'
+      with_items:
+        - regexp: "^PermitEmptyPasswords"
+          line: "PermitEmptyPasswords no"
+      notify: restart ssh
+
+#Example usage: ansible-playbook --extra-vars '{"host":"centos8-vmware"}' yamls/install_mysql.yml

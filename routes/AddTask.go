@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/adhocore/gronx"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
@@ -52,6 +53,13 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	task.Alert = template.Alert
+
+	gron := gronx.New()
+	// check if expr is even valid, returns bool
+	if !gron.IsValid(task.CronTime) {
+		utils.ERROR(w, http.StatusBadRequest, "invalid cron time format")
+		return
+	}
 
 	if task.CronTime != "" {
 		go task.CronRunTask(r)
