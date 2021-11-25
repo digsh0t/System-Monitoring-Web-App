@@ -162,6 +162,15 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	watch := models.WatchInfo{SSHConnectionId: int(lastId), SSHConnectionName: sshConnectionInfo.HostNameSSH, WatchList: ""}
+	err = watch.AddNewWatcher()
+	if err != nil {
+		returnJson.Set("Status", false)
+		returnJson.Set("Error", err.Error())
+		utils.JSON(w, http.StatusBadRequest, returnJson)
+		return
+	}
+
 	err = models.GenerateInventory()
 	if err != nil {
 		returnJson.Set("Status", false)
@@ -413,6 +422,12 @@ func AddNewSSHConnection(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		err = models.GenerateInventory()
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		var watch = models.WatchInfo{SSHConnectionId: sshConnection.SSHConnectionId, SSHConnectionName: sshConnection.HostNameSSH, WatchList: ""}
+		err = watch.AddNewWatcher()
 		if err != nil {
 			utils.ERROR(w, http.StatusBadRequest, err.Error())
 			return

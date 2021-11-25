@@ -96,7 +96,7 @@ func AddWebAppUser(user User) (bool, error) {
 
 	err = InsertUserToDB(user)
 	if err != nil {
-		return false, errors.New("failed to create new user")
+		return false, err
 	}
 	return true, err
 
