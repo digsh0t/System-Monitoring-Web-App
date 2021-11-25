@@ -91,3 +91,17 @@ CREATE TABLE ssh_connection_alert (
     FOREIGN KEY (sca_id) references ssh_connections(sc_connection_id)
     ON DELETE CASCADE
 );
+
+CREATE TABLE `templates` (
+  `template_id` int NOT NULL AUTO_INCREMENT,
+  `template_name` varchar(60) DEFAULT NULL,
+  `template_description` varchar(200) DEFAULT NULL,
+  `ssh_key_id` int NULL,
+  `filepath` varchar(100) DEFAULT NULL,
+  `arguments` text,
+  `alert` tinyint(1) NOT NULL,
+  `user_id` int DEFAULT NULL,
+  PRIMARY KEY (`template_id`),
+  KEY `ssh_key_id` (`ssh_key_id`),
+  CONSTRAINT `templates_ibfk_1` FOREIGN KEY (`ssh_key_id`) REFERENCES `ssh_keys` (`sk_key_id`) ON DELETE CASCADE
+)
