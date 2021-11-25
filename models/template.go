@@ -2,6 +2,7 @@ package models
 
 import (
 	"bufio"
+	"database/sql"
 	"errors"
 	"os"
 	"regexp"
@@ -25,15 +26,26 @@ type Template struct {
 
 func (template *Template) AddTemplateToDB() (int64, error) {
 	var lastIndex int64
+	var query string
+	var res sql.Result
 	db := database.ConnectDB()
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO templates (template_name, template_description, ssh_key_id, filepath, arguments, alert, user_id) VALUES (?,?,?,?,?,?,?)")
+	if template.SshKeyId == 0 {
+		query = "INSERT INTO templates (template_name, template_description, ssh_key_id, filepath, arguments, alert, user_id) VALUES (?,?,NULL,?,?,?,?)"
+	} else {
+		query = "INSERT INTO templates (template_name, template_description, ssh_key_id, filepath, arguments, alert, user_id) VALUES (?,?,?,?,?,?,?)"
+	}
+	stmt, err := db.Prepare(query)
 	if err != nil {
 		return lastIndex, err
 	}
 	defer stmt.Close()
-	res, err := stmt.Exec(template.TemplateName, template.Description, template.SshKeyId, template.FilePath, template.Arguments, template.Alert, template.UserId)
+	if template.SshKeyId == 0 {
+		res, err = stmt.Exec(template.TemplateName, template.Description, template.FilePath, template.Arguments, template.Alert, template.UserId)
+	} else {
+		res, err = stmt.Exec(template.TemplateName, template.Description, template.SshKeyId, template.FilePath, template.Arguments, template.Alert, template.UserId)
+	}
 	if err != nil {
 		return lastIndex, err
 	}
@@ -45,6 +57,7 @@ func (template *Template) AddTemplateToDB() (int64, error) {
 }
 
 func GetTemplateFromId(temlateId int) (Template, error) {
+	var keyId sql.NullInt32
 	db := database.ConnectDB()
 	defer db.Close()
 
@@ -53,11 +66,13 @@ func GetTemplateFromId(temlateId int) (Template, error) {
 	if row == nil {
 		return Template{}, errors.New("no template with id " + strconv.Itoa(temlateId) + " exists")
 	}
-	err := row.Scan(&template.TemplateId, &template.TemplateName, &template.Description, &template.SshKeyId, &template.FilePath, &template.Arguments, &template.Alert)
+	err := row.Scan(&template.TemplateId, &template.TemplateName, &template.Description, &keyId, &template.FilePath, &template.Arguments, &template.Alert)
+	template.SshKeyId = int(keyId.Int32)
 	return template, err
 }
 
 func GetAllTemplate() ([]Template, error) {
+	var keyId sql.NullInt32
 	db := database.ConnectDB()
 	defer db.Close()
 
@@ -70,10 +85,11 @@ func GetAllTemplate() ([]Template, error) {
 	var template Template
 	var templateList []Template
 	for selDB.Next() {
-		err = selDB.Scan(&template.TemplateId, &template.TemplateName, &template.Description, &template.SshKeyId, &template.FilePath, &template.Arguments, &template.Alert, &template.UserId, &template.Username)
+		err = selDB.Scan(&template.TemplateId, &template.TemplateName, &template.Description, &keyId, &template.FilePath, &template.Arguments, &template.Alert, &template.UserId, &template.Username)
 		if err != nil {
 			return nil, err
 		}
+		template.SshKeyId = int(keyId.Int32)
 
 		templateList = append(templateList, template)
 	}

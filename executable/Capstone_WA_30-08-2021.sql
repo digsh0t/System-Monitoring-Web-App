@@ -8,9 +8,9 @@ CREATE TABLE wa_users (
   wa_users_role VARCHAR(60)
 );
 
-INSERT INTO wa_users (wa_users_username, wa_users_password, wa_users_role) VALUES ("trilx123","9a835b7eece9ea09bfc80b63d15b94aee929eac524544813da1962bc35081fbaea7698c84b73b7b3d7c65ead23d7abbf0d8e25e183e50f6a1f1e96f97d712afd", "admin");
-INSERT INTO wa_users (wa_users_username, wa_users_password, wa_users_role) VALUES ("long123","556c45b340635b61ab3a99a282d5c339115fe9e636d859edc5cdc9dabcbb701198f50c5e204dc0e3393f7c54b6116525d12e4d84690081761b42632c87002f2c", "admin");
-SELECT * FROM wa_users;
+-- INSERT INTO wa_users (wa_users_username, wa_users_password, wa_users_role) VALUES ("trilx123","9a835b7eece9ea09bfc80b63d15b94aee929eac524544813da1962bc35081fbaea7698c84b73b7b3d7c65ead23d7abbf0d8e25e183e50f6a1f1e96f97d712afd", "admin");
+-- INSERT INTO wa_users (wa_users_username, wa_users_password, wa_users_role) VALUES ("long123","556c45b340635b61ab3a99a282d5c339115fe9e636d859edc5cdc9dabcbb701198f50c5e204dc0e3393f7c54b6116525d12e4d84690081761b42632c87002f2c", "admin");
+-- SELECT * FROM wa_users;
 
 CREATE TABLE  ssh_keys (
     sk_key_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -32,10 +32,6 @@ CREATE TABLE ssh_connections (
     FOREIGN KEY (creator_id) references wa_users(wa_users_id),
     FOREIGN KEY (ssh_key_id) references ssh_keys(sk_key_id)
 );
-
-
-SELECT * FROM wa_users;
-
 
 CREATE TABLE package_installed (
   pkg_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -95,3 +91,17 @@ CREATE TABLE ssh_connection_alert (
     FOREIGN KEY (sca_id) references ssh_connections(sc_connection_id)
     ON DELETE CASCADE
 );
+
+CREATE TABLE `templates` (
+  `template_id` int NOT NULL AUTO_INCREMENT,
+  `template_name` varchar(60) DEFAULT NULL,
+  `template_description` varchar(200) DEFAULT NULL,
+  `ssh_key_id` int NULL,
+  `filepath` varchar(100) DEFAULT NULL,
+  `arguments` text,
+  `alert` tinyint(1) NOT NULL,
+  `user_id` int DEFAULT NULL,
+  PRIMARY KEY (`template_id`),
+  KEY `ssh_key_id` (`ssh_key_id`),
+  CONSTRAINT `templates_ibfk_1` FOREIGN KEY (`ssh_key_id`) REFERENCES `ssh_keys` (`sk_key_id`) ON DELETE CASCADE
+)

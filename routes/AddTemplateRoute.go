@@ -48,7 +48,6 @@ func AddTemplate(w http.ResponseWriter, r *http.Request) {
 	template = models.Template{
 		TemplateName: templateData.Get("template_name"),
 		Description:  templateData.Get("template_description"),
-		SshKeyId:     30,
 		Alert:        templateData.GetBool("alert"),
 	}
 
@@ -74,7 +73,7 @@ func AddTemplate(w http.ResponseWriter, r *http.Request) {
 
 	lastIndex, err := template.AddTemplateToDB()
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to insert template to database").Error())
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	path := "./yamls/templates/" + strconv.Itoa(int(lastIndex)) + "-" + yamlName

@@ -95,6 +95,10 @@ func InstallWindowsProgram(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	if fatal != nil {
+		utils.ERROR(w, http.StatusBadRequest, fatal[0])
+		return
+	}
 	returnJson := simplejson.New()
 	returnJson.Set("Status", status)
 	returnJson.Set("Fatal", fatal)

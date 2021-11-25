@@ -199,12 +199,15 @@ func GetClientTodayLog(logBasePath string, sshConnectionId int, seconds int, pri
 }
 
 func AllClientAlertLog(baseLogPath string, seconds int) error {
+	var tmp []int
 	watchList, err := GetAllWatch()
 	if err != nil {
 		return err
 	}
 	for _, watch := range watchList {
-		tmp, err := ConvertPriListToInt(watch.WatchList)
+		if watch.WatchList != "" {
+			tmp, err = ConvertPriListToInt(watch.WatchList)
+		}
 		if err != nil {
 			return err
 		}
@@ -241,10 +244,14 @@ func ClientAlertLog(logBasePath string, sshConnectionId int, seconds int, priLis
 		return nil
 	}
 	for _, log := range logList {
-		message += "\n"
-		message += fmt.Sprintf("%s: Time: %s, Host: %s, Origin Process: %s, Message: %s", priorityDictionary[log.SyslogPRI], log.Timegenerated, log.Hostname, log.ProgramName, log.Message)
+		message = fmt.Sprintf("%s: Time: %s, Host: %s, Origin Process: %s, Message: %s", priorityDictionary[log.SyslogPRI], log.Timegenerated, log.Hostname, log.ProgramName, log.Message)
+		message = strings.Trim(message, "\r\n\t ")
+		err = SendTelegramMessage(message)
+		if err != nil {
+			return err
+		}
 	}
-	err = SendTelegramMessage(message)
+
 	return err
 }
 
@@ -256,8 +263,10 @@ func GetLogInterval(seconds int, logList []Syslog, priorities []int) ([]Syslog, 
 		if err != nil {
 			return nil, err
 		}
-		if currTime.Sub(parsed) < (time.Second*time.Duration(seconds)) && checkPri(logList[i].SyslogPRI, priorities) {
-			newLog = append(newLog, logList[i])
+		if currTime.Sub(parsed) < (time.Second * time.Duration(seconds)) {
+			if checkPri(logList[i].SyslogPRI, priorities) {
+				newLog = append(newLog, logList[i])
+			}
 		} else {
 			return newLog, nil
 		}
