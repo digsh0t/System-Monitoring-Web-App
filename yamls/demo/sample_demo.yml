@@ -5,8 +5,6 @@
     - name: restart ssh
       service: name=sshd state=restarted
       
-  vars:
-    MySQL_root_pass: ReplaceWithYourPassword
   tasks:
     - name: Update SSH configuration to be more secure.
       lineinfile:

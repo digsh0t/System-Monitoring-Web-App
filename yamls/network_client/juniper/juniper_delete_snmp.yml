@@ -1,0 +1,15 @@
+- name: Delete SNMPv3
+  connection: netconf
+  hosts: "{{ host }}"
+  gather_facts: false
+  tasks:
+  - name: Delete SNMPv3
+    junos_config:
+     lines:
+     - delete snmp v3 usm local-engine user "{{ auth_username }}"
+     - delete snmp v3 usm local-engine user "{{ auth_username }}" 
+     - delete snmp v3 vacm security-to-group security-model usm security-name "{{ auth_username }}"
+     - delete snmp view SNMPVIEW oid .1 include
+     - delete snmp v3 vacm access group SNMPV3GROUP default-context-prefix security-model any security-level privacy read-view SNMPVIEW
+     - delete snmp v3 vacm access group SNMPV3GROUP default-context-prefix security-model any security-level privacy write-view SNMPVIEW
+     comment: update config

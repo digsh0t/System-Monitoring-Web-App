@@ -256,12 +256,20 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Delete setting account snmpv3 on network devices
+	if sshConnectionInfo.IsNetwork {
+		_, err := models.DeleteSNMPFromNetworkDevice(*sshConnectionInfo)
+		if err != nil {
+			returnJson.Set("Status", false)
+			returnJson.Set("Error", errors.New("SSH Connection with id "+strconv.Itoa(sshConnectionId)+" doesn't exist").Error())
+			utils.JSON(w, http.StatusBadRequest, returnJson)
+			return
+		}
+	}
+
 	_, err = models.DeleteSSHConnection(sshConnectionId)
 	if err != nil {
-		returnJson.Set("Status", false)
-		returnJson.Set("Error", errors.New("error while deleting SSH Connection").Error())
-		utils.JSON(w, http.StatusBadRequest, returnJson)
-		return
+		utils.JSON(w, http.StatusBadRequest, "can not process deleting account snmpv3 on this network, administrator must delete that account manually")
 	}
 	err = models.GenerateInventory()
 	var eventStatus string
@@ -281,7 +289,7 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 	description := "Delete SSHconnection from " + sshConnectionInfo.HostNameSSH + " " + eventStatus
 	_, err = models.WriteWebEvent(r, "SSHConnection", description)
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to write event").Error())
+		utils.ERROR(w, http.StatusBadRequest, errors.New("fail to write event").Error())
 		return
 	}
 }
