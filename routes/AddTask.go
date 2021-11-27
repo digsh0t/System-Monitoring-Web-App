@@ -52,14 +52,15 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("no template with this id exists").Error())
 		return
 	}
-	task.Alert = template.Alert
-
-	gron := gronx.New()
-	// check if expr is even valid, returns bool
-	if !gron.IsValid(task.CronTime) {
-		utils.ERROR(w, http.StatusBadRequest, "invalid cron time format")
-		return
+	if task.CronTime != "" {
+		gron := gronx.New()
+		// check if expr is even valid, returns bool
+		if !gron.IsValid(task.CronTime) {
+			utils.ERROR(w, http.StatusBadRequest, errors.New("invalid cron time format").Error())
+			return
+		}
 	}
+	task.Alert = template.Alert
 
 	if task.CronTime != "" {
 		go task.CronRunTask(r)

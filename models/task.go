@@ -352,6 +352,7 @@ func GetTaskFromTaskId(taskId int) (Task, error) {
 }
 
 func (task *Task) CronRunTask(r *http.Request) error {
+
 	// id, _ := C.AddFunc(task.CronTime, func() { task.RunTask(r) })
 	var err error
 	var nextRun time.Time

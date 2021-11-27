@@ -10,6 +10,5 @@
      - delete service snmp location 'VyOS Datacenter'
      - delete service snmp v3 engineid '000000000000000000000002'
      - delete service snmp v3 group snmpGroup mode 'ro'
-     - delete service snmp v3 user {{ auth_username }} 
-     - delete service snmp v3 user {{ auth_username }} group 'snmpGroup'
+     - delete service snmp v3 user "{{ auth_username }}" 
      save: yes
