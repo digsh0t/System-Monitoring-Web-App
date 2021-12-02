@@ -5,16 +5,24 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 
 	"github.com/bitly/go-simplejson"
-	"github.com/gorilla/mux"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
 )
 
 func GetWindowsLocalUserGroup(w http.ResponseWriter, r *http.Request) {
+
+	type returnStruct struct {
+		SshConnectionId int                     `json:"ssh_connection_id"`
+		GroupList       []models.LocalUserGroup `json:"group_list"`
+	}
+	type inputStruct struct {
+		SshIdList []int `json:"ssh_id_list"`
+	}
+	var returnVal []returnStruct
+	var inputVal inputStruct
 
 	//Authorization
 	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
@@ -27,23 +35,31 @@ func GetWindowsLocalUserGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	sshConnection, err := models.GetSSHConnectionFromId(id)
+	err = json.Unmarshal(body, &inputVal)
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	groupList, err := sshConnection.GetLocalUserGroup()
-	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err.Error())
-		return
+	for _, id := range inputVal.SshIdList {
+		sshConnection, err := models.GetSSHConnectionFromId(id)
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		groupList, err := sshConnection.GetLocalUserGroup()
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		returnVal = append(returnVal, returnStruct{SshConnectionId: id, GroupList: groupList})
 	}
-	utils.JSON(w, http.StatusOK, groupList)
+
+	utils.JSON(w, http.StatusOK, returnVal)
 }
 
 func AddNewWindowsGroup(w http.ResponseWriter, r *http.Request) {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -25,16 +24,16 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	sshConnection, err := models.GetSSHConnectionFromId(82)
-	if err != nil {
-		log.Println(err)
-	}
+	// sshConnection, err := models.GetSSHConnectionFromId(82)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 
-	result, err := sshConnection.GetExplorerPoliciesSettings("S-1-5-21-1572063403-3487170947-126735497-1018")
-	if err != nil {
-		log.Println(err)
-	}
-	fmt.Println(result)
+	// result, err := sshConnection.GetExplorerPoliciesSettings("S-1-5-21-1572063403-3487170947-126735497-1018")
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// fmt.Println(result)
 
 	// err := models.AllClientAlertLog("/var/log/remotelogs", 30)
 	// if err != nil {
@@ -237,7 +236,7 @@ func main() {
 	router.HandleFunc("/{id}/loggedinusers/appexecutionhistory", routes.GetWindowsLogonAppExecutionHistory).Methods("OPTIONS", "POST")
 
 	//Windows Local Group Management
-	router.HandleFunc("/{id}/localusergroup", routes.GetWindowsLocalUserGroup).Methods("OPTIONS", "GET")
+	router.HandleFunc("/getlocalusergroup", routes.GetWindowsLocalUserGroup).Methods("OPTIONS", "POST")
 	router.HandleFunc("/localusergroup", routes.AddNewWindowsGroup).Methods("OPTIONS", "POST")
 	router.HandleFunc("/localusergroup", routes.RemoveWindowsGroup).Methods("OPTIONS", "DELETE")
 
