@@ -30,7 +30,7 @@ func main() {
 		log.Println(err)
 	}
 
-	result, err := sshConnection.GetExplorerPoliciesSettings("S-1-5-21-1572063403-3487170947-126735497-1014")
+	result, err := sshConnection.GetExplorerPoliciesSettings("S-1-5-21-1572063403-3487170947-126735497-1018")
 	if err != nil {
 		log.Println(err)
 	}

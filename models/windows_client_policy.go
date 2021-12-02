@@ -41,25 +41,25 @@ func (sshConnection SshConnectionInfo) GetExplorerPoliciesSettings(sid string) (
 		return regKeyList, err
 	}
 	regKeyList, err = parseKeyList(result)
-	beautifyRegistryKeyList(regKeyList)
+	regKeyList = beautifyRegistryKeyList(regKeyList)
 	return regKeyList, err
 }
 
-func beautifyRegistryKeyList(regKeyList []RegistryKey) {
+func beautifyRegistryKeyList(regKeyList []RegistryKey) []RegistryKey {
 
-	pathTranslator := map[string]string{
-		"NoControlPanel": "Disables all Control Panel programs and the PC settings app.",
-		"DisallowRun":    "Prevent Users From Running Certain Programs",
-	}
+	var policyList []RegistryKey
+	policyList = append(policyList, RegistryKey{Path: "Disables all Control Panel programs and the PC settings app.", Data: "0"})
+	policyList = append(policyList, RegistryKey{Path: "Prevent Users From Running Certain Programs", Data: "0"})
 
 	for i, key := range regKeyList {
 		if strings.Contains(key.Path, "NoControlPanel") {
-			regKeyList[i].Path = pathTranslator["NoControlPanel"]
+			policyList[0].Data = regKeyList[i].Data
 		}
 		if strings.Contains(key.Path, "DisallowRun") {
-			regKeyList[i].Path = pathTranslator["DisallowRun"]
+			policyList[1].Data = regKeyList[i].Data
 		}
 	}
+	return policyList
 }
 
 func uglifyRegistryKeyList(regKeyList []RegistryKey) {
