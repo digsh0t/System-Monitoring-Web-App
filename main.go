@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -24,15 +25,16 @@ func main() {
 	// 	log.Println(err)
 	// }
 
-	// sshConnection, err := models.GetSSHConnectionFromId(72)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
+	sshConnection, err := models.GetSSHConnectionFromId(82)
+	if err != nil {
+		log.Println(err)
+	}
 
-	// err := models.RemoveWatcher(72)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
+	result, err := sshConnection.GetExplorerPoliciesSettings("S-1-5-21-1572063403-3487170947-126735497-1014")
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(result)
 
 	// err := models.AllClientAlertLog("/var/log/remotelogs", 30)
 	// if err != nil {

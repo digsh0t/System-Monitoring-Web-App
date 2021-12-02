@@ -30,7 +30,13 @@ func parseKeyList(output string) ([]RegistryKey, error) {
 
 func (sshConnection SshConnectionInfo) GetExplorerPoliciesSettings(sid string) ([]RegistryKey, error) {
 	var regKeyList []RegistryKey
-	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT data, path FROM registry WHERE key = 'HKEY_USERS\` + sid + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' AND data != ''"`)
+	userBasePath, err := sshConnection.regLoadCurrentUser(sid)
+	if err != nil {
+		return regKeyList, err
+	}
+	userBasePath = strings.ReplaceAll(userBasePath, `HKU:\`, `HKEY_USERS\`)
+	query := `osqueryi --json "SELECT data, path FROM registry WHERE key = '` + userBasePath + `\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' AND data != ''"`
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(query)
 	if err != nil {
 		return regKeyList, err
 	}
@@ -42,17 +48,13 @@ func (sshConnection SshConnectionInfo) GetExplorerPoliciesSettings(sid string) (
 func beautifyRegistryKeyList(regKeyList []RegistryKey) {
 
 	pathTranslator := map[string]string{
-		"NoControlPanel":     "Disables all Control Panel programs and the PC settings app.",
-		"NoDriveTypeAutoRun": "Turn off the Autoplay feature.",
-		"DisallowRun":        "Prevent Users From Running Certain Programs",
+		"NoControlPanel": "Disables all Control Panel programs and the PC settings app.",
+		"DisallowRun":    "Prevent Users From Running Certain Programs",
 	}
 
 	for i, key := range regKeyList {
 		if strings.Contains(key.Path, "NoControlPanel") {
 			regKeyList[i].Path = pathTranslator["NoControlPanel"]
-		}
-		if strings.Contains(key.Path, "NoDriveTypeAutoRun") {
-			regKeyList[i].Path = pathTranslator["NoDriveTypeAutoRun"]
 		}
 		if strings.Contains(key.Path, "DisallowRun") {
 			regKeyList[i].Path = pathTranslator["DisallowRun"]
@@ -64,16 +66,12 @@ func uglifyRegistryKeyList(regKeyList []RegistryKey) {
 
 	pathTranslator := map[string]string{
 		"Disables all Control Panel programs and the PC settings app": "NoControlPanel",
-		"Turn off the Autoplay feature":                               "NoDriveTypeAutoRun",
 		"Prevent Users From Running Certain Programs":                 "DisallowRun",
 	}
 
 	for i, key := range regKeyList {
 		if strings.Contains(key.Path, "Disables all Control Panel programs and the PC settings app") {
 			regKeyList[i].Path = pathTranslator["Disables all Control Panel programs and the PC settings app"]
-		}
-		if strings.Contains(key.Path, "Turn off the Autoplay feature") {
-			regKeyList[i].Path = pathTranslator["Turn off the Autoplay feature"]
 		}
 		if strings.Contains(key.Path, "Prevent Users From Running Certain Programs") {
 			regKeyList[i].Path = pathTranslator["Prevent Users From Running Certain Programs"]
