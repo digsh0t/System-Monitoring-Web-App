@@ -43,6 +43,20 @@ func GetIdFromUsername(username string) (int, error) {
 	return id, err
 }
 
+func GetUserFromUsername(username string) (User, error) {
+	var user User
+	db := database.ConnectDB()
+	defer db.Close()
+
+	row := db.QueryRow("SELECT wa_users_id, wa_users_username, wa_users_role, wa_secret, wa_users_password, wa_2fa FROM wa_users WHERE wa_users_username = ?", username)
+	err := row.Scan(&user.UserId, &user.Username, &user.Role, &user.Secret, &user.Password, &user.TwoFA)
+	if row == nil {
+		return user, errors.New("user doesn't exist")
+	}
+
+	return user, err
+}
+
 func (user User) UpdateSecret(secret string) error {
 	db := database.ConnectDB()
 	defer db.Close()
@@ -339,4 +353,26 @@ func HashPassword(password string) string {
 	result := fmt.Sprintf("%x", hashedPasswordBytes)
 
 	return result
+}
+
+func (user User) UpdatePassword(password string) error {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	stmt, err := db.Prepare("UPDATE wa_users SET wa_users_password = ? WHERE wa_users_username = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	hashed := HashPassword(password)
+	if password == "" {
+		_, err = stmt.Exec("", user.Username)
+	} else {
+		_, err = stmt.Exec(hashed, user.Username)
+	}
+	if err != nil {
+		return err
+	}
+	return err
 }

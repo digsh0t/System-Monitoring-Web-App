@@ -43,7 +43,7 @@ type process struct {
 }
 
 func (sshConnection SshConnectionInfo) GetProcessListFromWindows() ([]process, error) {
-	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT P.*,U.username FROM processes AS P LEFT JOIN users AS U WHERE P.uid=U.uid"`)
+	result, err := sshConnection.RunCommandFromSSHConnectionUseKeys(`osqueryi --json "SELECT P.*,U.username FROM processes AS P LEFT JOIN users AS U ON P.uid=U.uid"`)
 	if err != nil {
 		return nil, err
 	}

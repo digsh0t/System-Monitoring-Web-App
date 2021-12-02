@@ -229,3 +229,103 @@ func ListAllWebAppUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func CheckUserExistRoute(w http.ResponseWriter, r *http.Request) {
+	var user models.User
+	type tmpStruct struct {
+		Username string `json:"username"`
+		Valid    bool   `json:"valid"`
+	}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	ok, err := models.CheckUserNameExist(user.Username)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.JSON(w, http.StatusOK, tmpStruct{Username: user.Username, Valid: ok})
+}
+
+func CheckUserOTPRoute(w http.ResponseWriter, r *http.Request) {
+	var authorization string
+	type returnStruct struct {
+		Username      string `json:"username"`
+		Valid         bool   `json:"valid"`
+		Authorization string `json:"authorization"`
+	}
+	type inputStruct struct {
+		Username string `json:"username"`
+		TOTP     string `json:"totp"`
+	}
+	var tmpUser inputStruct
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = json.Unmarshal(body, &tmpUser)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	user, err := models.GetUserFromUsername(tmpUser.Username)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	user.Secret, err = models.AESDecryptKey(user.Secret)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	ok, err := models.CheckTOTP(user.Secret, tmpUser.TOTP)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if ok {
+		authorization, err = auth.CreateToken(user.UserId, user.Username, user.Role, "not authorized")
+		if err != nil {
+			utils.ERROR(w, http.StatusBadRequest, err.Error())
+			return
+		}
+	}
+	utils.JSON(w, http.StatusOK, returnStruct{Username: user.Username, Valid: ok, Authorization: authorization})
+}
+
+func UpdateUserPasswordRoute(w http.ResponseWriter, r *http.Request) {
+	type inputStruct struct {
+		NewPassword string `json:"password"`
+	}
+	var user models.User
+	var input inputStruct
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = json.Unmarshal(body, &input)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	tokenData, err := auth.ExtractTokenMetadata(r)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	user.Username = tokenData.Username
+	err = user.UpdatePassword(input.NewPassword)
+	if err != nil {
+		utils.ERROR(w, http.StatusBadRequest, err.Error())
+		return
+	}
+}
