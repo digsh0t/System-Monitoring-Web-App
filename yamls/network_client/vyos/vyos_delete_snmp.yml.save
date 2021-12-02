@@ -1,0 +1,14 @@
+- name: Delete SNMPv3
+  connection: network_cli
+  hosts: "{{ host }}"
+  gather_facts: false
+  tasks:
+  - name: Delete SNMPv3
+    vyos_config:
+     lines:
+     - delete service snmp community public authorization ro
+     - delete service snmp location 'VyOS Datacenter'
+     - delete service snmp v3 engineid '000000000000000000000002'
+     - delete service snmp v3 group snmpGroup mode 'ro'
+     - delete service snmp v3 user "{{ auth_username }}" 
+     save: yes

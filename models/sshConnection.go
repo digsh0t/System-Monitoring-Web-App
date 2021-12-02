@@ -211,6 +211,23 @@ func GetAllSSHConnection() ([]SshConnectionInfo, error) {
 	return connectionInfos, err
 }
 
+func CheckHostnameExist(hostname string) (bool, error) {
+	db := database.ConnectDB()
+	defer db.Close()
+
+	query := `SELECT sc_connection_id, sc_username FROM ssh_connections WHERE sc_hostname = ?`
+	selDB, err := db.Query(query, hostname)
+	if err != nil {
+		return false, err
+	}
+
+	if selDB.Next() {
+		return true, err
+	} else {
+		return false, err
+	}
+}
+
 func GetAllSSHConnectionNoGroup() ([]SshConnectionInfo, error) {
 	db := database.ConnectDB()
 	defer db.Close()
@@ -608,6 +625,55 @@ func AddSNMPToNetworkDevice(sshConnectionInfo SshConnectionInfo, lastId int64) (
 	_, err = RunAnsiblePlaybookWithjson(filepath, string(snmpJsonMarshal))
 	if err != nil {
 		return false, errors.New("fail to enable snmp on network device")
+	}
+	return result, err
+}
+
+func DeleteSNMPFromNetworkDevice(sshConnectionInfo SshConnectionInfo) (bool, error) {
+	var (
+		result bool
+		err    error
+	)
+	snmpInfo, err := GetSNMPCredentialFromSshConnectionId(sshConnectionInfo.SSHConnectionId)
+	if err != nil {
+		return false, err
+	}
+
+	type SNMPJson struct {
+		Host          string `json:"host"`
+		Auth_Username string `json:"auth_username"`
+		Auth_Password string `json:"auth_password"`
+		Priv_Password string `json:"priv_password"`
+	}
+
+	// Create Json
+	snmpJson := SNMPJson{
+		Host:          sshConnectionInfo.HostNameSSH,
+		Auth_Username: snmpInfo.AuthUsername,
+		Auth_Password: snmpInfo.AuthPassword,
+		Priv_Password: snmpInfo.PrivPassword,
+	}
+
+	// Marshal and run playbook
+	snmpJsonMarshal, err := json.Marshal(snmpJson)
+	if err != nil {
+		return false, errors.New("fail to marshal json")
+	}
+
+	// Enable NETCONF connection on Juniper device
+	var filepath string
+	switch sshConnectionInfo.NetworkOS {
+	case "ios":
+		filepath = "./yamls/network_client/cisco/cisco_delete_snmp.yml"
+	case "vyos":
+		filepath = "./yamls/network_client/vyos/vyos_delete_snmp.yml"
+	case "junos":
+		filepath = "./yamls/network_client/juniper/juniper_delete_snmp.yml"
+	}
+
+	_, err = RunAnsiblePlaybookWithjson(filepath, string(snmpJsonMarshal))
+	if err != nil {
+		return false, errors.New("fail to delete snmp on network device")
 	}
 	return result, err
 }

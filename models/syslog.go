@@ -714,3 +714,38 @@ local7.*                                                /var/log/boot.log
 	}
 	return string(output), err
 }
+
+func AnalyzeSyslog() (map[string][]string, error) {
+	m := make(map[string][]string)
+
+	var err error
+	sshConnectionList, err := GetAllSSHConnection()
+	if err != nil {
+		return nil, err
+	}
+	for _, sshConnection := range sshConnectionList {
+		var tmpRows []Syslog
+		tmpRows, err = GetClientSyslog("/var/log/remotelogs", sshConnection.SSHConnectionId, "21-11-2021")
+		// if err != nil {
+		// 	return nil, err
+		// }
+		problems := AnalyzeClientSyslog(tmpRows)
+		m[sshConnection.HostNameSSH] = problems
+	}
+
+	return m, err
+}
+
+func AnalyzeClientSyslog(syslogs []Syslog) []string {
+	var interfacesDown []string
+
+	// Specific Problem to catch log
+	var re = regexp.MustCompile(`state to down|SNMP_TRAP_LINK_DOWN|down`)
+
+	for _, syslog := range syslogs {
+		if re.MatchString(syslog.Message) {
+			interfacesDown = append(interfacesDown, syslog.Message)
+		}
+	}
+	return interfacesDown
+}

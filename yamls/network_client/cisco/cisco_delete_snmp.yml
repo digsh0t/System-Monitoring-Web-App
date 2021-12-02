@@ -1,0 +1,15 @@
+- name: Delete SNMPv3
+  connection: network_cli
+  hosts: "{{ host }}"
+  gather_facts: false
+  tasks:
+  - name: Enable SNMPv3
+    ios_config:
+     lines: 
+     - no snmp-server community public
+     - no snmp-server group snmpGroup v3 priv
+     - no snmp-server user "{{ auth_username }}" snmpGroup v3 auth md5 "{{ auth_password }}" priv des "{{ priv_password }}"
+     save_when: changed
+    
+  
+     

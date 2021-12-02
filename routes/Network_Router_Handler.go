@@ -123,10 +123,16 @@ func ConfigStaticRouteRouter(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Return Json
+		var statusCode int
 		returnJson := simplejson.New()
 		returnJson.Set("Status", status)
 		returnJson.Set("Fatal", fatals)
-		utils.JSON(w, http.StatusOK, returnJson)
+		if len(fatals) > 0 {
+			statusCode = http.StatusBadRequest
+		} else {
+			statusCode = http.StatusOK
+		}
+		utils.JSON(w, statusCode, returnJson)
 		eventStatus = "successfully"
 	}
 

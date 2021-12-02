@@ -48,7 +48,7 @@ CREATE TABLE event_web (
   ev_web_description VARCHAR(300),
   ev_web_timestamp DATETIME,
   ev_web_creator_id INT,
-  FOREIGN KEY (ev_creator_id) references wa_users(wa_users_id)
+  FOREIGN KEY (ev_web_creator_id) references wa_users(wa_users_id) ON DELETE CASCADE
   
 );
 

@@ -352,10 +352,12 @@ func GetTaskFromTaskId(taskId int) (Task, error) {
 }
 
 func (task *Task) CronRunTask(r *http.Request) error {
+
 	// id, _ := C.AddFunc(task.CronTime, func() { task.RunTask(r) })
 	var err error
 	var nextRun time.Time
 	var isNewRun bool = true
+
 	id, _ := C.AddFunc(task.CronTime, func() {
 		err = task.Run()
 		// Write Event Web
@@ -373,7 +375,6 @@ func (task *Task) CronRunTask(r *http.Request) error {
 	for {
 		time.Sleep(time.Second)
 		if !C.Entry(id).Valid() {
-
 			task.Status = "halted"
 			description := "Task Id \"" + strconv.Itoa(task.TaskId) + "\" finished with result: " + task.Status
 			WriteWebEvent(r, "Task", description)

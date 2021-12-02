@@ -119,6 +119,7 @@ func AddWebAppUser(user User) (bool, error) {
 func DeleteWepAppUser(waUserId int) (bool, error) {
 	err := DeleteUserFromDB(waUserId)
 	if err != nil {
+		fmt.Println(err.Error())
 		return false, err
 	}
 	return true, err

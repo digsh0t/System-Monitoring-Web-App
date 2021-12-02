@@ -69,10 +69,16 @@ func PackageRemove(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Return Json
+		var statusCode int
 		returnJson := simplejson.New()
 		returnJson.Set("Status", status)
 		returnJson.Set("Fatal", fatalList)
-		utils.JSON(w, http.StatusOK, returnJson)
+		if len(fatalList) > 0 {
+			statusCode = http.StatusBadRequest
+		} else {
+			statusCode = http.StatusOK
+		}
+		utils.JSON(w, statusCode, returnJson)
 		eventStatus = "successfully"
 	}
 	// Write Event Web
@@ -139,10 +145,16 @@ func PackageInstall(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Return Json
+		var statusCode int
 		returnJson := simplejson.New()
 		returnJson.Set("Fatal", fatalList)
 		returnJson.Set("Status", status)
-		utils.JSON(w, http.StatusOK, returnJson)
+		if len(fatalList) > 0 {
+			statusCode = http.StatusBadRequest
+		} else {
+			statusCode = http.StatusOK
+		}
+		utils.JSON(w, statusCode, returnJson)
 		eventStatus = "successfully"
 	}
 	// Write Event Web

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/adhocore/gronx"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/models"
 	"github.com/wintltr/login-api/utils"
@@ -50,6 +51,14 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("no template with this id exists").Error())
 		return
+	}
+	if task.CronTime != "" {
+		gron := gronx.New()
+		// check if expr is even valid, returns bool
+		if !gron.IsValid(task.CronTime) {
+			utils.ERROR(w, http.StatusBadRequest, errors.New("invalid cron time format").Error())
+			return
+		}
 	}
 	task.Alert = template.Alert
 
