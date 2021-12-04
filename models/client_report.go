@@ -358,7 +358,7 @@ func ClientExportReport(filename string, modulesList ReportModules) error {
 		pdf.SetTextColor(255, 255, 255)
 		pdf.SetLineWidth(.3)
 		pdf.SetFont("", "B", 0)
-		w := []float64{45.0, 85.0, 65.0}
+		w := []float64{70.0, 85.0, 65.0}
 		for j, str := range header {
 			pdf.CellFormat(w[j], 7, str, "1", 0, "C", true, 0, "")
 		}
