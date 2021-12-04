@@ -172,7 +172,7 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	watch := models.WatchInfo{SSHConnectionId: int(lastId), SSHConnectionName: sshConnectionInfo.HostNameSSH, WatchList: ""}
+	watch := models.WatchInfo{SSHConnectionId: int(lastId), SSHConnectionName: sshConnectionInfo.HostNameSSH, WatchList: "0"}
 	err = watch.AddNewWatcher()
 	if err != nil {
 		returnJson.Set("Status", false)

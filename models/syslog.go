@@ -213,7 +213,9 @@ func AllClientAlertLog(baseLogPath string, seconds int) error {
 		}
 		err = ClientAlertLog(baseLogPath, watch.SSHConnectionId, seconds, tmp)
 		if err != nil {
-			return err
+			if !strings.Contains(err.Error(), "no such file or directory") {
+				return err
+			}
 		}
 	}
 	return err
