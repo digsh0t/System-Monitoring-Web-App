@@ -295,7 +295,7 @@ func main() {
 
 	//Check Username
 	router.HandleFunc("/checkusername", routes.CheckUserExistRoute).Methods("OPTIONS", "POST")
-	router.HandleFunc("/checkusertoptp", routes.CheckUserOTPRoute).Methods("OPTIONS", "POST")
+	router.HandleFunc("/checkusertotp", routes.CheckUserOTPRoute).Methods("OPTIONS", "POST")
 	router.HandleFunc("/updateuserpassword", routes.UpdateUserPasswordRoute).Methods("OPTIONS", "POST")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
