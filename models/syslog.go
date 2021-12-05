@@ -248,6 +248,10 @@ func ClientAlertLog(logBasePath string, sshConnectionId int, seconds int, priLis
 	for _, log := range logList {
 		message = fmt.Sprintf("%s: Time: %s, Host: %s, Origin Process: %s, Message: %s", priorityDictionary[log.SyslogPRI], log.Timegenerated, log.Hostname, log.ProgramName, log.Message)
 		message = strings.Trim(message, "\r\n\t ")
+		err := WriteToLogFile("./log/alert.log", message)
+		if err != nil {
+			return err
+		}
 		err = SendTelegramMessage(message)
 		if err != nil {
 			return err

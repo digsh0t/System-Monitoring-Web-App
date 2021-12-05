@@ -2,8 +2,11 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"os"
 	"regexp"
+	"time"
 
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/database"
@@ -158,4 +161,14 @@ func DeleteAllEventWeb() (bool, error) {
 		return false, err
 	}
 	return true, err
+}
+
+func WriteToLogFile(filepath string, logMessage string) error {
+	f, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	log := fmt.Sprintf("%s: %s\n", time.Now().String(), logMessage)
+	_, err = f.Write([]byte(log))
+	return err
 }
