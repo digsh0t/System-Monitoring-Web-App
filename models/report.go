@@ -7,6 +7,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/Jeffail/gabs"
 	"github.com/jung-kurt/gofpdf"
+	"github.com/wcharczuk/go-chart/v2"
 	"github.com/wintltr/login-api/auth"
 	"github.com/wintltr/login-api/utils"
 )
@@ -231,12 +233,67 @@ func GetClientSerial(sshConnection SshConnectionInfo) (string, error) {
 
 }
 
+func CountOS() (Report, error) {
+	var (
+		reportInfo Report
+		err        error
+	)
+
+	// Get Linux Os total
+	sshConnectionLinux, err := GetAllOSSSHConnection("Linux")
+	if err != nil {
+		return reportInfo, errors.New("fail to get linux os total")
+	}
+	reportInfo.Linux_os_total = len(sshConnectionLinux)
+
+	// Get Windows Os total
+	sshConnectionWindows, err := GetAllOSSSHConnection("Windows")
+	if err != nil {
+		return reportInfo, errors.New("fail to get windows os total")
+	}
+	reportInfo.Windows_os_total = len(sshConnectionWindows)
+
+	// Get Unknown Os
+	reportInfo.Unknown_os_total, err = CountUnknownOS()
+	if err != nil {
+		return reportInfo, errors.New("fail to get unknown os total")
+	}
+
+	// Get Network Os
+	reportInfo.Netowrk_os_total, err = CountNetworkOS()
+	if err != nil {
+		return reportInfo, errors.New("fail to get network os total")
+	}
+	return reportInfo, err
+}
+
 func ExportReport(filename string, modulesList ReportModules) error {
 
 	// Cover Page
 	type recType struct {
 		align, txt string
 	}
+
+	// Export Pie chart PNG
+
+	report, err := CountOS()
+	if err != nil {
+		return err
+	}
+	pie := chart.PieChart{
+		Width:  512,
+		Height: 512,
+		Values: []chart.Value{
+			{Value: float64(report.Linux_os_total), Label: "Linux"},
+			{Value: float64(report.Netowrk_os_total), Label: "Network"},
+			{Value: float64(report.Windows_os_total), Label: "Windows"},
+			{Value: float64(report.Unknown_os_total), Label: "Unknown"},
+		},
+	}
+
+	f, _ := os.Create("./tmp/piechart.png")
+	defer f.Close()
+	pie.Render(chart.PNG, f)
 
 	var formatRect = func(pdf *gofpdf.Fpdf) {
 		pdf.AddPage()
