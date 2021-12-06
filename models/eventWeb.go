@@ -168,7 +168,7 @@ func WriteToLogFile(filepath string, logMessage string) error {
 	if err != nil {
 		return err
 	}
-	log := fmt.Sprintf("%s: %s\n", time.Now().String(), logMessage)
+	log := fmt.Sprintf("%s: %s\n", time.Now().Format("Mon, 02 Jan 2006 15:04:05 MST"), logMessage)
 	_, err = f.Write([]byte(log))
 	return err
 }

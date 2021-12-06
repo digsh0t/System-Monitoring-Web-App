@@ -228,10 +228,6 @@ func (task *Task) UpdateStatus() error {
 	task.Log("Task Id:" + strconv.Itoa(task.TaskId) + " run " + task.Status)
 	if task.Alert {
 		message := task.EndTime.String() + ": Task Id " + strconv.Itoa(task.TaskId) + " is finished with result: " + task.Status
-		err := WriteToLogFile("./log/alert.log", message)
-		if err != nil {
-			return err
-		}
 		SendTelegramMessage(message)
 	}
 	return task.UpdateTask()

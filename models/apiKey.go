@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -79,6 +80,11 @@ func RemoveTelegramAPIKeyFromDB(apiName string) error {
 }
 
 func SendTelegramMessage(message string) error {
+	message = fmt.Sprint(message)
+	err := WriteToLogFile("./log/alert.log", message)
+	if err != nil {
+		return err
+	}
 	apiKey, err := GetTelegramAPIKey()
 	if err != nil {
 		if strings.Contains(err.Error(), "telegram api key doesn't exist") {
