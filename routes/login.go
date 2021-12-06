@@ -83,6 +83,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		returnJson.Set("Authorization", token)
 		returnJson.Set("2fa", twofaSettings)
 		returnJson.Set("user_id", user.UserId)
+		returnJson.Set("role", user.Role)
 		returnJson.Set("Error", "")
 		utils.JSON(w, http.StatusOK, returnJson)
 	}

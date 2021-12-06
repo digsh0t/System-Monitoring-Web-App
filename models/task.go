@@ -227,7 +227,8 @@ func (task *Task) Run() error {
 func (task *Task) UpdateStatus() error {
 	task.Log("Task Id:" + strconv.Itoa(task.TaskId) + " run " + task.Status)
 	if task.Alert {
-		SendTelegramMessage(task.EndTime.String() + ": Task Id " + strconv.Itoa(task.TaskId) + " is finished with result: " + task.Status)
+		message := task.EndTime.String() + ": Task Id " + strconv.Itoa(task.TaskId) + " is finished with result: " + task.Status
+		SendTelegramMessage(message)
 	}
 	return task.UpdateTask()
 }

@@ -16,7 +16,7 @@ import (
 
 func UpdateWebAppUser(w http.ResponseWriter, r *http.Request) {
 	//Authorization
-	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin", "user"})
 	if err != nil {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
 		return
@@ -25,6 +25,7 @@ func UpdateWebAppUser(w http.ResponseWriter, r *http.Request) {
 		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
 		return
 	}
+	tokenData, _ := auth.ExtractTokenMetadata(r)
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -34,6 +35,12 @@ func UpdateWebAppUser(w http.ResponseWriter, r *http.Request) {
 
 	var user models.User
 	err = json.Unmarshal(body, &user)
+	if tokenData.Role == "user" {
+		if !(tokenData.Username == user.Username && user.Role == "user") {
+			utils.ERROR(w, http.StatusBadRequest, errors.New("You are not authorized to change other account's password").Error())
+			return
+		}
+	}
 	if err != nil {
 		utils.ERROR(w, http.StatusBadRequest, errors.New("Fail to parse json format").Error())
 		return

@@ -1,8 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gorilla/handlers"
@@ -11,8 +15,19 @@ import (
 	"github.com/wintltr/login-api/routes"
 )
 
-func main() {
+func checkSignal() {
+	sigCh := make(chan os.Signal)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
+	select {
+	case <-sigCh:
+		message := fmt.Sprintf("%s: Server is terminated.", time.Now().Format("Mon, 02 Jan 2006 15:04:05 MST"))
+		models.SendTelegramMessage(message)
+		os.Exit(0)
+	}
+}
+
+func main() {
 	//go goroutines.CheckClientOnlineStatusGour()
 	// sshKey, err := models.GetSSHKeyFromId(14)
 	// if err != nil {
@@ -56,7 +71,9 @@ func main() {
 	//}
 	// sI := models.SmtpInfo{EmailSender: "noti.lthmonitor@gmail.com", EmailPassword: "Lethihang123", SMTPHost: "smtp.gmail.com", SMTPPort: "587"}
 	// sI.SendReportMail("./10-11-2021-report.pdf", []string{"trilxse140935@fpt.edu.vn"}, []string{"wintltrbackup@gmail.com"},[]string{"wintltr@gmail.com"})
-
+	message := fmt.Sprintf("%s: Server has started sucessfully.", time.Now().Format("Mon, 02 Jan 2006 15:04:05 MST"))
+	models.SendTelegramMessage(message)
+	go checkSignal()
 	go models.AlertWatcher()
 	go models.RemoveEntryChannel()
 	router := mux.NewRouter().StrictSlash(true)

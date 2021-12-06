@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -43,10 +44,10 @@ func GetTelegramAPIKey() (ApiKey, error) {
 	var encryptedToken string
 	row := db.QueryRow(`SELECT ak_api_name,ak_api_token, ak_telegram_user, ak_chat_id FROM api_keys WHERE ak_api_name = "Telegram_bot"`)
 	err := row.Scan(&apiKey.ApiName, &encryptedToken, &apiKey.TelegramUser, &apiKey.TelegramChatId)
-	if row == nil {
-		return apiKey, errors.New("telegram api key doesn't exist")
-	}
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return apiKey, errors.New("telegram api key doesn't exist")
+		}
 		return apiKey, errors.New("fail to retrieve telegram api key info")
 	}
 
@@ -79,8 +80,16 @@ func RemoveTelegramAPIKeyFromDB(apiName string) error {
 }
 
 func SendTelegramMessage(message string) error {
+	message = fmt.Sprint(message)
+	err := WriteToLogFile("./log/alert.log", message)
+	if err != nil {
+		return err
+	}
 	apiKey, err := GetTelegramAPIKey()
 	if err != nil {
+		if strings.Contains(err.Error(), "telegram api key doesn't exist") {
+			return nil
+		}
 		return err
 	}
 

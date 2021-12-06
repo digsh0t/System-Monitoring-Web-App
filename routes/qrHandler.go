@@ -127,6 +127,7 @@ func VerifyQR(w http.ResponseWriter, r *http.Request) {
 	returnJson.Set("ok", ok)
 	returnJson.Set("authorization", token)
 	returnJson.Set("user_id", user.UserId)
+	returnJson.Set("role", user.Role)
 	utils.JSON(w, http.StatusOK, returnJson)
 }
 
