@@ -1,8 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gorilla/handlers"
@@ -11,8 +15,22 @@ import (
 	"github.com/wintltr/login-api/routes"
 )
 
-func main() {
+func checkSignal() {
+	sigCh := make(chan os.Signal)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
+	select {
+	case <-sigCh:
+		message := fmt.Sprintf("%s: Server is terminated.", time.Now().Format("Mon, 02 Jan 2006 15:04:05 MST"))
+		models.SendTelegramMessage(message)
+		os.Exit(0)
+	}
+}
+
+func main() {
+	message := fmt.Sprintf("%s: Server has started sucessfully.", time.Now().Format("Mon, 02 Jan 2006 15:04:05 MST"))
+	models.SendTelegramMessage(message)
+	go checkSignal()
 	//go goroutines.CheckClientOnlineStatusGour()
 	// sshKey, err := models.GetSSHKeyFromId(14)
 	// if err != nil {
@@ -298,4 +316,5 @@ func main() {
 	router.HandleFunc("/updateuserpassword", routes.UpdateUserPasswordRoute).Methods("OPTIONS", "POST")
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(credentials, methods, origins)(router)))
+	defer models.SendTelegramMessage("this is when server stop running")
 }
