@@ -284,14 +284,15 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		Width:  512,
 		Height: 512,
 		Values: []chart.Value{
-			{Value: float64(report.Linux_os_total), Label: "Linux"},
-			{Value: float64(report.Netowrk_os_total), Label: "Network"},
-			{Value: float64(report.Windows_os_total), Label: "Windows"},
-			{Value: float64(report.Unknown_os_total), Label: "Unknown"},
+			{Value: float64(report.Linux_os_total), Label: "Linux: " + strconv.Itoa(report.Linux_os_total)},
+			{Value: float64(report.Netowrk_os_total), Label: "Network: " + strconv.Itoa(report.Netowrk_os_total)},
+			{Value: float64(report.Windows_os_total), Label: "Windows: " + strconv.Itoa(report.Windows_os_total)},
+			{Value: float64(report.Unknown_os_total), Label: "Unknown: " + strconv.Itoa(report.Unknown_os_total)},
 		},
 	}
 
-	f, _ := os.Create("./tmp/piechart.png")
+	datetime := utils.GetCurrentDateTime()
+	f, _ := os.Create("./tmp/piechart-" + datetime + ".png")
 	defer f.Close()
 	pie.Render(chart.PNG, f)
 
@@ -414,6 +415,11 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		pdf.WriteAligned(100, 20, "          2.2."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
 		pdf.Ln(8)
 	}
+	pdf.Ln(2)
+	pdf.WriteAligned(70, 20, "3. Pie chart", "L")
+	pdf.Ln(10)
+	pdf.Ln(2)
+	pdf.WriteAligned(70, 20, "4. Detail OS Report", "L")
 	pdf.Ln(10)
 
 	// Content
@@ -1160,6 +1166,30 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		return err
 	}
 
+	var DrawOSPieChart = func(pdf *gofpdf.Fpdf) error {
+		pdf.SetAutoPageBreak(true, 20.0)
+		pdf.AddPage()
+		pdf.SetMargins(10, 10, 10)
+		pdf.SetFont("", "B", 18)
+		pdf.WriteAligned(100, 20, "3. OS Pie Chart", "L")
+		pdf.SetFont("", "", 12)
+		pdf.ImageOptions(
+			"./tmp/piechart-"+datetime+".png",
+			70, 70,
+			0, 0,
+			false,
+			gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true},
+			0,
+			"",
+		)
+
+		pdf.SetFont("Arial", "B", 22)
+		pdf.SetXY(20, 20)
+		pdf.SetXY(20, 20)
+
+		return err
+	}
+
 	var DrawOSSummaryTable = func(pdf *gofpdf.Fpdf, osType string) error {
 		pdf.SetAutoPageBreak(true, 20.0)
 
@@ -1200,6 +1230,80 @@ func ExportReport(filename string, modulesList ReportModules) error {
 			pdf.CellFormat(w[3], height, detailInfo.OsVersion, "1", 0, "", fill, 0, "")
 			pdf.Ln(-1)
 			fill = !fill
+		}
+
+		return err
+	}
+
+	var DrawDetailOSReport = func(pdf *gofpdf.Fpdf) error {
+		pdf.SetAutoPageBreak(true, 20.0)
+		pdf.AddPage()
+		pdf.SetMargins(10, 10, 10)
+		marginCell := 2. // margin of top/bottom of cell
+		// Draw System info
+		header := []string{"informationId", "OS Name", "OS version", "Date installation", "Serial number", "Hostname", "Manufacturer", "Model", "Architecture", "ConnectionID"}
+
+		pdf.Ln(20)
+		pdf.SetFont("", "B", 15)
+		pdf.WriteAligned(100, 20, "4. Detail OS Report", "L")
+		pdf.SetFont("", "", 12)
+		pdf.Ln(20)
+		pdf.SetFillColor(141, 151, 173)
+		pdf.SetTextColor(255, 255, 255)
+		pdf.SetLineWidth(.3)
+		pdf.SetFont("", "B", 0)
+		w := []float64{28.0, 27.0, 34.0, 32.0, 35.0, 30.0, 33.0, 28.0, 28.0, 35.0}
+		for j, str := range header {
+			if j == 0 {
+				continue
+			}
+			pdf.CellFormat(w[j], 7, str, "1", 0, "C", true, 0, "")
+		}
+		pdf.Ln(-1)
+
+		// Color and font restoration
+		pdf.SetFillColor(224, 235, 255)
+		pdf.SetTextColor(0, 0, 0)
+		pdf.SetFont("", "", 10)
+		// 	Data
+		reportList, err := GetDetailOSReport("")
+		if err != nil {
+			return err
+		}
+
+		for _, report := range reportList {
+			curx, y := pdf.GetXY()
+			x := curx
+
+			height := 0.
+			_, lineHt := pdf.GetFontSize()
+
+			v := reflect.ValueOf(report)
+			typeOfS := v.Type()
+
+			for i := 0; i < typeOfS.NumField(); i++ {
+				lines := pdf.SplitLines([]byte(v.Field(i).String()), w[i])
+				h := float64(len(lines))*lineHt + marginCell*float64(len(lines))
+				if h > height {
+					height = h
+				}
+			}
+
+			for i := 0; i < typeOfS.NumField(); i++ {
+				if i == 0 {
+					continue
+				}
+				width := w[i]
+				pdf.Rect(x, y, width, height, "")
+				if i != 9 {
+					pdf.MultiCell(width, lineHt+marginCell, v.Field(i).String(), "", "", false)
+				} else {
+					pdf.MultiCell(width, lineHt+marginCell, strconv.Itoa(report.SshConnectionId), "", "", false)
+				}
+				x += width
+				pdf.SetXY(x, y)
+			}
+			pdf.SetXY(curx, y+height)
 		}
 
 		return err
@@ -1392,6 +1496,18 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		if err != nil {
 			log.Println("fail to excute function DrawOSSummaryTable =>", err.Error())
 		}
+	}
+
+	// Draw Pie chart
+	err = DrawOSPieChart(pdf)
+	if err != nil {
+		log.Println("fail to excute function DrawOSPieChart =>", err.Error())
+	}
+
+	// Draw Detail OS Report
+	err = DrawDetailOSReport(pdf)
+	if err != nil {
+		log.Println("fail to excute function DrawDetailOSReport =>", err.Error())
 	}
 
 	// End Page
