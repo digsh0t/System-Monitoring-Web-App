@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"strconv"
 )
@@ -49,5 +50,28 @@ func DeleteWindowsProgram(host interface{}, productId string) (string, error) {
 		return "", err
 	}
 	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/delete_windows_program.yml", string(jsonArgs))
+	return output, err
+}
+
+func InstallWindowsProgramLocal(host interface{}, filename string) (string, error) {
+
+	type installInfo struct {
+		Host     interface{} `json:"host"`
+		Src      string      `json:"source"`
+		Dest     string      `json:"dest"`
+		Filename string      `json:"filename"`
+	}
+
+	source, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	source += "/msi"
+	dest := `C:\tmp` + strconv.Itoa(rand.Int()) + `\`
+	jsonArgs, err := json.Marshal(installInfo{Host: host, Src: source, Dest: dest, Filename: filename})
+	if err != nil {
+		return "", err
+	}
+	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/install_windows_program_local_msi.yml", string(jsonArgs))
 	return output, err
 }

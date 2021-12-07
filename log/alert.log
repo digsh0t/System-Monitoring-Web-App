@@ -4,8 +4,14 @@
 
 Mon, 06 Dec 2021 11:33:06 +07: Mon, 06 Dec 2021 11:33:06 +07: Server has started sucessfully.
 Mon, 06 Dec 2021 11:33:26 +07: Mon, 06 Dec 2021 11:33:26 +07: Server is terminated.
+<<<<<<< HEAD
 Tue, 07 Dec 2021 04:59:05 +07: Tue, 07 Dec 2021 04:59:05 +07: Server has started sucessfully.
 Tue, 07 Dec 2021 05:02:45 +07: Tue, 07 Dec 2021 05:02:45 +07: Server is terminated.
 Tue, 07 Dec 2021 05:02:56 +07: Tue, 07 Dec 2021 05:02:56 +07: Server has started sucessfully.
 Tue, 07 Dec 2021 05:28:32 +07: 2021-12-07 05:28:32.288092643 +0700 +07 m=+1535.297197799: Task Id 135 is finished with result: success
 Tue, 07 Dec 2021 06:03:19 +07: Tue, 07 Dec 2021 06:03:19 +07: Server is terminated.
+=======
+Mon, 06 Dec 2021 11:54:24 +07: Mon, 06 Dec 2021 11:54:24 +07: Server has started sucessfully.
+Tue, 07 Dec 2021 18:01:03 +07: Tue, 07 Dec 2021 18:01:03 +07: Server has started sucessfully.
+Tue, 07 Dec 2021 19:28:28 +07: Tue, 07 Dec 2021 19:28:28 +07: Server is terminated.
+>>>>>>> 86bec6c9a5415be266b4560d6e182697329aecf1
