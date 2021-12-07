@@ -1,5 +1,7 @@
 github.com/Jeffail/gabs v1.4.0 h1://5fYRRTq1edjfIrQGvdkcd22pkYUrHZ5YC/H2GJVAo=
 github.com/Jeffail/gabs v1.4.0/go.mod h1:6xMvQMK4k33lb7GUUpaAPh6nKMmemQeg5d4gn7/bOXc=
+github.com/VirusTotal/vt-go v0.0.0-20211116094520-07a92e6467b7 h1:1oIDITWcezvHQXrm2RDiYsVpCeRbvxY4MLBAFdoaPWQ=
+github.com/VirusTotal/vt-go v0.0.0-20211116094520-07a92e6467b7/go.mod h1:u1+HeRyl/gQs67eDgVEWNE7+x+zCyXhdtNVrRJR5YPE=
 github.com/adhocore/gronx v0.2.6 h1:bFcYDpnDOOJ+ExO9fhLjNm5sB5+U8JCOaa0SgFYWkFw=
 github.com/adhocore/gronx v0.2.6/go.mod h1:7oUY1WAU8rEJWmAxXR2DN0JaO4gi9khSgKjiRypqteg=
 github.com/albrow/forms v0.3.3 h1:+40fCsDyS2lU97IEeed7bnUGENvlVzppQGBGy6kd77E=
@@ -66,6 +68,8 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/technoweenie/multipartstreamer v1.0.1 h1:XRztA5MXiR1TIRHxH2uNxXxaIkKQDeX7m2XsSOlQEnM=
 github.com/technoweenie/multipartstreamer v1.0.1/go.mod h1:jNVxdtShOxzAsukZwTSw6MDx5eUJoiEBsSvzDU9uzog=
+github.com/thedevsaddam/gojsonq/v2 v2.5.2 h1:CoMVaYyKFsVj6TjU6APqAhAvC07hTI6IQen8PHzHYY0=
+github.com/thedevsaddam/gojsonq/v2 v2.5.2/go.mod h1:bv6Xa7kWy82uT0LnXPE2SzGqTj33TAEeR560MdJkiXs=
 github.com/yeqown/go-qrcode v1.5.8 h1:WUN8kjl2p2Y46qaSzrHfK973ARt6brABoynN3t2dDL0=
 github.com/yeqown/go-qrcode v1.5.8/go.mod h1:C1eAU4Jure3vqD56kqzeSLaX84MHg3fZAMNID4nXX+Y=
 github.com/yeqown/reedsolomon v1.0.0 h1:x1h/Ej/uJnNu8jaX7GLHBWmZKCAWjEJTetkqaabr4B0=

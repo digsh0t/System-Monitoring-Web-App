@@ -228,8 +228,11 @@ func main() {
 	router.HandleFunc("/{id}/openconnection", routes.GetWindowsOpenConnection).Methods("OPTIONS", "GET")
 
 	//Windows Programs Management
+	router.HandleFunc("/programs/url/vtcheck", routes.CheckURLVTRoute).Methods("POST")
+	router.HandleFunc("/programs/file/vtcheck", routes.CheckFileVTRoute).Methods("POST")
 	router.HandleFunc("/{id}/programs", routes.GetWindowsInstalledProgram).Methods("GET")
 	router.HandleFunc("/programs", routes.InstallWindowsProgram).Methods("POST")
+	router.HandleFunc("/programs/local", routes.InstallWindowsProgramLocalHandler).Methods("POST")
 	router.HandleFunc("/programs", routes.RemoveWindowsProgram).Methods("DELETE")
 
 	//Add new ssh connection
