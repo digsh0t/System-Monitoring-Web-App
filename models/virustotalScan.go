@@ -236,6 +236,6 @@ func getURLVTReport(client *vt.Client, hashedURL string) (VTReport, error) {
 	}
 	json.Unmarshal(jsonParsed.Path("attributes.last_analysis_stats").Bytes(), &report.Attributes)
 	report.AnalysisTime = jsonParsed.Path("attributes.last_analysis_date").String()
-	report.URL = strings.Trim(strings.ReplaceAll(jsonParsed.Path("links.self").String(), "https://www.virustotal.com/api/v3/files", "https://www.virustotal.com/gui/file"), `"`)
+	report.URL = strings.Trim(strings.ReplaceAll(jsonParsed.Path("links.self").String(), "https://www.virustotal.com/api/v3/urls", "https://www.virustotal.com/gui/url"), `"`)
 	return report, err
 }
