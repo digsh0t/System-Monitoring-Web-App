@@ -53,15 +53,15 @@ func GetWindowsInstalledProgram(w http.ResponseWriter, r *http.Request) {
 func InstallWindowsProgram(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	// isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
-	// if err != nil {
-	// 	utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
-	// 	return
-	// }
-	// if !isAuthorized {
-	// 	utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
-	// 	return
-	// }
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -185,15 +185,15 @@ func RemoveWindowsProgram(w http.ResponseWriter, r *http.Request) {
 
 func CheckFileVTRoute(w http.ResponseWriter, r *http.Request) {
 
-	// isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
-	// if err != nil {
-	// 	utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
-	// 	return
-	// }
-	// if !isAuthorized {
-	// 	utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
-	// 	return
-	// }
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 
 	r.ParseMultipartForm(10 << 20)
 	var buf bytes.Buffer
@@ -231,15 +231,15 @@ func CheckFileVTRoute(w http.ResponseWriter, r *http.Request) {
 func CheckURLVTRoute(w http.ResponseWriter, r *http.Request) {
 
 	//Authorization
-	// isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
-	// if err != nil {
-	// 	utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
-	// 	return
-	// }
-	// if !isAuthorized {
-	// 	utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
-	// 	return
-	// }
+	isAuthorized, err := auth.CheckAuth(r, []string{"admin"})
+	if err != nil {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("invalid token").Error())
+		return
+	}
+	if !isAuthorized {
+		utils.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized").Error())
+		return
+	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
