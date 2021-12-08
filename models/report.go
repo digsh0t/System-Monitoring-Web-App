@@ -357,9 +357,13 @@ func ExportReport(filename string, modulesList ReportModules) error {
 	pdf.AddPage()
 	pdf.CellFormat(60, 30, "Table of Contents ", "", 0, "C", false, 0, "")
 	pdf.Ln(20)
-	pdf.WriteAligned(90, 20, "1. Computer devices", "L")
+	pdf.WriteAligned(70, 20, "1. OS Summary", "L")
 	pdf.Ln(10)
-	pdf.WriteAligned(70, 20, "   1.1. Windows devices", "L")
+	pdf.WriteAligned(70, 20, "2. Detail OS Report", "L")
+	pdf.Ln(10)
+	pdf.WriteAligned(90, 20, "3. Computer devices", "L")
+	pdf.Ln(10)
+	pdf.WriteAligned(70, 20, "   3.1. Windows devices", "L")
 	pdf.Ln(10)
 
 	// Get Windows
@@ -368,12 +372,12 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
-		pdf.WriteAligned(100, 20, "          1.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+		pdf.WriteAligned(100, 20, "          3.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
 		pdf.Ln(8)
 	}
 
 	pdf.Ln(2)
-	pdf.WriteAligned(70, 20, "   1.2. Linux devices", "L")
+	pdf.WriteAligned(70, 20, "   3.2. Linux devices", "L")
 	pdf.Ln(10)
 
 	// Get Linux
@@ -382,14 +386,14 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
-		pdf.WriteAligned(100, 20, "          1.2."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+		pdf.WriteAligned(100, 20, "          3.2."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
 		pdf.Ln(8)
 	}
 
 	pdf.Ln(2)
-	pdf.WriteAligned(70, 20, "2. Network devices", "L")
+	pdf.WriteAligned(70, 20, "4. Network devices", "L")
 	pdf.Ln(10)
-	pdf.WriteAligned(70, 20, "   2.1. Router devices", "L")
+	pdf.WriteAligned(70, 20, "   4.1. Router devices", "L")
 	pdf.Ln(10)
 
 	// Get Router
@@ -398,12 +402,12 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
-		pdf.WriteAligned(100, 20, "          2.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+		pdf.WriteAligned(100, 20, "          4.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
 		pdf.Ln(8)
 	}
 
 	pdf.Ln(2)
-	pdf.WriteAligned(70, 20, "   2.2. Switch devices", "L")
+	pdf.WriteAligned(70, 20, "   4.2. Switch devices", "L")
 	pdf.Ln(10)
 
 	// Get Switch
@@ -412,30 +416,20 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
-		pdf.WriteAligned(100, 20, "          2.2."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+		pdf.WriteAligned(100, 20, "          4.2."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
 		pdf.Ln(8)
 	}
-	pdf.Ln(2)
-	pdf.WriteAligned(70, 20, "3. Pie chart", "L")
-	pdf.Ln(10)
-	pdf.Ln(2)
-	pdf.WriteAligned(70, 20, "4. Detail OS Report", "L")
-	pdf.Ln(10)
 
 	// Content
 	var DrawSystemInfoTable = func(pdf *gofpdf.Fpdf, index int, sshConnection SshConnectionInfo) error {
 		pdf.SetAutoPageBreak(true, 20.0)
 
-		// Draw System info
-		if index > 0 {
-			pdf.AddPage()
-		}
 		pdf.SetFont("Arial", "B", 16)
 		sshConnectionInfo, err := GetSSHConnectionInformationBySSH_Id(sshConnection.SSHConnectionId)
 		if err != nil {
 			return err
 		}
-		pdf.WriteAligned(100, 20, "          1.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+
 		pdf.SetY(90)
 		pdf.SetFillColor(141, 151, 173)
 		pdf.SetTextColor(255, 255, 255)
@@ -1168,10 +1162,9 @@ func ExportReport(filename string, modulesList ReportModules) error {
 
 	var DrawOSPieChart = func(pdf *gofpdf.Fpdf) error {
 		pdf.SetAutoPageBreak(true, 20.0)
-		pdf.AddPage()
 		pdf.SetMargins(10, 10, 10)
 		pdf.SetFont("", "B", 18)
-		pdf.WriteAligned(100, 20, "3. OS Pie Chart", "L")
+		pdf.WriteAligned(100, 20, "1. OS Summary", "L")
 		pdf.SetFont("", "", 12)
 		pdf.ImageOptions(
 			"./tmp/piechart-"+datetime+".png",
@@ -1245,7 +1238,7 @@ func ExportReport(filename string, modulesList ReportModules) error {
 
 		pdf.Ln(20)
 		pdf.SetFont("", "B", 15)
-		pdf.WriteAligned(100, 20, "4. Detail OS Report", "L")
+		pdf.WriteAligned(100, 20, "2. Detail OS Report", "L")
 		pdf.SetFont("", "", 12)
 		pdf.Ln(20)
 		pdf.SetFillColor(141, 151, 173)
@@ -1305,7 +1298,6 @@ func ExportReport(filename string, modulesList ReportModules) error {
 			}
 			pdf.SetXY(curx, y+height)
 		}
-
 		return err
 	}
 
@@ -1315,9 +1307,24 @@ func ExportReport(filename string, modulesList ReportModules) error {
 	pdf.Ln(10)
 	pdf.WriteAligned(90, 20, "Contents", "L")
 	pdf.Ln(20)
-	pdf.WriteAligned(90, 20, "1. Computer devices", "L")
+	// Draw Pie chart
+	err = DrawOSPieChart(pdf)
+	if err != nil {
+		log.Println("fail to excute function DrawOSPieChart =>", err.Error())
+	}
+
+	// Draw Detail OS Report
+	err = DrawDetailOSReport(pdf)
+	if err != nil {
+		log.Println("fail to excute function DrawDetailOSReport =>", err.Error())
+	}
+
+	pdf.AddPage()
 	pdf.Ln(10)
-	pdf.WriteAligned(70, 20, "   1.1. Windows devices", "L")
+	pdf.SetFont("", "B", 15)
+	pdf.WriteAligned(90, 20, "3. Computer devices", "L")
+	pdf.Ln(10)
+	pdf.WriteAligned(70, 20, "   3.1. Windows devices", "L")
 	pdf.Ln(10)
 
 	modules := modulesList.Modules
@@ -1327,6 +1334,12 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
+		if index > 0 {
+			pdf.AddPage()
+		}
+		pdf.SetFont("", "B", 15)
+		pdf.WriteAligned(100, 20, "          3.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+		pdf.Ln(5)
 		if CheckModules(modules, 1) {
 			err = DrawSystemInfoTable(pdf, index, sshConnection)
 			if err != nil {
@@ -1395,14 +1408,19 @@ func ExportReport(filename string, modulesList ReportModules) error {
 	pdf.AddPage()
 	pdf.Ln(20)
 	pdf.SetFont("", "B", 15)
-	pdf.WriteAligned(70, 20, "   1.2. Linux devices", "L")
+	pdf.WriteAligned(70, 20, "   3.2. Linux devices", "L")
 	pdf.Ln(10)
 	sshConnectionList, err = GetAllOSSSHConnection("Linux")
 	if err != nil {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
-
+		if index > 0 {
+			pdf.AddPage()
+		}
+		pdf.SetFont("", "B", 15)
+		pdf.WriteAligned(100, 20, "          3.2."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+		pdf.Ln(10)
 		if CheckModules(modules, 10) {
 			err = DrawSystemInfoTable(pdf, index, sshConnection)
 			if err != nil {
@@ -1435,16 +1453,21 @@ func ExportReport(filename string, modulesList ReportModules) error {
 	// Get Router
 	pdf.AddPage()
 	pdf.SetFont("", "B", 15)
-	pdf.WriteAligned(90, 20, "2. Network devices", "L")
+	pdf.WriteAligned(90, 20, "4. Network devices", "L")
 	pdf.Ln(10)
-	pdf.WriteAligned(70, 20, "   2.1. Router devices", "L")
+	pdf.WriteAligned(70, 20, "   4.1. Router devices", "L")
 	pdf.Ln(10)
 	sshConnectionList, err = GetAllOSSSHConnection("Router")
 	if err != nil {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
-
+		if index > 0 {
+			pdf.AddPage()
+		}
+		pdf.SetFont("", "B", 15)
+		pdf.WriteAligned(100, 20, "          4.1."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+		pdf.Ln(10)
 		if CheckModules(modules, 20) {
 			err = DrawSystemInfoTable(pdf, index, sshConnection)
 			if err != nil {
@@ -1469,14 +1492,19 @@ func ExportReport(filename string, modulesList ReportModules) error {
 	// Get Switch
 	pdf.AddPage()
 	pdf.SetFont("", "B", 15)
-	pdf.WriteAligned(70, 20, "   2.2. Switch devices", "L")
+	pdf.WriteAligned(70, 20, "   4.2. Switch devices", "L")
 	pdf.Ln(10)
 	sshConnectionList, err = GetAllOSSSHConnection("Switch")
 	if err != nil {
 		return err
 	}
 	for index, sshConnection := range sshConnectionList {
-
+		if index > 0 {
+			pdf.AddPage()
+		}
+		pdf.SetFont("", "B", 15)
+		pdf.WriteAligned(100, 20, "          4.2."+strconv.Itoa(index+1)+". "+sshConnection.HostNameSSH, "L")
+		pdf.Ln(10)
 		if CheckModules(modules, 30) {
 			err = DrawSystemInfoTable(pdf, index, sshConnection)
 			if err != nil {
@@ -1496,18 +1524,6 @@ func ExportReport(filename string, modulesList ReportModules) error {
 		if err != nil {
 			log.Println("fail to excute function DrawOSSummaryTable =>", err.Error())
 		}
-	}
-
-	// Draw Pie chart
-	err = DrawOSPieChart(pdf)
-	if err != nil {
-		log.Println("fail to excute function DrawOSPieChart =>", err.Error())
-	}
-
-	// Draw Detail OS Report
-	err = DrawDetailOSReport(pdf)
-	if err != nil {
-		log.Println("fail to excute function DrawDetailOSReport =>", err.Error())
 	}
 
 	// End Page
