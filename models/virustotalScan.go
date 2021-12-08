@@ -10,6 +10,7 @@ import (
 
 	"github.com/Jeffail/gabs"
 	vt "github.com/VirusTotal/vt-go"
+	"github.com/wintltr/login-api/utils"
 )
 
 type VTReport struct {
@@ -29,7 +30,8 @@ type VTReport struct {
 
 func ScanFile(filename string) (VTReport, error) {
 	var report VTReport
-	apiKey := "0a73b1126be43858189b52b30c690e5e3429896c2d6aba826cdcc69608e871d1"
+	utils.EnvInit()
+	apiKey := os.Getenv("VT_API_TOKEN")
 	client := vt.NewClient(apiKey)
 
 	f, err := os.Open(filename)
@@ -75,7 +77,8 @@ func ScanFile(filename string) (VTReport, error) {
 
 func ScanURL(url string) (VTReport, error) {
 	var report VTReport
-	apiKey := "0a73b1126be43858189b52b30c690e5e3429896c2d6aba826cdcc69608e871d1"
+	utils.EnvInit()
+	apiKey := os.Getenv("VT_API_TOKEN")
 	hasher := sha256.New()
 	hasher.Write([]byte(url))
 	hashedURL := fmt.Sprintf("%x", hasher.Sum(nil))
