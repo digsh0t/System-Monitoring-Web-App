@@ -3,6 +3,7 @@ package models
 import (
 	"crypto/rand"
 	"encoding/base32"
+	"os"
 	"strings"
 
 	"github.com/dgryski/dgoogauth"
@@ -64,10 +65,10 @@ func GenerateQR(username string) (string, string, error) {
 		return "", "", err
 	}
 
-	// e := os.Remove(tmpFilePath)
-	// if e != nil {
-	// 	return nil, "", err
-	// }
+	e := os.Remove(tmpFilePath)
+	if e != nil {
+		return "", "", err
+	}
 	return authLink, secret, nil
 }
 

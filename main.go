@@ -28,49 +28,7 @@ func checkSignal() {
 }
 
 func main() {
-	//go goroutines.CheckClientOnlineStatusGour()
-	// sshKey, err := models.GetSSHKeyFromId(14)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// err = sshKey.WriteKeyToFile("tmp/private_key")
-	//err := models.RemoveFile("tmp/private_key")
-	// if err != nil {
-	// 	log.Println(err)
-	// }
 
-	// sshConnection, err := models.GetSSHConnectionFromId(82)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-
-	// result, err := sshConnection.GetExplorerPoliciesSettings("S-1-5-21-1572063403-3487170947-126735497-1018")
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// fmt.Println(result)
-
-	// err := models.AllClientAlertLog("/var/log/remotelogs", 30)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// for _, index := range key {
-	// 	fmt.Print(index.Username + " ")
-	// 	fmt.Print(index.IsEnabled)
-	// 	fmt.Print(" " + index.LastLogon)
-	// 	fmt.Println(index.Type)
-	// }
-	// key, err = sshConnection.GetWindowsVmwareProductKey()
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// fmt.Println(key)
-	//err := models.ExportReport("hello.pdf")
-	//if err != nil {
-	//	log.Println(err.Error())
-	//}
-	// sI := models.SmtpInfo{EmailSender: "noti.lthmonitor@gmail.com", EmailPassword: "Lethihang123", SMTPHost: "smtp.gmail.com", SMTPPort: "587"}
-	// sI.SendReportMail("./10-11-2021-report.pdf", []string{"trilxse140935@fpt.edu.vn"}, []string{"wintltrbackup@gmail.com"},[]string{"wintltr@gmail.com"})
 	message := fmt.Sprintf("%s: Server has started sucessfully.", time.Now().Format("Mon, 02 Jan 2006 15:04:05 MST"))
 	models.SendTelegramMessage(message)
 	go checkSignal()

@@ -4,11 +4,12 @@ go 1.16
 
 require (
 	github.com/Jeffail/gabs v1.4.0
-	github.com/VirusTotal/vt-go v0.0.0-20211116094520-07a92e6467b7 // indirect
+	github.com/VirusTotal/vt-go v0.0.0-20211116094520-07a92e6467b7
 	github.com/adhocore/gronx v0.2.6
 	github.com/albrow/forms v0.3.3
 	github.com/bitly/go-simplejson v0.5.0
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
 	github.com/fsnotify/fsnotify v1.5.1

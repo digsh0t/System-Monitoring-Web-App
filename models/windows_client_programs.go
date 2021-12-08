@@ -34,7 +34,7 @@ func InstallWindowsProgram(host interface{}, url string, dest string) (string, e
 	if err != nil {
 		return "", err
 	}
-	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/add_windows_program.yml", string(jsonArgs))
+	output, err := RunAnsiblePlaybookWithjson("yamls/windows_client/install_windows_program.yml", string(jsonArgs))
 	return output, err
 }
 

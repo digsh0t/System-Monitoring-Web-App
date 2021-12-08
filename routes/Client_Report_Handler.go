@@ -49,7 +49,7 @@ func ClientExportReport(w http.ResponseWriter, r *http.Request) {
 		eventStatus = "failed"
 	} else {
 		// Send Email
-		sI := models.SmtpInfo{EmailSender: "noti.lthmonitor@gmail.com", EmailPassword: "Lethihang123", SMTPHost: "smtp.gmail.com", SMTPPort: "587"}
+		sI := models.SmtpInfo{EmailSender: os.Getenv("EMAIL_SENDER"), EmailPassword: os.Getenv("EMAIL_PASS"), SMTPHost: os.Getenv("SMTP_HOST"), SMTPPort: os.Getenv("SMTP_PORT")}
 		err = sI.SendReportMail(filename, modules.ReceiveEmail, modules.Cc, modules.Bcc, r)
 		if err != nil {
 			utils.ERROR(w, http.StatusBadRequest, err.Error())
