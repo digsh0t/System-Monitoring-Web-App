@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -46,6 +48,13 @@ func ScanFile(filename string) (VTReport, error) {
 		return report, err
 	}
 	defer f.Close()
+	stat, _ := f.Stat()
+	if stat.Size() > 33554432 {
+		url, err = requestBigFileUploadVT()
+		if err != nil {
+			return report, err
+		}
+	}
 
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
@@ -53,19 +62,19 @@ func ScanFile(filename string) (VTReport, error) {
 	}
 
 	fileSHA256 := fmt.Sprintf("%x", h.Sum(nil))
-
-	values := map[string]io.Reader{
-		"file": mustOpen(filename), // lets assume its this file
-	}
-	err = Upload(http.DefaultClient, url, values, f.Name())
-	if err != nil {
-		return report, err
-	}
-
 	report, err = getFileVTReport(client, fileSHA256)
 	if err != nil {
-		return report, err
+		if !strings.Contains(err.Error(), "not found") {
+			return report, err
+		}
 	}
+	go func() {
+		values := map[string]io.Reader{
+			"file": mustOpen(filename), // lets assume its this file
+		}
+		err = Upload(http.DefaultClient, url, values, f.Name())
+		log.Println(err)
+	}()
 	for report.AnalysisTime == "{}" {
 		report, err = getFileVTReport(client, fileSHA256)
 		if err != nil {
@@ -80,6 +89,30 @@ func ScanFile(filename string) (VTReport, error) {
 		}
 	}
 	return report, err
+}
+
+func requestBigFileUploadVT() (string, error) {
+	type tmpStruct struct {
+		Data string `json:"data"`
+	}
+	var tmp tmpStruct
+
+	url := "https://www.virustotal.com/api/v3/files/upload_url"
+
+	req, _ := http.NewRequest("GET", url, nil)
+
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("x-apikey", os.Getenv("VT_API_TOKEN"))
+
+	res, _ := http.DefaultClient.Do(req)
+
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+	err := json.Unmarshal(body, &tmp)
+	if err != nil {
+		return "", err
+	}
+	return tmp.Data, err
 }
 
 func Upload(client *http.Client, url string, values map[string]io.Reader, filename string) (err error) {

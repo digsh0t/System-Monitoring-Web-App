@@ -62,7 +62,7 @@ func extractProcessId(input string) (string, int, error) {
 	if tmp != "" {
 		tmp = tmp[1 : len(tmp)-1]
 	}
-	if tmp == "" {
+	if tmp == "" || tmp == "LocationType" {
 		processId = -1
 	} else {
 		processId, err = strconv.Atoi(tmp)
