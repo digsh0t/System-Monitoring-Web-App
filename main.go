@@ -53,7 +53,7 @@ func main() {
 	router.HandleFunc("/sshkey", routes.AddSSHKey).Methods("POST", "OPTIONS")
 	router.HandleFunc("/sshkey/{id}", routes.SSHKeyDeleteRoute).Methods("DELETE", "OPTIONS")
 	router.HandleFunc("/sshkeys", routes.GetAllSSHKey).Methods("GET", "OPTIONS")
-
+	//
 	// Inventory Group
 	/*
 		router.HandleFunc("/inventory/group/add", routes.InventoryGroupAdd).Methods("POST")
