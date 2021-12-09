@@ -24,6 +24,7 @@ require (
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/pusher/pusher-http-go v4.0.1+incompatible
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/wcharczuk/go-chart/v2 v2.1.0 // indirect
 	github.com/yeqown/go-qrcode v1.5.8
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 	golang.org/x/sys v0.0.0-20210903071746-97244b99971b // indirect

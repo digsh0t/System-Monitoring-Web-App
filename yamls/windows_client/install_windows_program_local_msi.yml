@@ -11,12 +11,12 @@
   - name: Copy File
     win_copy:
       src: "{{ source + '/' + filename }}"
-      dest: "{{ dest + '\' + filename }}"
+      dest: "{{ dest }}\\{{ filename }}"
       remote_src: no
 
   - name: Install msi locally omitting the product_id
     win_package:
-      path: "{{ dest + '\' + filename }}"
+      path: "{{ dest }}\\{{ filename }}"
       state: present
 
   - name: Remove directory structure
