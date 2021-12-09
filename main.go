@@ -28,7 +28,6 @@ func checkSignal() {
 }
 
 func main() {
-
 	message := fmt.Sprintf("%s: Server has started sucessfully.", time.Now().Format("Mon, 02 Jan 2006 15:04:05 MST"))
 	models.SendTelegramMessage(message)
 	go checkSignal()

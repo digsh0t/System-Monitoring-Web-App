@@ -16,7 +16,7 @@
 
   - name: Install msi locally omitting the product_id
     win_package:
-      path: "{{ dest + filename }}"
+      path: "{{ dest + '\' + filename }}"
       state: present
 
   - name: Remove directory structure

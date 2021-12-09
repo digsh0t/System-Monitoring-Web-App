@@ -200,6 +200,8 @@ func SSHCopyKey(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	go models.UpdateRsyslogServerConfig("")
+
 	// Get Detail Information Of Client
 	go models.AddSSHConnectionInformation(sshConnectionInfo, lastId)
 
@@ -271,6 +273,7 @@ func SSHConnectionDeleteRoute(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.JSON(w, http.StatusBadRequest, "can not process deleting account snmpv3 on this network, administrator must delete that account manually")
 	}
+	go models.UpdateRsyslogServerConfig("")
 	err = models.GenerateInventory()
 	var eventStatus string
 	if err != nil {
